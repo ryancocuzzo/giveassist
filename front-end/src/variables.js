@@ -14,7 +14,13 @@ var variables = {
   server_urls: {
     home: server_root,
     eventPriviledges: server_root + '/eventPriviledges',
-    createEvent: server_root + '/createEvent'
+    createEvent: server_root + '/createEvent',
+    createStripeUser: server_root + '/createStripeUser',
+    initPayments: server_root + '/initPayments',
+    uploadProfilePicture: server_root + '/uploadProfilePicture',
+    changePaymentSource: server_root + '/changePaymentSource',
+    change_plan: server_root + '/change_plan',
+    deleteUser: server_root + 'deleteUser'
   }
 };
 

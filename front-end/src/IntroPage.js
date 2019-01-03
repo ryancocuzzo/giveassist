@@ -3,7 +3,7 @@ import { Button, Row, Col } from 'react-bootstrap';
 import { Link, withRouter} from 'react-router-dom';
 import firebase, { auth, provider } from './firebase.js';
 import variables from './variables.js';
-import './App.css';
+// import './App.css';
 
 let urls = variables.local_urls;
 
@@ -11,6 +11,7 @@ class IntroPage extends Component {
 
   constructor(props) {
       super(props);
+      window.history.pushState(null, '', '/home')
   }
 
   render() {
@@ -23,12 +24,12 @@ class IntroPage extends Component {
           <Row>
             <Col sm={12} md={6}>
               <Link to={urls.signUp} style={{marginLeft: '60%', width: '20%'}}>
-                <Button className="navButton" style={{width: '40%', height: '40px'}}> JOIN </Button>
+                <button style={{width: '40%', height: '40px'}}> JOIN </button>
               </Link>
             </Col>
             <Col sm={12} md={6}>
               <Link to={urls.login} style={{marginRight: '60%', width: '20%'}}>
-                <Button className="navButton" style={{width: '40%', height: '40px'}}> LOGIN </Button>
+                <button  style={{width: '40%', height: '40px'}}> LOGIN </button>
               </Link>
             </Col>
           </Row>

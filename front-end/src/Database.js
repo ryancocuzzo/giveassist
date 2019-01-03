@@ -139,9 +139,12 @@ export const userVotes = async (userId) => {
 
           var events_voted_on = [];
           snapshot.forEach(function(child) {
-            let event = child.key;
-            let option = child.val();
-            events_voted_on.push(event);
+            if (child.val()['chosen_option'] != null && child.val()['chosen_option'] != '') {
+              let event = child.key;
+              let option = child.val();
+
+              events_voted_on.push(event);
+            }
           })
           resolve(events_voted_on);
         }
@@ -156,6 +159,52 @@ export const getKey = () => {
 export const castVote = (eventId, voteId, userId) => {
 
     firebase.database().ref('/db/events/' + eventId + '/options/' + voteId+'/voters/').push(userId)
-    firebase.database().ref('/users/' + userId + '/votes/' + eventId).set(voteId);
-    alert("Your vote has been recieved.\nThanks for voting on this event!");
+    firebase.database().ref('/users/' + userId + '/votes/' + eventId + '/chosen_option').set(voteId);
+}
+
+export const getProfilePictureFilename = async (uid) => {
+    return new Promise( function(resolve, reject) {
+      let ref = firebase.database().ref('/users/' + uid + '/images/profilePicture');
+
+        ref.once('value').then (function(snap) {
+            console.log('Snapback & unload');
+            if (snap && snap.val())
+                resolve(snap.val())
+            else
+                reject('No profilie pic!')
+        })
+    })
+}
+
+export const getUserInfo = async (uid) => {
+    return new Promise( function(resolve, reject) {
+      let ref = firebase.database().ref('/users/' + uid + '/info/');
+
+        ref.once('value').then (function(snap) {
+            console.log('Snapback & unload');
+            if (snap && snap.val())
+                resolve(snap.val())
+            else
+                reject('No profilie pic!')
+        })
+    })
+}
+
+/**
+ * Gets the active event id
+ * @return {[String]} the active event id
+ */
+export const getTotalDonated = async (uid) => {
+
+  let event_ref = firebase.database().ref('/users/' + uid + '/donation_stats/total_donated');
+
+  return new Promise( function (resolve, reject) {
+
+    event_ref.once('value').then(function(snapshot) {
+      resolve(snapshot.val());
+    }).catch(function(err) {
+      reject(err.message);
+    });
+  })
+
 }

@@ -1,8 +1,8 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import './App.css';
+// import './index.css';
+// import './App.css';
 import Popup from 'react-popup';
 import axios from 'axios';
 import { Col, Row, Grid, DropdownButton, Button} from 'react-bootstrap';
@@ -34,12 +34,16 @@ class Vote extends React.Component {
       token: null,
       canCreateEvents: false,
       hasVoted: false,
-      votes: []
+      something: false,
+      votes: [],
+      eventComponentWidth: 12
     }
 
     // Bind components
     this.eventComponent = this.eventComponent.bind(this);
     this.click = this.click.bind(this);
+
+    window.history.pushState(null, '', '/vote')
 
 
   }
@@ -118,8 +122,12 @@ class Vote extends React.Component {
           options: event["options"],
           id: event['id']
         }
+
+        var size = Object.keys(e.options).length
+
         this.setState({
-          event: e
+          event: e,
+          eventComponentWidth: 12 / size
         })
       }.bind(this))
     }.bind(this));
@@ -145,6 +153,8 @@ class Vote extends React.Component {
     }
     if (hasVoted != checkVoted)
       this.setState({hasVoted: checkVoted});
+    if (this.state.something != null && this.state.something == true)
+      checkVoted = true;
     return checkVoted;
   }
 
@@ -163,6 +173,10 @@ class Vote extends React.Component {
       console.log(uid)
 
       castVote(eventId, optionId, uid);
+      this.setState({ hasVoted: true });
+      this.setState({ something: true});
+      Popup.alert('Your vote has been recieved.\nThanks for voting on this event!')
+      console.log('hasVoted now true!')
     }
   }
 
@@ -174,12 +188,13 @@ class Vote extends React.Component {
    */
   eventComponent = (name, summary, id) => {
     if (name != null && summary != null) {
-      return (<Col sm={12} md={12} lg={12}>
-        <div className="eventComponent" style={{padding: '10px', backgroundColor: 'lightGrey', textAlign: 'center', borderRadius: '7px', fontSize: '12px'}}>
+      var size = this.state.eventComponentWidth;
+      return (<Col sm={size} md={size} lg={size}>
+        <div className="eventComponent" style={{padding: '10px', backgroundColor: '#A9DBEF', boxShadow: '  2px 4px lightGrey', marginBottom: '20px', textAlign: 'center', borderRadius: '7px', fontSize: '12px', }}>
           <h1 style={{display: 'inline-block'}}>{name}</h1>
           <br></br>
           <p>{summary}</p>
-        <button onClick={() => this.click(id)}>Here is a button!</button>
+        <button onClick={() => this.click(id)}>VOTE</button>
         </div>
       </Col>);
     } else {
@@ -208,6 +223,8 @@ class Vote extends React.Component {
    * @return {[Object]} [rendered stats page]
    */
   render() {
+
+    console.log('Rendering.. has voted: ' + this.state.something);
 
     console.log("rendering with votes " + this.state.votes + " and event " + (this.state.event ? this.state.event.id : 'TBD'));
 
@@ -241,7 +258,7 @@ class Vote extends React.Component {
         return this.eventComponent(firstProp.title, firstProp.summary, k);
       }.bind(this))
     } else {
-      eventMap = <p>No events found!</p>;
+      eventMap = <p></p>;
     }
 
     console.log(this.hasVotedCheck());
@@ -255,7 +272,7 @@ class Vote extends React.Component {
     var eventComponent = (
       <div>
         <span>
-          <h1 style={{marginLeft: '20px'}}>{event ? ("EVENT: " + event.title) : "Cannot find event!"}
+          <h1 style={{marginLeft: '20px'}}>{event ? ("EVENT: " + event.title) : ""}
           </h1>
           <p style={{marginLeft: '20px'}}>
             {event ? (event.summary) : ""}
@@ -263,7 +280,6 @@ class Vote extends React.Component {
           {createEventComponent_local}
           <br /><br />
           {this.hasVotedCheck() ? hasVotedComponent : eventMap}
-
         </span>
       </div>
     );

@@ -11,6 +11,9 @@ import firebase, { auth, provider } from './firebase.js';
 import VotePage from './Vote.js';
 import IntroPage from './IntroPage.js';
 import SignUpPage from './signUp.js';
+import StatsPage from './Stats.js';
+import LoginPage from './login.js';
+
 import {
   BrowserRouter,
   Link,
@@ -18,29 +21,6 @@ import {
   Switch,
 } from 'react-router-dom';
 import variables from './variables.js';
-
-const ErrorPage = () => (
-  <div>
-    <br></br><br></br><br></br><br></br>
-    <h1>It seems the page link you were given isn't quite right!</h1>
-  </div>
-);
-
-
-const Vote = ({ match }) => {
-  return <VotePage />;
-}
-
-const Intro = ({ match }) => {
-  console.log("Intro!");
-
-  return <IntroPage />;
-}
-
-const SignUp = ({ match }) => {
-  console.log("Sign Up!");
-  return <SignUpPage />;
-}
 
 class App extends React.Component {
   /**
@@ -55,6 +35,8 @@ class App extends React.Component {
     this.state = {
       user: user
     };
+
+
   }
 
   /**
@@ -69,7 +51,36 @@ class App extends React.Component {
     }.bind(this));
   }
 
+  popupMessage = (text) => {
+    Popup.alert(text);
+  }
+
   render() {
+
+    const ErrorPage = () => (
+      <div>
+      </div>
+    );
+
+    const Vote = ({ match }) => {
+      return <VotePage popup={(msg) => this.popupMessage(msg)}/>;
+    }
+
+    const Stats = ({ match }) => {
+      return <StatsPage popup={(msg) => this.popupMessage(msg)}/>;
+    }
+
+    const Intro = ({ match }) => {
+      return <IntroPage popup={(msg) => this.popupMessage(msg)}/>;
+    }
+
+    const SignUp = ({ match }) => {
+      return <SignUpPage popup={(msg) => this.popupMessage(msg)}/>;
+    }
+
+    const Login = ({ match }) => {
+      return <LoginPage popup={(msg) => this.popupMessage(msg)}/>;
+    }
 
     var page = this.state.user ?
     ( <div>
@@ -81,7 +92,9 @@ class App extends React.Component {
           <br/>
         <Switch>
           <Route exact path='/' component={Vote}/>
-          <Route path="*" component={ErrorPage} />
+          <Route path='/vote' component={Vote}/>
+          <Route path='/stats' component={Stats}/>
+        <Route path="*" component={Vote} />
         </Switch>
       </div>
     ) :
@@ -90,7 +103,8 @@ class App extends React.Component {
         <Switch>
           <Route exact path='/' component={Intro}/>
           <Route path='/signup' component={SignUp}/>
-          <Route path="*" component={ErrorPage} />
+        <Route path='/login' component={Login}/>
+          <Route path="*" component={Intro} />
         </Switch>
       </div>
 
