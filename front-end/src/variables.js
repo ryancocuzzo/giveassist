@@ -9,7 +9,8 @@ var variables = {
     vote: "/vote",
     stats: "/stats",
     login: '/login',
-    signUp: './signup'
+    signUp: './signup',
+    vaults: './vaults'
   },
   server_urls: {
     home: server_root,
@@ -20,7 +21,7 @@ var variables = {
     uploadProfilePicture: server_root + '/uploadProfilePicture',
     changePaymentSource: server_root + '/changePaymentSource',
     change_plan: server_root + '/change_plan',
-    deleteUser: server_root + 'deleteUser'
+    deleteUser: server_root + '/deleteUser'
   }
 };
 

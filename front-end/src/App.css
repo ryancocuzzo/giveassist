@@ -1,8 +1,19 @@
 
 @import url('https://fonts.googleapis.com/css?family=Charm|Thasadith');
+html {
+  background-color: #dfedd6;
 
+}
 div {
   font-family: Thasadith;
+}
+.myGradientBackground {
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#249cb5+0,b3ea8f+100 */
+  background: #249cb5; /* Old browsers */
+  background: -moz-linear-gradient(top, #249cb5 0%, #b3ea8f 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, #249cb5 0%,#b3ea8f 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom, #249cb5 0%,#b3ea8f 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#249cb5', endColorstr='#b3ea8f',GradientType=0 ); /* IE6-9 */
 }
 
 .NavPhoto {
@@ -60,6 +71,10 @@ div {
   width: 150px;
   /* Just so it's visible */
 }
+.fixedAdjacentChildLarge {
+  width: 250px;
+  /* Just so it's visible */
+}
 .fixedAdjacentChild2 {
   width: 150px;
   /* Just so it's visible */
@@ -90,6 +105,7 @@ div {
   border-radius: 5px;
   color: white;
 }
+
 
 
 
@@ -389,7 +405,7 @@ button {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  background-color: #6772e5;
+  background-color: #6babc4;
   text-decoration: none;
   -webkit-transition: all 150ms ease;
   transition: all 150ms ease;
@@ -411,7 +427,7 @@ button {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.025em;
-  background-color: #6772e5;
+  background-color: #6babc4;
   text-decoration: none;
   -webkit-transition: all 150ms ease;
   transition: all 150ms ease;
@@ -422,12 +438,27 @@ form {
   margin-bottom: 40px;
   padding-bottom: 40px;
   border-bottom: 3px solid #e6ebf1;
+
 }
 
 button:hover {
   color: #fff;
   cursor: pointer;
-  background-color: #7795f8;
+  background-color: #3e819b;
+  transform: translateY(-1px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
+}
+
+button::selection {
+  background-color: #3e819b;
+}
+
+
+
+.button:hover {
+  color: #fff;
+  cursor: pointer;
+  background-color: #3e819b;
   transform: translateY(-1px);
   box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
 }
@@ -444,12 +475,14 @@ input,
   border: 0;
   outline: 0;
   border-radius: 4px;
-  background: white;
+  background: #f4fbff;
 }
 
 input::placeholder {
-  color: #aab7c4;
+  color: #e3eff4;
 }
+
+
 
 input:focus,
 .StripeElement--focus {
@@ -464,9 +497,46 @@ input:focus,
 }
 
 
+input {
+  background-color: #e3eff4;
+  color: black;
+  background-color: black;
+
+}
+
+.FormControl {
+  background-color: #e3eff4;
+  placeholder: #e3eff4;
+  background-color: black;
+
+}
+
+.InputGroup {
+  background-color: #e3eff4;
+  placeholder: #e3eff4;
+  background-color: black;
+
+
+}
+
+.InputGroup, .FormControl {
+  background-color: #e3eff4;
+  background-color: black;
+
+
+}
 
 
 
+.form-control::-moz-placeholder {
+  color: #447f93;
+}
+.form-control:-ms-input-placeholder {
+  color: #447f93;
+}
+.form-control::-webkit-input-placeholder {
+  color: #447f93;
+}
 
 
 .mm-popup {
@@ -658,7 +728,7 @@ input:focus,
         .fixedAdjacentChild3[disabled]{
           border: 1px solid #999999;
           background-color: rgb(234,234,234);
-          
+
         }
 
 @media (max-width: 420px) {
@@ -693,6 +763,41 @@ input:focus,
 .fixedAdjacentChild3 {
   width: 240px;
   /* Just so it's visible */
+}
+
+#bottomAlign {
+    height: 150px;/*Only for the demo.*/
+    background-color:green;/*Only for the demo.*/
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  padding: 0;
+  padding-top: -10px;
+  margin-top: 15px;
+  height: 45px;
+  -webkit-box-shadow: 0 8px 6px -6px grey;
+   -moz-box-shadow: 0 8px 6px -6px grey;
+        box-shadow: 0px 8px 6px -5px grey;
+}
+
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+.upload-btn-wrapper input[type=file]:hover {
+  color: #fff;
+  cursor: pointer;
+  background-color: #ffff;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {

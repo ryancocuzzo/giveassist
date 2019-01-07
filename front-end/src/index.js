@@ -13,6 +13,7 @@ import IntroPage from './IntroPage.js';
 import SignUpPage from './signUp.js';
 import StatsPage from './Stats.js';
 import LoginPage from './login.js';
+import VaultPage from './Vaults.js';
 
 import {
   BrowserRouter,
@@ -58,7 +59,7 @@ class App extends React.Component {
   render() {
 
     const ErrorPage = () => (
-      <div>
+      <div  style={{backgroundColor: '#dfedd6'}}>
       </div>
     );
 
@@ -82,24 +83,25 @@ class App extends React.Component {
       return <LoginPage popup={(msg) => this.popupMessage(msg)}/>;
     }
 
+    const Vaults = ({ match }) => {
+      return <VaultPage popup={(msg) => this.popupMessage(msg)}/>;
+    }
+
     var page = this.state.user ?
     ( <div>
         <MyNavBar/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
+      <div style={{ backgroundColor: '#249cb5', width: '100%', height: '80px'}}></div>
         <Switch>
           <Route exact path='/' component={Vote}/>
           <Route path='/vote' component={Vote}/>
+          <Route path='/vaults' component={Vaults}/>
           <Route path='/stats' component={Stats}/>
         <Route path="*" component={Vote} />
         </Switch>
       </div>
     ) :
     (
-      <div>
+      <div >
         <Switch>
           <Route exact path='/' component={Intro}/>
           <Route path='/signup' component={SignUp}/>
@@ -110,13 +112,15 @@ class App extends React.Component {
 
     );
 
+    var footer = (
+      <div style={{height: '50px', width: '100%'}}><h5 style={{color: 'black', marginLeft: '45%', width:  '15%', height: '20px'}}>Copyright © 2018 Cuzzzo</h5></div>
+    );
+
       return (
-        <div>
-          <Popup />
+        <div >
+          <Popup/>
 
           {page}
-
-          <div style={{height: '50px', width: '100%'}}><h5 style={{color: 'white', marginLeft: '45%', width:  '15%', height: '20px'}}>Copyright © 2018 Cuzzzo</h5></div>
         </div>
       );
 

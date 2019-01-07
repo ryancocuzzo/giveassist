@@ -198,7 +198,7 @@ class MyNavBar extends Component {
     // console.log(this.state.user)
 
       var header = (<Navbar.Header>
-                <a onClick={() => window.open(urls.home, "_blank")}>
+                <a>
                 <span class="navbar-brand" style={{marginLeft: '0px'}}><img src={(this.state.picture) ? this.state.picture : imgs.unknown} width="50px" height="50px" alt="Picture" style={{marginTop: '6px', borderRadius: '5px'}}></img></span>
               </a>
               <Navbar.Toggle />
@@ -206,11 +206,27 @@ class MyNavBar extends Component {
 
   var rest = (
 
+
+
     <Navbar.Collapse>
+
       <Navbar.Text style={{marginTop: '24px'}}>
         {this.signInButton()}
       </Navbar.Text>
+
       <Nav pullRight>
+
+        <NavItem  className='link' style={{border: 'none'}}>
+          <Link to={urls.vaults} >
+          <Button style={{}} className="button"> VAULTS </Button>
+          </Link>
+        </NavItem>
+
+        <NavItem  className='link' style={{border: 'none'}}>
+          <Link to={urls.stats} >
+          <Button style={{}} className="button"> STATS </Button>
+          </Link>
+        </NavItem>
 
           <NavItem  className='link' style={{border: 'none'}}>
             <Link to={urls.vote}>
@@ -218,11 +234,8 @@ class MyNavBar extends Component {
             </Link>
           </NavItem>
 
-          <NavItem  className='link' style={{border: 'none'}}>
-            <Link to={urls.stats} >
-            <Button style={{}} className="button"> STATS </Button>
-            </Link>
-          </NavItem>
+
+
     </Nav>
   </Navbar.Collapse>
 
@@ -230,7 +243,7 @@ class MyNavBar extends Component {
 
 
   return (
-    <Navbar fixedTop inverse collapseOnSelect style={{backgroundColor: '#A9DBEF', headerStyle: {
+    <Navbar fixedTop inverse collapseOnSelect style={{backgroundColor: '#357244', headerStyle: {
           height: '100px'
       }}} className='myNavbar'>
       {header}

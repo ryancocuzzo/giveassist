@@ -27,11 +27,21 @@ class Login extends React.Component {
       user: user,
       email: '',
       password: '',
+      width: document.body.clientWidth
     };
 
     window.history.pushState(null, '', '/login')
 
   }
+
+
+    componentDidMount() {
+      window.addEventListener("resize", function(event) {
+        console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
+        this.setState({width: document.body.clientWidth});
+      }.bind(this))
+
+    }
 
 
      validateEmail = (email) => {
@@ -68,63 +78,66 @@ class Login extends React.Component {
 
   render() {
 
+    var fontSize = '20px';
+    var col_width_wide = '150px';
+
+    if (this.state.width < 700) {
+      fontSize = '17px';
+      col_width_wide = '100px';
+    }
+
     return (
-      <Row>
-        <Col>
-          <div style={{ backgroundColor: 'rgba(122, 198, 105, 0)', borderRadius: '7px', fontSize: '12px'}}>
+          <div style={{  borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
+            <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
+
             <Popup />
 
           <h1 style={{marginLeft: '20px', fontSize: '40px'}}>LOGIN</h1><br/>
 
 
-              <div className='adjacentItemsParent'>
-                <h1 style={{marginLeft: '50px', fontSize: '20px'}} className='fixedAdjacentChild'>EMAIL</h1><br/>
-                <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
-                  >
-                      <FormControl
-                        aria-label="Default"
-                        aria-describedby="inputGroup-sizing-default"
-                        value = {this.state.email}
-                        onChange={(event)=>{
-                                    this.setState({
-                                       email:event.target.value
-                                    });
-                                 }}
-                        className='fixedAdjacentChild2'
+          <div className='adjacentItemsParent'>
+            <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>EMAIL</h3><br/>
+            <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
+              >
+                  <FormControl
+                    aria-label="Default"
+                    aria-describedby="inputGroup-sizing-default"
+                    value = {this.state.email}
+                    onChange={(event)=>{
+                                this.setState({
+                                   email:event.target.value
+                                });
+                             }}
+                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                  />
+                </InputGroup>
+            <br />
+          </div>
 
-                      />
-                    </InputGroup>
-
-                <br />
-              </div>
-
-              <div className='adjacentItemsParent'>
-                <h1 style={{marginLeft: '50px', fontSize: '20px'}} className='fixedAdjacentChild'>PASSWORD</h1><br/>
-                <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
-                  >
-                      <FormControl
-                        type='password'
-                        aria-label="Default"
-                        aria-describedby="inputGroup-sizing-default"
-                        value = {this.state.password}
-                        onChange={(event)=>{
-                                    this.setState({
-                                       password:event.target.value
-                                    });
-                                 }}
-                        className='fixedAdjacentChild2'
-                      />
-                    </InputGroup>
-
-                <br />
-              </div>
+          <div className='adjacentItemsParent'>
+            <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>PASSWORD</h3><br/>
+            <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
+  >
+                  <FormControl
+                    placeholder='Min. length of 6 characters'
+                    aria-label="Default"
+                    aria-describedby="inputGroup-sizing-default"
+                    value = {this.state.password}
+                    onChange={(event)=>{
+                                this.setState({
+                                   password:event.target.value
+                                });
+                             }}
+                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                  />
+                </InputGroup>
+            <br />
+          </div>
 
             <hr/>
           <button style={{marginLeft: '50px'}} onClick={() => this.login()}>LOGIN</button>
-
+        <div style={{width: '100%', height: '400px'}}></div>
           </div>
-        </Col>
-      </Row>
 
     );
   }

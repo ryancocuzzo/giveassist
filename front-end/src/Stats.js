@@ -46,7 +46,9 @@ class Stats extends React.Component {
       hover2: false,
       hover3: false,
       isEditingInfo: false,
-      joined: ''
+      displayName: '',
+      joined: '',
+      width: document.body.clientWidth
     };
 
     window.history.pushState(null, '', '/stats')
@@ -71,7 +73,8 @@ class Stats extends React.Component {
               email: info.email,
               gender: info.gender,
               currentPlan: info.plan,
-              joined: info.joined
+              joined: info.joined,
+              displayName: info.displayName
             });
           }.bind(this)).catch(function(err) {
             // ...
@@ -235,17 +238,40 @@ class Stats extends React.Component {
 
     nameClicked = (event) => {
       const { target: { value } } = event;
-      let user = this.state.user.uid;
-      let nameIsOk = value != null && value != '';
-      console.log(user);
-      console.log(nameIsOk);
-      if (user && nameIsOk) {
-        firebase.database().ref('/users/' + user + '/info/name').set(value);
-        Popup.alert('Updated name in database!');
+      if (this.state.user) {
+        let user = this.state.user.uid;
+        let nameIsOk = value != null && value != '';
+        console.log(user);
+        console.log(nameIsOk);
+        if (user && nameIsOk) {
+          firebase.database().ref('/users/' + user + '/info/name').set(value);
+          Popup.alert('Updated name in database!');
+        } else {
+          Popup.alert('Could not update name in database!');
+        }
       } else {
-        Popup.alert('Could not update name in database!');
+        Popup.alert('Account error. It seems you are not logged in!')
       }
     };
+
+    displayNameClicked = (event) => {
+      const { target: { value } } = event;
+      if (this.state.user) {
+        let user = this.state.user.uid;
+        let displayNameIsOk = value != null && value != '' && value.length >= 5;
+        if (user && displayNameIsOk) {
+          firebase.database().ref('/users/' + user + '/info/displayName').set(value);
+          firebase.database().ref('/queriable/' + user + '/info/displayName').set(value);
+          Popup.alert('Updated Display Name in database!');
+        } else {
+          Popup.alert('Could not update Display Name in database!');
+        }
+      } else {
+        Popup.alert('Account error. It seems you are not logged in!')
+      }
+
+    };
+
     emailClicked = (event) => {
       const { target: { value } } = event;
 
@@ -352,15 +378,42 @@ class Stats extends React.Component {
     var getSuffix = (this.state.width <= 1200) ? '' : <span style={{paddingLeft: '230px'}}> - Click EDIT to access.</span>;
     var getSuffixPlan = (this.state.width <= 1200) ? '' : <span style={{paddingLeft: '304px'}}> - Click EDIT to access.</span>;
     var isMobile = this.state.width <= 800;
+    var textBoxDimensions = {
+      sm: {
+        width: '86%',
+        height: '180px'
+      },
+      lg: {
+        width: '31%',
+        height: '200px'
+      }
+    }
+    var tbDimension = (isMobile ? textBoxDimensions.sm : textBoxDimensions.lg);
+    if (this.state.width > 1500) {
+        tbDimension.width = '33.3333%';
+        tbDimension.height = '180px';
+
+    }
+
+    var fontSize = '20px';
+    var col_width_wide = '150px';
+    var bottomMargin = '100px'
+
+    if (this.state.width < 700) {
+      fontSize = '17px';
+      col_width_wide = '100px';
+      bottomMargin = '50px';
+    }
+
     var optComponent;
     if (!isMobile) {
       optComponent = (
         <div>
           <ButtonToolbar>
              <ToggleButtonGroup type="radio" defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '2%', alignContent: 'center'}}>
-                 <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', maxWidth: '31%'}}><h1>Premium X</h1><br/><p>This will be a description of the Premium X plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-               <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', maxWidth: '31%'}}><h1>Premium Y</h1><br/><p>This will be a description of the Premium Y plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-             <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', maxWidth: '31%'}}><h1>Premium Z</h1><br/><p>This will be a description of the Premium Z plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
+                 <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium X</h1><br/><p>This will be a  plan. It jsut fits very well.ldskjfa </p></ToggleButton>
+               <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Y</h1><br/><p>This will be a description of the Premium Y plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
+             <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Z</h1><br/><p>This will be a description of the Premium Z plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
              </ToggleButtonGroup>
 
          </ButtonToolbar>
@@ -371,11 +424,11 @@ class Stats extends React.Component {
       optComponent = (
         <div>
           <ButtonToolbar>
-             <ToggleButtonGroup type="radio" vertical defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '2%', alignContent: 'center'}}>
-                 <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', maxWidth: '90%'}}><h1>Premium X</h1><br/><p>This will be a description of the Premium X plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-               <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', maxWidth: '90%'}}><h1>Premium Y</h1><br/><p>This will be a description of the Premium Y plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-             <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', maxWidth: '90%'}}><h1>Premium Z</h1><br/><p>This will be a description of the Premium Z plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-             </ToggleButtonGroup>
+            <ToggleButtonGroup type="radio" vertical defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '2%', alignContent: 'center'}}>
+                <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium X</h1><br/><p>This will be a  plan. It jsut fits very well.ldskjfa </p></ToggleButton>
+              <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Y</h1><br/><p>This will be a description of the Premium Y plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
+            <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Z</h1><br/><p>This will be a description of the Premium Z plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
+            </ToggleButtonGroup>
 
          </ButtonToolbar>
          <button style={{marginLeft: '20px', marginTop: '25px'}} value={this.state.plan} onClick={this.submitPlanChange}>SUBMIT</button>
@@ -385,7 +438,8 @@ class Stats extends React.Component {
     return (
       <Row>
         <Col>
-          <div style={{ backgroundColor: 'rgba(122, 198, 105, 0)', borderRadius: '7px', fontSize: '12px'}}>
+          <div style={{ borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
+            <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
             <Popup />
 
           <h1 style={{marginLeft: '30px', fontSize: '40px'}}>STATISTICS</h1><br/>
@@ -415,7 +469,7 @@ class Stats extends React.Component {
 
 
                 <div className='adjacentItemsParent'>
-                  <h1 style={{marginLeft: '20px', fontSize: '20px'}} className='fixedAdjacentChild'>NAME</h1><br/>
+                  <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>NAME</h1><br/>
                   <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
                     >
                         <FormControl
@@ -438,8 +492,8 @@ class Stats extends React.Component {
                   <br />
                 </div>
 
-                <div className='adjacentItemsParent'>
-                  <h1 style={{marginLeft: '20px', fontSize: '20px'}} className='fixedAdjacentChild'>EMAIL</h1><br/>
+                <div className='adjacentItemsParent' style={{marginTop: '-15px'}}>
+                  <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>EMAIL</h1><br/>
                   <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
                     >
                         <FormControl
@@ -460,9 +514,33 @@ class Stats extends React.Component {
                   <br />
                 </div>
 
+                <div className='adjacentItemsParent' style={{marginTop: '-15px'}}>
+                  <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>DISPLAY NAME</h1><br/>
+                  <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
+                    >
+                        <FormControl
+                          aria-label="Default"
+                          aria-describedby="inputGroup-sizing-default"
+                          value = {this.state.displayName}
+                          onChange={(event)=>{
+                                      this.setState({
+                                         displayName:event.target.value
+                                      });
+                                   }}
+                          readOnly={ isReadOnly }
+                          className='fixedAdjacentChild2'
+                          defaultValue={this.state.displayName}
 
-              <div className='adjacentItemsParent'>
-                <h1 style={{marginLeft: '20px', fontSize: '20px', marginTop:'17px'}} className='fixedAdjacentChild'>GENDER</h1><br/>
+                        />
+                      </InputGroup>
+                      <button disabled={ isReadOnly } value={this.state.displayName} style={buttonStyle} onClick={this.displayNameClicked} >APPLY</button><br/>
+
+                  <br />
+                </div>
+
+
+              <div className='adjacentItemsParent' style={{marginTop: '-15px'}}>
+                <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>GENDER</h1><br/>
               <ButtonToolbar style={{marginTop:"11px", marginRight: '5px'}} className='fixedAdjacentChild3'>
                       <DropdownButton
                         drop='right'
@@ -492,7 +570,7 @@ class Stats extends React.Component {
                 <h1>Change your payment. {isReadOnly ? getSuffix : ''}</h1>
               { !isReadOnly ?
                 (
-                  <div style={{marginLeft: '2%'}}>
+                  <div style={{marginLeft: '2%', width: '90%'}}>
                     <Elements >
                       <CheckoutForm onSignUp={this.changePaymentSource} />
                     </Elements>
@@ -528,11 +606,13 @@ class Stats extends React.Component {
           <hr/>
           { !isReadOnly ?
             (
-              <div style={{marginLeft: '50px', marginTop: '20px'}}>
-                <h1>Delete your account.</h1>
-              <Button bsStyle='danger' style={{marginLeft: '20px', marginTop: '15px'}} >DELETE ACCOUNT</Button>
-              <hr/>
+                <div>
+                  <div style={{marginLeft: '50px', marginTop: '20px'}}>
+                    <h1>Delete your account.</h1>
+                  <Button bsStyle='danger' style={{marginLeft: '20px', marginTop: '15px'}} >DELETE ACCOUNT</Button>
 
+                  </div>
+                  <hr/>
               </div>
             ) :
             (
@@ -542,7 +622,7 @@ class Stats extends React.Component {
 
             <button style={{marginLeft: '30px', marginTop: '10px'}} onClick={() => this.changeEditing()}>{(this.state.isEditingInfo ? 'DONE' : 'EDIT')}</button>
 
-
+            <div style={{width: '100%', height: bottomMargin}}></div>
           </div>
         </Col>
       </Row>

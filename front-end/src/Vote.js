@@ -7,7 +7,7 @@ import Popup from 'react-popup';
 import axios from 'axios';
 import { Col, Row, Grid, DropdownButton, Button} from 'react-bootstrap';
 import firebase, { auth, provider } from './firebase.js';
-import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote} from './Database.js';
+import {eventSnapshot, userVotes, getActiveEventId, votersFor, totalVotesFor, createEvent, getOptions, genKey, castVote} from './Database.js';
 import vars from './variables.js';
 
 var server_urls = vars.server_urls;
@@ -33,10 +33,13 @@ class Vote extends React.Component {
       event: null,
       token: null,
       canCreateEvents: false,
-      hasVoted: false,
+      hasVoted: 'IDK',
       something: false,
       votes: [],
-      eventComponentWidth: 12
+      eventComponentWidth: 12,
+      dispersion: [],
+      total_votes: 0,
+      width: document.body.clientWidth
     }
 
     // Bind components
@@ -125,19 +128,44 @@ class Vote extends React.Component {
 
         var size = Object.keys(e.options).length
 
-        this.setState({
-          event: e,
-          eventComponentWidth: 12 / size
-        })
+        var total = 0;
+
+         var dispersionArray = [];
+         if (event) {
+
+             Object.keys(e.options).forEach(function(key) {
+               var opt = {
+                   id: key,
+                   title: e.options[key].title,
+                   votes: e.options[key].total_votes
+               };
+               total += opt.votes;
+                dispersionArray.push(opt);
+             });
+         }
+
+         this.setState({
+           event: e,
+           eventComponentWidth: 12 / size,
+           dispersion: dispersionArray,
+           total_votes: total
+         });
+
       }.bind(this))
     }.bind(this));
 
+    window.addEventListener("resize", function(event) {
+      console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
+      this.setState({width: document.body.clientWidth});
+    }.bind(this))
 
   }
 
 
+
   hasVotedCheck = () => {
     var hasVoted = this.state.hasVoted;
+
     var checkVoted = false;
     if (this.state.event) {
 
@@ -190,8 +218,8 @@ class Vote extends React.Component {
     if (name != null && summary != null) {
       var size = this.state.eventComponentWidth;
       return (<Col sm={size} md={size} lg={size}>
-        <div className="eventComponent" style={{padding: '10px', backgroundColor: '#A9DBEF', boxShadow: '  2px 4px lightGrey', marginBottom: '20px', textAlign: 'center', borderRadius: '7px', fontSize: '12px', }}>
-          <h1 style={{display: 'inline-block'}}>{name}</h1>
+        <div className="eventComponent" style={{padding: '10px', backgroundColor: '#A9DBEF', boxShadow: '0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08)', marginBottom: '20px', textAlign: 'center', borderRadius: '7px', fontSize: '12px', }}>
+          <h1 style={{display: 'inline-block', fontWeight: '500'}}>{name}</h1>
           <br></br>
           <p>{summary}</p>
         <button onClick={() => this.click(id)}>VOTE</button>
@@ -224,10 +252,15 @@ class Vote extends React.Component {
    */
   render() {
 
-    console.log('Rendering.. has voted: ' + this.state.something);
+    var fontSize = '20px';
+    var col_width_wide = '150px';
+    var bottomMargin = '400px'
 
-    console.log("rendering with votes " + this.state.votes + " and event " + (this.state.event ? this.state.event.id : 'TBD'));
-
+    if (this.state.width < 700) {
+      fontSize = '17px';
+      col_width_wide = '100px';
+      bottomMargin = '200px';
+    }
     var event = this.state.event
 
     var objArray = [];
@@ -261,26 +294,98 @@ class Vote extends React.Component {
       eventMap = <p></p>;
     }
 
-    console.log(this.hasVotedCheck());
-
-    var createEventComponent_local = (this.state.canCreateEvents == true) ? this.createEventComponent() : (<div></div>);
-
     var hasVotedComponent = (
       <div style={{textAlign: 'center'}}><h4 style={{marginLeft: '20px', display: 'inline-block'}}>You've already voted for this event!</h4></div>
     )
+
+    var dynamic_vote_component;
+    if (this.state.hasVoted != 'IDK') {
+      if (this.hasVotedCheck()) {
+        dynamic_vote_component = hasVotedComponent;
+      } else {
+        dynamic_vote_component = eventMap;
+      }
+    } else {
+      dynamic_vote_component = <div></div>
+      this.hasVotedCheck();
+    }
+
+    var size = this.state.eventComponentWidth;
+    var total_votes = this.state.total_votes;
+
+    var colorForVoteCount = (count) => {
+      if (total_votes != 0) {
+        let percentage = count *1.0 / total_votes;
+        var numOptions = 12/size;
+        let average = 1.0 / numOptions;
+        let stdDev = 0.08;
+        // alert(percentage)
+        if (percentage > average + stdDev) { // Dark green
+          return '#3cbc0d';
+        } else if (percentage > average) {
+          return '#b7e88f'
+        } else if (percentage == average) {
+          return '#bfe02c';
+      }  else if (percentage >= (average-stdDev)) {
+          return '#f9c159';
+        } else {
+          return '#f46353'
+        }
+      } else {
+        return 'black'
+      }
+    }
+
+    var size = this.state.eventComponentWidth;
+    var total_votes = this.state.total_votes;
+
+    var percentageCalc = (count) => {
+      if (total_votes != 0) {
+        var p = (count *1.0 / total_votes);
+        p = Math.round(p * 100) / 100;
+        if (p == 1) return '100%';
+        else return (p + '%');
+      } else {
+        return '';
+      }
+    }
+
+    var dispersedComponent = this.state.dispersion.map(function(element, i) {
+        return <Col sm={size} md={size} style={{textAlign: 'center'}}>
+          <h1 style={{display: 'inline-block', fontSize: '50px', fontWeight: 'bold', color: 'black'}}>{element.title}</h1>
+        <br />
+      <h1 style={{display: 'inline-block', fontSize: '60px', fontWeight: '900', color: colorForVoteCount(element.votes)}}>{percentageCalc(element.votes)}</h1>
+      </Col>;
+      })
+
+    if (this.state.hasVoted != true ) {
+      dispersedComponent = <div></div>;
+    };
+
+
+    var createEventComponent_local = (this.state.canCreateEvents == true) ? this.createEventComponent() : (<div></div>);
+
+
     // Generaet a default HTML object that we are gonna append to
     var eventComponent = (
-      <div>
+      <div className='myGradientBackground'>
+        <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
         <span>
-          <h1 style={{marginLeft: '20px'}}>{event ? ("EVENT: " + event.title) : ""}
+          <h1 style={{marginLeft: '20px', fontWeight: '500'}}>{event ? ("EVENT: " + event.title) : ""}
           </h1>
           <p style={{marginLeft: '20px'}}>
             {event ? (event.summary) : ""}
           </p>
           {createEventComponent_local}
           <br /><br />
-          {this.hasVotedCheck() ? hasVotedComponent : eventMap}
+        {dynamic_vote_component}
         </span>
+        {dispersedComponent}
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+      <div style={{width: '100%', height: bottomMargin}}></div>
       </div>
     );
 
