@@ -533,7 +533,7 @@ var getWinningOptionForEvent = async (eventId) => {
 
 var haveProcessedUserPaymentForEvent = async (uid, eventId) => {
     // ref
-  let event_ref = firebase.database().ref('/users/' + uid + '/v/' + eventId + '/don');
+  let event_ref = root.ref('/users/' + uid + '/v/' + eventId + '/don');
 
   return new Promise( function (resolve, reject) {
 
@@ -547,21 +547,28 @@ var haveProcessedUserPaymentForEvent = async (uid, eventId) => {
   })
 }
 
-
-
 app.post('/event_log', async function(request, response) {
   // Retrieve the request's body and parse it as JSON:
     const event_json = request.body;
     if (event_json.type == 'charge.succeeded') {
         try {
+            
+            log('charge succeeded!');
 
             let cust_id = event_json.data.object.customer;
             let amountContributed = Number(event_json.data.object.amount);
             
+            log('found customer id and the amount they contributed!');
+
+            
             let uid = await getFirebaseUserFromCustomerId(cust_id);
             let active_event = await getActiveEventId();
+            
+            log('found uid and active event!');
 
             let alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);
+            
+            log('finished checking for already processed!');
             
             if (!alreadyProcessed) {
                 let incomeForEvent = await getTotalIncomeForEvent(active_event);
@@ -596,7 +603,7 @@ app.post('/event_log', async function(request, response) {
     } else if (event_json.type == 'payout.created') {
             
         try {
-
+            console.log('Payout created')
             let active_event = await getActiveEventId();
             let winningOption = await getWinningOptionForEvent(active_event);
             
