@@ -110,7 +110,7 @@ var canPostEvents = async (uid) => {
 
 app.get('/', (req, res)  => {
     res.send('Running..')
-}
+})
 
 
 // Get the priveledges of a user
