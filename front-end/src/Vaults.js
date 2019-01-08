@@ -219,8 +219,8 @@ class Vaults extends Component {
         count++;
         return <div>
                 <div className='adjacentItemsParent' style={{backgroundColor: c(count), borderTop: topBorder, borderBottom: '1px solid black'}}>
-                  <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}} >{user.value.info.displayName}</h3><br/>
-                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{user.value.info.plan}</h3><br/>
+                  <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}} >{user.value.dn}</h3><br/>
+                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{user.value.p}</h3><br/>
                   <br />
                 </div>
               </div>
@@ -239,7 +239,7 @@ class Vaults extends Component {
         return <div >
                 <div className='adjacentItemsParent' style={{backgroundColor: c(count), borderTop: topBorder, borderBottom: '1px solid black'}}>
                   <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}}>{event.value.id}</h3><br/>
-                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.total*0.01)}</h3><br/>
+                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.ttl*0.01)}</h3><br/>
                   <br />
                 </div>
               </div>

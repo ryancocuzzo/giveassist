@@ -68,7 +68,7 @@ export const getActiveEventId = async () => {
  */
 export const votersFor = async (eventId, voteId) => {
 
-  let event_ref = firebase.database().ref('/db/events/'+eventId+'/options/'+voteId+'/voters');
+  let event_ref = firebase.database().ref('/db/events/'+eventId+'/o/'+voteId+'/vrs');
 
   return new Promise( function (resolve, reject) {
     event_ref.once('value').then(function(snapshot, err) {
@@ -90,7 +90,7 @@ export const votersFor = async (eventId, voteId) => {
  */
 export const totalVotesFor = async (eventId, voteId) => {
 
-  let event_ref = firebase.database().ref('/db/events/'+eventId+'/options/'+voteId+'/total_votes');
+  let event_ref = firebase.database().ref('/db/events/'+eventId+'/o/'+voteId+'/t');
 
   return new Promise( function (resolve, reject) {
     event_ref.once('value').then(function(snapshot, err) {
@@ -107,10 +107,10 @@ export const totalVotesFor = async (eventId, voteId) => {
 
 export const createEvent = async (title, summary, options, idToken) => {
     let event = {
-      title: title,
+      t: title,
       created: moment(),
-      summary: summary,
-      options: JSON.parse(JSON.stringify(options)),
+      s: summary,
+      o: JSON.parse(JSON.stringify(options)),
 
     };
     console.log("Sending createEvent post with params: \nEvent: \n" + event + "idToken: " + idToken)
@@ -134,8 +134,8 @@ export const getOptions = (titles, summaries) => {
   var obj = [];
   for (var i = 0; i < titles.length; i++) {
     var temp = {
-      title: titles[i],
-      summary: summaries[i]
+      t: titles[i],
+      s: summaries[i]
     };
     obj.push(temp)
   }
@@ -147,8 +147,8 @@ export const getOptions = (titles, summaries) => {
     var key = getKey();
 
     js[key] = {
-      title: o.title,
-      summary: o.summary
+      t: o.title,
+      s: o.summary
     };
   })
   return js;
@@ -156,7 +156,7 @@ export const getOptions = (titles, summaries) => {
 
 export const userVotes = async (userId) => {
   console.log('userVotes: ');
-    let ref = firebase.database().ref('/users/' + userId + '/votes/')
+    let ref = firebase.database().ref('/users/' + userId + '/v/')
     return new Promise( function (resolve, reject) {
       ref.once('value').then(function(snapshot, err) {
         if (err) {
@@ -166,7 +166,7 @@ export const userVotes = async (userId) => {
 
           var events_voted_on = [];
           snapshot.forEach(function(child) {
-            if (child.val()['chosen_option'] != null && child.val()['chosen_option'] != '') {
+            if (child.val()['c'] != null && child.val()['c'] != '') {
               let event = child.key;
               let option = child.val();
 
@@ -185,14 +185,15 @@ export const getKey = () => {
 
 export const castVote = (eventId, voteId, userId) => {
 
-    firebase.database().ref('/db/events/' + eventId + '/options/' + voteId+'/voters/').push(userId)
-    firebase.database().ref('/users/' + userId + '/votes/' + eventId + '/chosen_option').set(voteId);
+    alert('castVote got:\nE: ' + eventId + '\nV: ' + voteId + '\nU: ' + userId)
+    firebase.database().ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
+    firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c').set(voteId);
 
-    let event_ref = firebase.database().ref('/db/events/'+eventId+'/options/'+voteId+'/total_votes');
+    let event_ref = firebase.database().ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
     let votes = 0;
     event_ref.once('value').then(function(snapshot, err) {
         if (snapshot) {
-          votes = snapshot.val()
+          votes = Number(snapshot.val())
         }
         votes++;
         event_ref.set(votes);
@@ -203,7 +204,7 @@ export const castVote = (eventId, voteId, userId) => {
 
 export const getProfilePictureFilename = async (uid) => {
     return new Promise( function(resolve, reject) {
-      let ref = firebase.database().ref('/users/' + uid + '/images/profilePicture');
+      let ref = firebase.database().ref('/users/' + uid + '/img/p');
 
         ref.once('value').then (function(snap) {
             console.log('Snapback & unload');
@@ -217,7 +218,7 @@ export const getProfilePictureFilename = async (uid) => {
 
 export const getUserInfo = async (uid) => {
     return new Promise( function(resolve, reject) {
-      let ref = firebase.database().ref('/users/' + uid + '/info/');
+      let ref = firebase.database().ref('/users/' + uid + '/i/');
 
         ref.once('value').then (function(snap) {
             console.log('Snapback & unload');
@@ -288,7 +289,7 @@ export const get_users = async () => {
  */
 export const getTotalDonated = async (uid) => {
 
-  let event_ref = firebase.database().ref('/users/' + uid + '/donation_stats/total_donated');
+  let event_ref = firebase.database().ref('/users/' + uid + '/d/t');
 
   return new Promise( function (resolve, reject) {
 

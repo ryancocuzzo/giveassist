@@ -118,15 +118,19 @@ class Vote extends React.Component {
 
     getActiveEventId().then(function(eventId) {
       eventSnapshot(eventId).then(function(event) {
-        console.log(event);
+        if (!event) {
+            alert('No event!');
+            return;
+        }
+        console.log('E: ' + JSON.stringify(event));
         var e = {
-          title: event["title"],
-          summary: event["summary"],
-          options: event["options"],
+          title: event["t"],
+          summary: event["s"],
+          options: event["o"],
           id: event['id']
         }
 
-        var size = Object.keys(e.options).length
+        var size = Object.keys(e.options).length -1;
 
         var total = 0;
 
@@ -134,13 +138,16 @@ class Vote extends React.Component {
          if (event) {
 
              Object.keys(e.options).forEach(function(key) {
-               var opt = {
-                   id: key,
-                   title: e.options[key].title,
-                   votes: e.options[key].total_votes
-               };
-               total += opt.votes;
-                dispersionArray.push(opt);
+               if (e.options[key].t != null) {
+                 var opt = {
+                     id: key,
+                     title: e.options[key].t,
+                     votes: e.options[key].ttl
+                 }
+                 total += opt.votes;
+                  dispersionArray.push(opt);
+               }
+
              });
          }
 
@@ -267,18 +274,19 @@ class Vote extends React.Component {
     if (event) {
 
         Object.keys(event.options).forEach(function(key) {
-          var temp = {}
+          if (event.options[key].t) {
+            var temp = {}
 
-          temp[key] = event.options[key];
+            temp[key] = event.options[key];
 
-          objArray.push(temp);
+            objArray.push(temp);
+          }
       });
     }
       var eventMap;
 
     if (event) {
       eventMap = objArray.map(function(event) {
-        console.log('E:' + JSON.stringify(event))
         var firstProp;
         var k;
         for(var key in event) {
@@ -288,7 +296,7 @@ class Vote extends React.Component {
                 break;
             }
         }
-        return this.eventComponent(firstProp.title, firstProp.summary, k);
+        return this.eventComponent(firstProp.t, firstProp.s, k);
       }.bind(this))
     } else {
       eventMap = <p></p>;

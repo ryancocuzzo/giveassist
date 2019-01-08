@@ -38,6 +38,7 @@ app.use( function(req, res, next) {
 });
 
 
+process.env.NODE_ENV = 'production';
 
 
 
@@ -107,6 +108,11 @@ var canPostEvents = async (uid) => {
   })
 }
 
+app.get('/', (req, res)  => {
+    res.send('Running..')
+}
+
+
 // Get the priveledges of a user
 app.get('/eventPriviledges', (req, res)  => {
 //    log('\n' + 'Getting event priveledges.')
@@ -144,7 +150,7 @@ app.get('/eventPriviledges', (req, res)  => {
 
 var getProfilePictureFilename = async (uid) => {
     return new Promise( function(resolve, reject) {
-        root.ref('/users/' + uid + '/images/profilePicture').once('value').then (function(snap) {
+        root.ref('/users/' + uid + '/img/p').once('value').then (function(snap) {
             if (snap && snap.val())
                 resolve(snap.val())
             else
@@ -155,7 +161,7 @@ var getProfilePictureFilename = async (uid) => {
 
 var getStripeCustomerId = async (uid) => {
     return new Promise( function(resolve, reject) {
-        root.ref('/users/' + uid + '/payment/customer_id').once('value').then (function(snap) {
+        root.ref('/users/' + uid + '/st/id').once('value').then (function(snap) {
             if (snap && snap.val())
                 resolve(snap.val())
             else
@@ -218,7 +224,7 @@ app.get('/createStripeUser', async (req,res) => {
             if (uid && customer_id) {
                 console.log('UID: ' + uid)
                 console.log('Customer ID: ' + customer_id)
-                root.ref('/users/' + uid + '/payment/customer_id/').set(customer_id)
+                root.ref('/users/' + uid + '/st/id/').set(customer_id)
                 root.ref('/stripe_ids/' + customer_id + '/uid/').set(uid);
                 res.send(customer_id);
             } else {
@@ -303,11 +309,10 @@ var createSubscription = async (firebase_user_token, planName) => {
                           if (subscription) {
 
                             log('Got subscription!')
-                            root.ref('/users/' + uid + '/subscription/').set(subscription);
+                            root.ref('/users/' + uid + '/sub/').set(subscription.id);
 
-                            resolve(subscription)
+                            resolve(subscription.id)
                           } else {
-                              log('ErrorX: ' + err)
                             reject(err);
                           }
                         }); 
@@ -376,7 +381,7 @@ var getActiveEventId = async () => {
  */
 var getTotalIncomeForEvent = async (eventId) => {
 
-  let event_ref = root.ref('/db/' + eventId + '/total/');
+  let event_ref = root.ref('/db/events/' + eventId + '/ttl');
 
   return new Promise( function (resolve, reject) {
 
@@ -395,7 +400,7 @@ var getTotalIncomeForEvent = async (eventId) => {
  */
 var getTotalDonated = async (uid) => {
 
-  let event_ref = root.ref('/users/' + uid + '/donation_stats/total_donated');
+  let event_ref = root.ref('/users/' + uid + '/d/t');
 
   return new Promise( function (resolve, reject) {
 
@@ -435,7 +440,6 @@ var eventSnapshot = async (eventId) => {
 
     event_ref.once('value').then(function(snapshot, err) {
       if (err) {
-        console.log("Potential Error?? function: voteSnapshot. ");
         console.log(err);
         reject(err.message);
     } else {
@@ -459,11 +463,11 @@ var getOptionsDispersion = async (eventId) => {
        let active_event_id = await getActiveEventId();
        let eventSnapshot = await eventSnapshot(active_event_id);
        let event = {
-          title: event["title"],
-          summary: event["summary"],
-          options: event["options"],
+          title: event["t"],
+          summary: event["s"],
+          options: event["o"],
           id: event['id']
-        }
+        };
         var objArray = [];
         if (event) {
 
@@ -491,9 +495,9 @@ var getWinningOptionForEvent = async (eventId) => {
        let active_event_id = await getActiveEventId();
        let eventSnapshot = await eventSnapshot(active_event_id);
        let event = {
-          title: event["title"],
-          summary: event["summary"],
-          options: event["options"],
+          title: event["t"],
+          summary: event["s"],
+          options: event["o"],
           id: event['id']
         }
     
@@ -527,6 +531,22 @@ var getWinningOptionForEvent = async (eventId) => {
   })
 }
 
+var haveProcessedUserPaymentForEvent = async (uid, eventId) => {
+    // ref
+  let event_ref = firebase.database().ref('/users/' + uid + '/v/' + eventId + '/don');
+
+  return new Promise( function (resolve, reject) {
+
+    event_ref.once('value').then(function(snapshot, err) {
+      if (err || !snapshot.val()) {
+        resolve(false);
+        } else {
+            resolve(true)
+        }
+    });
+  })
+}
+
 
 
 app.post('/event_log', async function(request, response) {
@@ -537,16 +557,14 @@ app.post('/event_log', async function(request, response) {
 
             let cust_id = event_json.data.object.customer;
             let amountContributed = Number(event_json.data.object.amount);
-            log(cust_id);
-            logn(amountContributed)
-            log('ok')
             
             let uid = await getFirebaseUserFromCustomerId(cust_id);
             let active_event = await getActiveEventId();
 
-            log('ok2')
-
-            let incomeForEvent = await getTotalIncomeForEvent(active_event);
+            let alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);
+            
+            if (!alreadyProcessed) {
+                let incomeForEvent = await getTotalIncomeForEvent(active_event);
             incomeForEvent = Number(incomeForEvent);
             incomeForEvent += amountContributed;
             
@@ -557,17 +575,22 @@ app.post('/event_log', async function(request, response) {
             log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
 
             // Set amount that user donated
-            root.ref('/users/' + uid + '/votes/' + active_event + '/contribution/').set(amountContributed)
+            root.ref('/users/' + uid + '/v/' + active_event + '/don/').set(amountContributed)
             
-            root.ref('/users/' + uid + '/donation_stats/total_donated').set(totalDonated)
+            root.ref('/users/' + uid + '/d/t').set(totalDonated)
 
-            root.ref('/db/events/' + active_event + '/total/').set(incomeForEvent);
+            root.ref('/db/events/' + active_event + '/ttl/').set(incomeForEvent);
 
-            log(event_json);
+            log('Finished processing charge!');
+                
+            } else {
+                log('Caught duplicate for user ' + uid + ' on event ' + active_event);
+            }
+
             
         } catch (e) {
             
-             res.send(e)
+             response.send(e)
             
         }
     } else if (event_json.type == 'payout.created') {
@@ -577,7 +600,7 @@ app.post('/event_log', async function(request, response) {
             let active_event = await getActiveEventId();
             let winningOption = await getWinningOptionForEvent(active_event);
             
-            root.ref('/db/events/' + active_event + '/winningOption').set(winningOption);
+            root.ref('/db/events/' + active_event + '/w').set(winningOption);
 
             // ------- UPATE WINNING OPTION AS WINNING OPTION ------- // 
             
@@ -585,16 +608,16 @@ app.post('/event_log', async function(request, response) {
             
             root.ref('/db/active_event/').set(nextEvent.id);
             
-            res.send('Good!');
+            response.send('Good!');
             
         } catch (e) {
             
-             res.send(e)
+             response.send(e)
             
         }
         
     }else {
-        log('NON-CHARGE: ' + JSON.stringify(event_json));
+        
     }
     
 });
@@ -620,9 +643,6 @@ app.get('/changePaymentSource', async (req,res) => {
             let x = await stripe.customers.createSource(cust_id, {
               source: paymentToken
             });
-            
-            log(x.id);
-            logn('ABOVE WAS PAYMENT SOURCE')
             
             // Perform update
             stripe.customers.update(cust_id, {
@@ -653,7 +673,7 @@ app.get('/changePaymentSource', async (req,res) => {
 
 var getUserSubscriptionId = async (uid) => {
     return new Promise( function(resolve, reject) {
-        let ref = root.ref('/users/' + uid + '/subscription/id');
+        let ref = root.ref('/users/' + uid + '/sub');
         ref.once('value', function(snap) {
             if (snap && snap.val())
                 resolve(snap.val())
@@ -693,10 +713,10 @@ app.get('/change_plan', async (req,res) => {
                   if (subscription) {
 
                     log('Got subscription!')
-                    root.ref('/users/' + uid + '/subscription/').set(subscription);
+                    root.ref('/users/' + uid + '/sub').set(subscription.id);
 
-                    root.ref('/users/' + uid + '/info/plan/').set(planName);
-                    root.ref('/queriable/' + uid + '/info/plan/').set(planName);
+                    root.ref('/users/' + uid + '/i/p/').set(planName);
+                    root.ref('/queriable/' + uid + '/p').set(planName);
 
                     
                     res.send(subscription)
@@ -734,7 +754,7 @@ app.get('/deleteUser', async (req,res) => {
           var uid = decodedToken.uid;
           var cust_id = await getStripeCustomerId(uid);
             
-          stripe.customers.del("cus_EGYkcrrtYpP9Wa",
+          stripe.customers.del(cust_id,
               function(err, confirmation) {
                 if (confirmation) {
                     

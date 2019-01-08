@@ -114,18 +114,18 @@ class SignUp extends Component {
 
       // All fields cleared
       var userJson = {
-        name: this.state.name,
-        email: this.state.email,
-        dob: this.state.dob,
-        gender: this.state.gender,
-        plan: this.state.plan,
-        displayName: this.state.displayName,
-        joined: moment().format('LL')
+        n: this.state.name,
+        e: this.state.email,
+        b: this.state.dob,
+        g: this.state.gender,
+        p: this.state.plan,
+        dn: this.state.displayName,
+        j: moment().format('LL')
       };
 
       var userQueriableJSON = {
-        displayName: this.state.displayName,
-        plan: this.state.plan
+        dn: this.state.displayName,
+        p: this.state.plan
       };
 
       let createUser = await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password);
@@ -133,9 +133,9 @@ class SignUp extends Component {
       user = user.user;
       this.setState({user:user});
       // Set user info
-      firebase.database().ref('/users/'+(user.uid)+'/info/').set(userJson);
-      firebase.database().ref('/queriable/'+(user.uid)+'/info/').set(userQueriableJSON);
-      firebase.database().ref('/users/' + user.uid + '/donation_stats/total_donated').set(0);
+      firebase.database().ref('/users/'+(user.uid)+'/i/').set(userJson);
+      firebase.database().ref('/queriable/'+(user.uid)+'/').set(userQueriableJSON);
+      firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
 
       var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
       var paymentToken = tokenId;
@@ -242,7 +242,7 @@ class SignUp extends Component {
         });
 
             // Post profile picture to database
-           firebase.database().ref('/users/' + user + '/images/profilePicture').set(body.name);
+           firebase.database().ref('/users/' + user + '/img/p').set(body.name);
 
     }
 
