@@ -1,8 +1,7 @@
 // import imgs from './ImgFactory.js';
 
 var local_root = "http://localhost:8000";
-var server_root = "https://donate-mate-app.herokuapp.com";
-// var server_root = "http://localhost:1234";
+var server_root = "http://localhost:1234";
 
 var variables = {
   local_urls: {

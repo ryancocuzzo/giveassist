@@ -136,7 +136,7 @@ class Login extends React.Component {
 
             <hr/>
           <button style={{marginLeft: '50px'}} onClick={() => this.login()}>LOGIN</button>
-        <div style={{width: '100%', height: '600px'}}></div>
+        <div style={{width: '100%', height: '400px'}}></div>
           </div>
 
     );

@@ -118,18 +118,15 @@ class Vote extends React.Component {
 
     getActiveEventId().then(function(eventId) {
       eventSnapshot(eventId).then(function(event) {
-        if (!event) {
-            return;
-        }
-        console.log('E: ' + JSON.stringify(event));
+        console.log(event);
         var e = {
-          title: event["t"],
-          summary: event["s"],
-          options: event["o"],
+          title: event["title"],
+          summary: event["summary"],
+          options: event["options"],
           id: event['id']
         }
 
-        var size = Object.keys(e.options).length -1;
+        var size = Object.keys(e.options).length
 
         var total = 0;
 
@@ -137,16 +134,13 @@ class Vote extends React.Component {
          if (event) {
 
              Object.keys(e.options).forEach(function(key) {
-               if (e.options[key].t != null) {
-                 var opt = {
-                     id: key,
-                     title: e.options[key].t,
-                     votes: e.options[key].ttl
-                 }
-                 total += opt.votes;
-                  dispersionArray.push(opt);
-               }
-
+               var opt = {
+                   id: key,
+                   title: e.options[key].title,
+                   votes: e.options[key].total_votes
+               };
+               total += opt.votes;
+                dispersionArray.push(opt);
              });
          }
 
@@ -156,8 +150,6 @@ class Vote extends React.Component {
            dispersion: dispersionArray,
            total_votes: total
          });
-
-         this.hasVotedCheck();
 
       }.bind(this))
     }.bind(this));
@@ -189,6 +181,9 @@ class Vote extends React.Component {
     }
     if (hasVoted != checkVoted)
       this.setState({hasVoted: checkVoted});
+    if (this.state.something != null && this.state.something == true)
+      checkVoted = true;
+    return checkVoted;
   }
 
   /**
@@ -197,14 +192,19 @@ class Vote extends React.Component {
    */
   click = (optionId) => {
     if (optionId != null) {
-
+      console.log(this.state.event)
       let eventId = this.state.event.id;
       let uid = firebase.auth().currentUser.uid;
+      // console.log(optionId, eventId, uid)
+      console.log(eventId)
+      console.log(optionId)
+      console.log(uid)
 
       castVote(eventId, optionId, uid);
       this.setState({ hasVoted: true });
       this.setState({ something: true});
       Popup.alert('Your vote has been recieved.\nThanks for voting on this event!')
+      console.log('hasVoted now true!')
     }
   }
 
@@ -252,11 +252,9 @@ class Vote extends React.Component {
    */
   render() {
 
-
-
     var fontSize = '20px';
     var col_width_wide = '150px';
-    var bottomMargin = '600px'
+    var bottomMargin = '400px'
 
     if (this.state.width < 700) {
       fontSize = '17px';
@@ -269,19 +267,18 @@ class Vote extends React.Component {
     if (event) {
 
         Object.keys(event.options).forEach(function(key) {
-          if (event.options[key].t) {
-            var temp = {}
+          var temp = {}
 
-            temp[key] = event.options[key];
+          temp[key] = event.options[key];
 
-            objArray.push(temp);
-          }
+          objArray.push(temp);
       });
     }
       var eventMap;
 
     if (event) {
       eventMap = objArray.map(function(event) {
+        console.log('E:' + JSON.stringify(event))
         var firstProp;
         var k;
         for(var key in event) {
@@ -291,7 +288,7 @@ class Vote extends React.Component {
                 break;
             }
         }
-        return this.eventComponent(firstProp.t, firstProp.s, k);
+        return this.eventComponent(firstProp.title, firstProp.summary, k);
       }.bind(this))
     } else {
       eventMap = <p></p>;
@@ -303,13 +300,14 @@ class Vote extends React.Component {
 
     var dynamic_vote_component;
     if (this.state.hasVoted != 'IDK') {
-      if (this.state.hasVoted) {
+      if (this.hasVotedCheck()) {
         dynamic_vote_component = hasVotedComponent;
       } else {
         dynamic_vote_component = eventMap;
       }
     } else {
       dynamic_vote_component = <div></div>
+      this.hasVotedCheck();
     }
 
     var size = this.state.eventComponentWidth;
@@ -360,11 +358,8 @@ class Vote extends React.Component {
       </Col>;
       })
 
-    // alert(this.state.hasVoted)
-    if (!this.state.hasVoted) {
+    if (this.state.hasVoted != true ) {
       dispersedComponent = <div></div>;
-    } else {
-      eventMap = <div></div>;
     };
 
 

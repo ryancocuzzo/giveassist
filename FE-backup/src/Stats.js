@@ -69,12 +69,12 @@ class Stats extends React.Component {
         if (user) {
           getUserInfo(user.uid).then(function(info) {
             this.setState({
-              name: info.n,
-              email: info.e,
-              gender: info.g,
-              currentPlan: info.p,
-              joined: info.j,
-              displayName: info.dn
+              name: info.name,
+              email: info.email,
+              gender: info.gender,
+              currentPlan: info.plan,
+              joined: info.joined,
+              displayName: info.displayName
             });
           }.bind(this)).catch(function(err) {
             // ...
@@ -199,7 +199,7 @@ class Stats extends React.Component {
           });
 
               // Post profile picture to database
-             firebase.database().ref('/users/' + user + '/img/p').set(body.name);
+             firebase.database().ref('/users/' + user + '/images/profilePicture').set(body.name);
 
       }
 
@@ -244,7 +244,7 @@ class Stats extends React.Component {
         console.log(user);
         console.log(nameIsOk);
         if (user && nameIsOk) {
-          firebase.database().ref('/users/' + user + '/i/n').set(value);
+          firebase.database().ref('/users/' + user + '/info/name').set(value);
           Popup.alert('Updated name in database!');
         } else {
           Popup.alert('Could not update name in database!');
@@ -260,8 +260,8 @@ class Stats extends React.Component {
         let user = this.state.user.uid;
         let displayNameIsOk = value != null && value != '' && value.length >= 5;
         if (user && displayNameIsOk) {
-          firebase.database().ref('/users/' + user + '/i/dn').set(value);
-          firebase.database().ref('/queriable/' + user + '/n').set(value);
+          firebase.database().ref('/users/' + user + '/info/displayName').set(value);
+          firebase.database().ref('/queriable/' + user + '/info/displayName').set(value);
           Popup.alert('Updated Display Name in database!');
         } else {
           Popup.alert('Could not update Display Name in database!');
@@ -275,30 +275,23 @@ class Stats extends React.Component {
     emailClicked = (event) => {
       const { target: { value } } = event;
 
-      let user = this.state.user;
+      let user = this.state.user.uid;
       let emailIsOk = value != null && this.validateEmail(value);
 
       if (user && emailIsOk) {
-        var u = firebase.auth().currentUser;
-        firebase.auth()
-          .signInWithEmailAndPassword('you@domain.com', 'correcthorsebatterystaple')
-          .then(function(userCredential) {
-              userCredential.user.updateEmail('newyou@domain.com')
-        })
-        u.updateEmail(value).then(function(ok) {
+
+        user.updateEmail(value).then(function(ok) {
           if (ok) {
-            firebase.database().ref('/users/' + user + '/i/e').set(value);
+            firebase.database().ref('/users/' + user + '/info/email').set(value);
             Popup.alert('Updated email in database!');
           }
 
         }).catch(function(err) {
-          console.log('XX:' + err);
-
-          Popup.alert('Could not update email in database! Code 9');
+          Popup.alert('Could not update email in database!');
         });
 
       } else {
-        Popup.alert('Could not update email in database! Code 7');
+        Popup.alert('Could not update email in database!');
       }
     };
 
@@ -308,7 +301,7 @@ class Stats extends React.Component {
       let genderIsOk = value != null && value != '';
 
       if (user && genderIsOk) {
-        firebase.database().ref('/users/' + user + '/i/g').set(value);
+        firebase.database().ref('/users/' + user + '/info/gender').set(value);
         Popup.alert('Updated name in database!');
       } else {
         Popup.alert('Could not update gender in database!');
@@ -404,7 +397,7 @@ class Stats extends React.Component {
 
     var fontSize = '20px';
     var col_width_wide = '150px';
-    var bottomMargin = '300px'
+    var bottomMargin = '100px'
 
     if (this.state.width < 700) {
       fontSize = '17px';
@@ -495,6 +488,28 @@ class Stats extends React.Component {
                         />
                       </InputGroup>
                       <button disabled={ isReadOnly } value={this.state.name} style={buttonStyle} onClick={this.nameClicked} >APPLY</button><br/>
+
+                  <br />
+                </div>
+
+                <div className='adjacentItemsParent' style={{marginTop: '-15px'}}>
+                  <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>EMAIL</h1><br/>
+                  <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
+                    >
+                        <FormControl
+                          aria-label="Default"
+                          aria-describedby="inputGroup-sizing-default"
+                          value = {this.state.email}
+                          onChange={(event)=>{
+                                      this.setState({
+                                         email:event.target.value
+                                      });
+                                   }}
+                          readOnly={ isReadOnly }
+                          className='fixedAdjacentChild2'
+                        />
+                      </InputGroup>
+                      <button disabled={ isReadOnly } value={this.state.email} style={buttonStyle} onClick={this.emailClicked} >APPLY</button><br/>
 
                   <br />
                 </div>

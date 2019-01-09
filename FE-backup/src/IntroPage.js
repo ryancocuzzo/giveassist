@@ -92,7 +92,7 @@ class IntroPage extends Component {
         <Link to={urls.login} style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: correct_dim.mL, width: correct_dim.width}}>
           <button style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: correct_dim.width}} > LOGIN </button>
         </Link><br/>
-      <div style={{width: '100%', height: '600px'}}></div>
+      <div style={{width: '100%', height: '300px'}}></div>
 
         </div>
 
