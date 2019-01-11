@@ -796,14 +796,16 @@ app.get('/deleteUser', async (req,res) => {
          
 })
 
-var hasVoted = async (eventId, userId) => {
-    return new Promise( function(resolve, reject) {
+
+var userHasAlreadyVoted = async (eventId, userId) => {
+    return new Promise( async function(resolve, reject) {
+        log('checking if user ' + userId + ' has voted..')
         try {
 
-            let event_ref = firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c');
+            let event_ref = root.ref('/users/' + userId + '/v/' + eventId + '/c');
             event_ref.once('value').then(function(snapshot, err) {
                 if (err) { resolve(false) }
-                if (snapshot) {
+                if (snapshot && snapshot.val()) {
                     resolve(true)
                 } else {
                     resolve(false)
@@ -813,21 +815,21 @@ var hasVoted = async (eventId, userId) => {
         } catch (e) {
             reject(e);
         }
-        
     })
 }
+
 
 var castVote = async (eventId, voteId, userId) => {
     return new Promise( async function(resolve, reject) {
         try {
             
-            let hasVoted = await hasVoted(eventId, userId);
-            
+            let hasVoted = await userHasAlreadyVoted(eventId, userId);
+            log('hv: ' + hasVoted)
             if (!hasVoted) {
-                firebase.database().ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
-                firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c').set(voteId);
+                root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
+                root.ref('/users/' + userId + '/v/' + eventId + '/c').set(voteId);
 
-                let event_ref = firebase.database().ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
+                let event_ref = root.ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
                 let votes = 0;
                 event_ref.once('value').then(function(snapshot, err) {
                     if (err) { reject(err) }
@@ -843,6 +845,7 @@ var castVote = async (eventId, voteId, userId) => {
             }
 
         } catch (e) {
+            console.log(e);
             reject(e);
         }
         
@@ -873,6 +876,7 @@ app.get('/castVote', async (req,res) => {
             res.send(new Error('No decoded token!'));
         }
     } catch(e) {
+        console.log(e.message);
         res.send('Could not cast your vote!');
     }
              
