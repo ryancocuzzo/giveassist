@@ -818,10 +818,10 @@ var hasVoted = async (eventId, userId) => {
 }
 
 var castVote = async (eventId, voteId, userId) => {
-    return new Promise( function(resolve, reject) {
+    return new Promise( async function(resolve, reject) {
         try {
             
-            let hasVoted = hasVoted(eventId, userId);
+            let hasVoted = await hasVoted(eventId, userId);
             
             if (!hasVoted) {
                 firebase.database().ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
@@ -864,7 +864,7 @@ app.get('/castVote', async (req,res) => {
             
           var uid = decodedToken.uid;
           
-          let castedVote = castVote(eventId, voteId, uid);
+          let castedVote = await castVote(eventId, voteId, uid);
             
           res.send(castedVote);
           
