@@ -96,7 +96,7 @@ var storage_root = admin.storage();
 
 var canPostEvents = async (uid) => {
     
-  var event_ref = root.ref('/users/' + uid + '/canPostEvents');
+  var event_ref = root.ref('/admins/' + uid + '/');
   return new Promise( function (resolve, reject) {
     event_ref.once('value').then(function(snapshot, err) {
       if (err) {
@@ -791,6 +791,89 @@ app.get('/deleteUser', async (req,res) => {
         }
     } catch(e) {
         res.send('Server error: ' + e);
+    }
+             
+         
+})
+
+var hasVoted = async (eventId, userId) => {
+    return new Promise( function(resolve, reject) {
+        try {
+
+            let event_ref = firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c');
+            event_ref.once('value').then(function(snapshot, err) {
+                if (err) { resolve(false) }
+                if (snapshot) {
+                    resolve(true)
+                } else {
+                    resolve(false)
+                }
+            });
+            
+        } catch (e) {
+            reject(e);
+        }
+        
+    })
+}
+
+var castVote = async (eventId, voteId, userId) => {
+    return new Promise( function(resolve, reject) {
+        try {
+            
+            let hasVoted = hasVoted(eventId, userId);
+            
+            if (!hasVoted) {
+                firebase.database().ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
+                firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c').set(voteId);
+
+                let event_ref = firebase.database().ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
+                let votes = 0;
+                event_ref.once('value').then(function(snapshot, err) {
+                    if (err) { reject(err) }
+                    if (snapshot) {
+                      votes = Number(snapshot.val())
+                    }
+                    votes++;
+                    event_ref.set(votes);
+                    resolve(true)   
+                });
+            } else {
+                reject(new Error('It seems you have already voted'));
+            }
+
+        } catch (e) {
+            reject(e);
+        }
+        
+    })
+}
+
+app.get('/castVote', async (req,res) => {
+    
+    var idToken = req.query.idToken;
+    var voteId = req.query.voteId;
+    var eventId = req.query.eventId;
+    
+    try {
+
+        // Get decoded token
+        let decodedToken = await admin.auth().verifyIdToken(idToken);
+
+        if (decodedToken) {
+            
+          var uid = decodedToken.uid;
+          
+          let castedVote = castVote(eventId, voteId, uid);
+            
+          res.send(castedVote);
+          
+        } else {
+            log('No decoded token!')
+            res.send(new Error('No decoded token!'));
+        }
+    } catch(e) {
+        res.send('Could not cast your vote!');
     }
              
          
