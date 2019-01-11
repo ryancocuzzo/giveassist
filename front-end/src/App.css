@@ -16,6 +16,15 @@ div {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#249cb5', endColorstr='#b3ea8f',GradientType=0 ); /* IE6-9 */
 }
 
+.myGradientBackgroundInverse {
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#249cb5+0,b3ea8f+100 */
+  background: #b3ea8f; /* Old browsers */
+  background: -moz-linear-gradient(top, #b3ea8f 0%, #249cb5 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, #b3ea8f 0%,#249cb5 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom, #b3ea8f 0%,#249cb5 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b3ea8f', endColorstr='#249cb5',GradientType=0 ); /* IE6-9 */
+}
+
 .NavPhoto {
     display: block;
     width: 50px;
@@ -538,10 +547,15 @@ input {
   color: #447f93;
 }
 
+.DropdownButton {
+  color: #447f93;
+  font-weight: 550;
+
+}
+
 
 .mm-popup {
     display: none;
-    margin-top: 50px;
 }
 
 .mm-popup--visible {
@@ -559,8 +573,6 @@ input {
         z-index: 1000;
         overflow: auto;
         background: rgba(0, 0, 0, .1);
-        margin-top: 50px;
-
     }
 
     .mm-popup__close {

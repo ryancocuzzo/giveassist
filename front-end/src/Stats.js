@@ -100,64 +100,64 @@ class Stats extends React.Component {
 
   }
 
-    retrieveTotalDonated = async (uid) => {
-      let total = await getTotalDonated(uid);
-      // alert(total)
-      this.setState({total_donated: total})
-    }
+  retrieveTotalDonated = async (uid) => {
+    let total = await getTotalDonated(uid);
+    // alert(total)
+    this.setState({total_donated: total})
+  }
 
-    selectedGender = (gender) => {
-      console.log(gender)
-      if (gender != null && gender != '') {
-        if (gender != 'Rather not choose') {
-          console.log('Setting gender to ' + gender);
-          this.setState({gender: gender})
-        }
-        else {
-          this.setState({gender: 'Preferred not to respond'})
-        }
+  selectedGender = (gender) => {
+    console.log(gender)
+    if (gender != null && gender != '') {
+      if (gender != 'Rather not choose') {
+        console.log('Setting gender to ' + gender);
+        this.setState({gender: gender})
       }
-
-    }
-
-    selectedPlan = (plan) => {
-      console.log(plan)
-      this.setState({plan: plan});
-
-      if (this.state.activeButton === plan) {
-        this.setState({activeButton : null})
-      } else {
-        this.setState({activeButton : plan})
+      else {
+        this.setState({gender: 'Preferred not to respond'})
       }
-      console.log(this.state.activeButton);
     }
 
-    handleChange = (value, formattedValue) => {
-        this.setState({
-          unformatted_dob: value, // ISO String, ex: "2016-11-19T12:00:00.000Z"
-          dob: formattedValue, // Formatted String, ex: "11/19/2016"
-        });
+  }
+
+  selectedPlan = (plan) => {
+    console.log(plan)
+    this.setState({plan: plan});
+
+    if (this.state.activeButton === plan) {
+      this.setState({activeButton : null})
+    } else {
+      this.setState({activeButton : plan})
+    }
+    console.log(this.state.activeButton);
+  }
+
+  handleChange = (value, formattedValue) => {
+      this.setState({
+        unformatted_dob: value, // ISO String, ex: "2016-11-19T12:00:00.000Z"
+        dob: formattedValue, // Formatted String, ex: "11/19/2016"
+      });
+  }
+
+
+
+   validateEmail = (email) => {
+      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
     }
 
 
+  datePicked = (current) => {
+    // console.log(current);
+    this.setState({dob: current.format('LL')})
 
-     validateEmail = (email) => {
-        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-      }
+  }
 
-
-    datePicked = (current) => {
-      // console.log(current);
-      this.setState({dob: current.format('LL')})
-
-    }
-
-    myColor = (position) => {
-     if (this.state.plan === position) {
-       return "#e6ffe6";
-     }
-     return "";
+  myColor = (position) => {
+   if (this.state.plan === position) {
+     return "#e6ffe6";
+   }
+   return "";
    }
 
    toggle = (position) => {
@@ -199,7 +199,7 @@ class Stats extends React.Component {
           });
 
               // Post profile picture to database
-             firebase.database().ref('/users/' + user + '/img/p').set(body.name);
+             firebase.database().ref('/users/' + user + '/img/p').update(body.name);
 
       }
 
@@ -244,7 +244,7 @@ class Stats extends React.Component {
         console.log(user);
         console.log(nameIsOk);
         if (user && nameIsOk) {
-          firebase.database().ref('/users/' + user + '/i/n').set(value);
+          firebase.database().ref('/users/' + user + '/i/n').update(value);
           Popup.alert('Updated name in database!');
         } else {
           Popup.alert('Could not update name in database!');
@@ -260,8 +260,8 @@ class Stats extends React.Component {
         let user = this.state.user.uid;
         let displayNameIsOk = value != null && value != '' && value.length >= 5;
         if (user && displayNameIsOk) {
-          firebase.database().ref('/users/' + user + '/i/dn').set(value);
-          firebase.database().ref('/queriable/' + user + '/n').set(value);
+          firebase.database().ref('/users/' + user + '/i/dn').update(value);
+          firebase.database().ref('/queriable/' + user + '/n').update(value);
           Popup.alert('Updated Display Name in database!');
         } else {
           Popup.alert('Could not update Display Name in database!');
@@ -287,7 +287,7 @@ class Stats extends React.Component {
         })
         u.updateEmail(value).then(function(ok) {
           if (ok) {
-            firebase.database().ref('/users/' + user + '/i/e').set(value);
+            firebase.database().ref('/users/' + user + '/i/e').update(value);
             Popup.alert('Updated email in database!');
           }
 
@@ -308,12 +308,54 @@ class Stats extends React.Component {
       let genderIsOk = value != null && value != '';
 
       if (user && genderIsOk) {
-        firebase.database().ref('/users/' + user + '/i/g').set(value);
+        firebase.database().ref('/users/' + user + '/i/g').update(value);
         Popup.alert('Updated name in database!');
       } else {
         Popup.alert('Could not update gender in database!');
       }
     };
+
+    deleteAccount = () => {
+      if (this.state.token) {
+        let token = this.state.token;
+        axios.get(server_urls.deleteUser, {params: { idToken: token }}).then(
+          function(response) {
+            console.log(response);
+            Popup.alert('Successfully deleted user!')
+          }).catch(
+            function(err) {
+              console.log(err);
+              Popup.alert('Could not change payment method!')
+            })      }
+    }
+
+    deletePopup = () => {
+      Popup.create({
+          title: 'DELETE ACCOUNT',
+          content: 'You are about to delete your account. This action cannot be undone. If you wish to confirm this action, you may proceed by clicking confirm.',
+          buttons: {
+              left: [{
+                  text: 'Cancel',
+                  className: 'success',
+                  action: function () {
+                      /** Close this popup. Close will always close the current visible one, if one is visible */
+                      Popup.close();
+                  }
+              }],
+              right: [ {
+                  text: 'Confirm',
+                  className: 'success',
+                  action: function () {
+                      this.deleteAccount();
+                      Popup.alert('Account deleted!');
+
+                      /** Close this popup. Close will always close the current visible one, if one is visible */
+                      Popup.close();
+                  }
+              }]
+          }
+      }.bind(this));
+    }
 
    changePaymentSource = (paymentToken) => {
      let token = this.state.token;
@@ -370,13 +412,13 @@ class Stats extends React.Component {
     var applyButtonStyle = {
       marginLeft: '10px',
       marginRight: '25px',
-      marginTop: '20px',
+      marginTop: '4px',
     };
     var disabledButtonStyle = {
       marginLeft: '10px',
       marginRight: '25px',
-      marginTop: '20px',
-      backgroundColor: 'darkGrey'
+      backgroundColor: '#556065',
+      marginTop: '4px',
     };
 
     let buttonStyle = (!isReadOnly ? applyButtonStyle : disabledButtonStyle );
@@ -402,15 +444,27 @@ class Stats extends React.Component {
 
     }
 
-    var fontSize = '20px';
-    var col_width_wide = '150px';
+    var fontSize = 22;
+    var col_width_wide = 150;
+    var leftMargin = 40;
+    var topMargin = -2;
     var bottomMargin = '300px'
 
     if (this.state.width < 700) {
-      fontSize = '17px';
-      col_width_wide = '100px';
-      bottomMargin = '50px';
+      fontSize = 19;
+      col_width_wide = 220;
+      leftMargin = 45;
+      bottomMargin = '50px'
     }
+
+    if (this.state.width < 500) {
+      fontSize = 14;
+      col_width_wide = 190;
+      leftMargin = 10;
+    }
+
+
+
 
     var optComponent;
     if (!isMobile) {
@@ -442,6 +496,32 @@ class Stats extends React.Component {
         </div>
       )
     }
+
+    var genderComponent =
+    (
+      <div className='adjacentItemsParent' style={{marginTop: '-15px'}}>
+        <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize)+'px', width: (col_width_wide+60)+'px', marginTop: (topMargin+2)+'px'}} className='fixedAdjacentChild'>GENDER</h1><br/>
+        <DropdownButton
+                drop='right'
+                variant="secondary"
+                title={(this.state.gender != '' ? this.state.gender : 'Please select your gender.')}
+                key='gender'
+                value={this.state.gender}
+                disabled={ isReadOnly }
+                className='flexibleAdjacentChild'
+                style={{minWidth: '100px', width: '30%'}}
+              >
+                <MenuItem eventKey="Male" onClick={this.selectedGender.bind(this, "Male")}>Male</MenuItem>
+                <MenuItem eventKey="Female" onClick={this.selectedGender.bind(this, "Female")}>Female</MenuItem>
+                <MenuItem eventKey="Other" onClick={this.selectedGender.bind(this, "Other")}>Other</MenuItem>
+                <MenuItem eventKey="Rather not choose" onClick={this.selectedGender.bind(this, "Rather not choose")}>Rather not choose</MenuItem>
+      </DropdownButton>
+
+          <button disabled={ isReadOnly } value={this.state.gender} style={buttonStyle} onClick={this.genderClicked} >APPLY</button><br/>
+        <br />
+      </div>
+    );
+
     return (
       <Row>
         <Col>
@@ -452,20 +532,20 @@ class Stats extends React.Component {
           <h1 style={{marginLeft: '30px', fontSize: '40px'}}>STATISTICS</h1><br/>
 
           <div className='adjacentItemsParent' style={{marginLeft: '30px'}}>
-              <h1 style={{marginLeft: '20px', fontSize: '20px'}} className='fixedAdjacentChild'>CURRENT PLAN</h1><br/>
-            <h1 className='flexibleAdjacentChild' style={{marginLeft: '20px', fontSize: '25px'}} >{this.state.currentPlan}</h1>
+            <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize+5)+'px', width: (col_width_wide+40)+'px', marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>CURRENT PLAN</h1><br/>
+            <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{this.state.currentPlan}</h1>
               <br />
           </div>
 
         <div className='adjacentItemsParent' style={{marginLeft: '30px'}}>
-            <h1 style={{marginLeft: '20px', fontSize: '20px'}} className='fixedAdjacentChild'>JOINED</h1><br/>
-          <h1 className='flexibleAdjacentChild' style={{marginLeft: '20px', fontSize: '25px'}} >{this.state.joined}</h1>
+            <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize+5)+'px', width: (col_width_wide+40)+'px', marginTop: (topMargin)+'px'}}className='fixedAdjacentChild'>JOINED</h1><br/>
+          <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{this.state.joined}</h1>
             <br />
         </div>
 
         <div className='adjacentItemsParent' style={{marginLeft: '30px'}}>
-            <h1 style={{marginLeft: '20px', fontSize: '20px'}} className='fixedAdjacentChild'>TOTAL DONATED</h1><br/>
-          <h1 className='flexibleAdjacentChild' style={{marginLeft: '20px', fontSize: '25px'}} >{moneyFormat(this.state.total_donated*0.01)}</h1>
+            <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize+5)+'px', width: (col_width_wide+40)+'px', marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>TOTAL DONATED</h1><br/>
+          <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{moneyFormat(this.state.total_donated*0.01)}</h1>
             <br />
         </div>
 
@@ -476,8 +556,8 @@ class Stats extends React.Component {
 
 
                 <div className='adjacentItemsParent'>
-                  <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>NAME</h1><br/>
-                  <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
+                  <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize)+'px', width: (col_width_wide+60)+'px', marginTop: (topMargin+2)+'px'}} className='fixedAdjacentChild'>NAME</h1><br/>
+                <InputGroup className="mb-3" style={{fontSize: (fontSize)+'px', width: (col_width_wide+300)+'px', marginTop: (topMargin-2)+'px'}} className='fixedAdjacentChild2'
                     >
                         <FormControl
                           aria-label="Default"
@@ -500,8 +580,8 @@ class Stats extends React.Component {
                 </div>
 
                 <div className='adjacentItemsParent' style={{marginTop: '-15px'}}>
-                  <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>DISPLAY NAME</h1><br/>
-                  <InputGroup className="mb-3" style={{marginTop:"15px"}} className='fixedAdjacentChild2'
+                  <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize)+'px', width: (col_width_wide+60)+'px', marginTop: (topMargin+2)+'px'}} className='fixedAdjacentChild'>DISPLAY NAME</h1><br/>
+                <InputGroup className="mb-3" style={{fontSize: (fontSize)+'px', width: (col_width_wide+300)+'px', marginTop: (topMargin-2)+'px'}} className='fixedAdjacentChild2'
                     >
                         <FormControl
                           aria-label="Default"
@@ -524,29 +604,7 @@ class Stats extends React.Component {
                 </div>
 
 
-              <div className='adjacentItemsParent' style={{marginTop: '-15px'}}>
-                <h1 style={{marginLeft: '20px',fontSize: fontSize, width: col_width_wide}} className='fixedAdjacentChild'>GENDER</h1><br/>
-              <ButtonToolbar style={{marginTop:"11px", marginRight: '5px'}} className='fixedAdjacentChild3'>
-                      <DropdownButton
-                        drop='right'
-                        variant="secondary"
-                        title={(this.state.gender != '' ? this.state.gender : 'Please select your gender.')}
-                        key='gender'
-                        value={this.state.gender}
-                        disabled={ isReadOnly }
-                        className='fixedAdjacentChild3'
 
-                      >
-                        <MenuItem eventKey="Male" onClick={this.selectedGender.bind(this, "Male")}>Male</MenuItem>
-                        <MenuItem eventKey="Female" onClick={this.selectedGender.bind(this, "Female")}>Female</MenuItem>
-                        <MenuItem eventKey="Other" onClick={this.selectedGender.bind(this, "Other")}>Other</MenuItem>
-                        <MenuItem eventKey="Rather not choose" onClick={this.selectedGender.bind(this, "Rather not choose")}>Rather not choose</MenuItem>
-                      </DropdownButton>
-
-                  </ButtonToolbar>
-                  <button disabled={ isReadOnly } value={this.state.gender} style={buttonStyle} onClick={this.genderClicked} >APPLY</button><br/>
-                <br />
-              </div>
 
           </div>
 
@@ -594,7 +652,7 @@ class Stats extends React.Component {
                 <div>
                   <div style={{marginLeft: '50px', marginTop: '20px'}}>
                     <h1>Delete your account.</h1>
-                  <Button bsStyle='danger' style={{marginLeft: '20px', marginTop: '15px'}} >DELETE ACCOUNT</Button>
+                  <Button bsStyle='danger' style={{marginLeft: '20px', marginTop: '15px'}} onClick={this.deletePopup}>DELETE ACCOUNT</Button>
 
                   </div>
                   <hr/>

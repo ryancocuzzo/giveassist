@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {CardElement, injectStripe} from 'react-stripe-elements';
 import axios from 'axios';
+import Popup from 'react-popup';
 
 class CheckoutForm extends Component {
   constructor(props) {
@@ -16,12 +17,13 @@ class CheckoutForm extends Component {
     if (token)
       this.props.onSignUp(token.id);
     else
-      alert('Your payment information is invalid!')
+      Popup.alert('Your payment information is invalid!')
 }
 
   render() {
     return (
       <div className="checkout">
+        <Popup />
         <p>Please enter your payment information into the secure form.</p>
         <CardElement style={{base: {fontSize: '18px'}}} />
       <button onClick={this.submit}>JOIN</button>

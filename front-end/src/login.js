@@ -80,10 +80,22 @@ class Login extends React.Component {
 
     var fontSize = '20px';
     var col_width_wide = '150px';
+    var bottomMargin = '400px';
+    var leftMargin = '40px';
+    var topMargin = 32;
 
     if (this.state.width < 700) {
       fontSize = '17px';
       col_width_wide = '100px';
+      bottomMargin = '200px';
+      leftMargin = '35px';
+    }
+
+    if (this.state.width < 500) {
+      fontSize = '14px';
+      col_width_wide = '80px';
+      leftMargin = '30px';
+      topMargin = topMargin+=3;
     }
 
     return (
@@ -95,8 +107,8 @@ class Login extends React.Component {
           <h1 style={{marginLeft: '20px', fontSize: '40px'}}>LOGIN</h1><br/>
 
 
-          <div className='adjacentItemsParent'>
-            <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>EMAIL</h3><br/>
+          <div className='adjacentItemsParent' style={{color: 'black', fontWeight: '700'}}>
+            <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>EMAIL</h3><br/>
             <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
               >
                   <FormControl
@@ -108,35 +120,36 @@ class Login extends React.Component {
                                    email:event.target.value
                                 });
                              }}
-                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
                   />
                 </InputGroup>
             <br />
           </div>
 
-          <div className='adjacentItemsParent'>
-            <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>PASSWORD</h3><br/>
-            <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
-  >
-                  <FormControl
-                    placeholder='Min. length of 6 characters'
-                    aria-label="Default"
-                    aria-describedby="inputGroup-sizing-default"
-                    value = {this.state.password}
-                    onChange={(event)=>{
-                                this.setState({
-                                   password:event.target.value
-                                });
-                             }}
-                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
-                  />
-                </InputGroup>
-            <br />
-          </div>
+
+            <div className='adjacentItemsParent' style={{color: 'black', fontWeight: '700'}}>
+              <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PASSWORD</h3><br/>
+              <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
+                >
+                    <FormControl
+                      placeholder='Min. length of 6 characters'
+                      aria-label="Default"
+                      aria-describedby="inputGroup-sizing-default"
+                      value = {this.state.password}
+                      onChange={(event)=>{
+                                  this.setState({
+                                     password:event.target.value
+                                  });
+                               }}
+                      style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
+                    />
+                  </InputGroup>
+              <br />
+            </div>
 
             <hr/>
           <button style={{marginLeft: '50px'}} onClick={() => this.login()}>LOGIN</button>
-        <div style={{width: '100%', height: '600px'}}></div>
+        <div style={{width: '100%', height: bottomMargin}}></div>
           </div>
 
     );

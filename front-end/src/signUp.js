@@ -100,7 +100,20 @@ class SignUp extends Component {
     let planIsOk = this.state.plan != null && this.state.plan != '';
     let passIsOk = this.state.password != null && this.state.password.length >= 6;
     let displayNameIsOk = this.state.displayName != null && this.state.displayName.length >= 5;
-
+    if (!nameIsOk)
+      Popup.alert('Please check your name, it doesn\n appear to be valid!')
+    else if (!emailIsOk)
+    Popup.alert('Please check your email, it doesn\n appear to be valid!')
+    else if (!dobIsOk)
+    Popup.alert('Please check your date of birth, it doesn\n appear to be valid!')
+    else if (!genderIsOk)
+    Popup.alert('Please check your gender, it doesn\n appear to be selected!')
+    else if (!passIsOk)
+    Popup.alert('Please check your password, it doesn\n appear to be valid!')
+    else if (!planIsOk)
+    Popup.alert('Please check your plan, it doesn\n appear to be selected!')
+    else if (!displayNameIsOk)
+    Popup.alert('Please check your display name, it doesn\n appear to be valid!')
     if (nameIsOk && emailIsOk && dobIsOk && genderIsOk && planIsOk && passIsOk && displayNameIsOk)
       return true;
     else
@@ -111,69 +124,80 @@ class SignUp extends Component {
     console.log('Signing up user');
     // Validate form
     if (this.formIsValid()) {
+      try {
 
-      // All fields cleared
-      var userJson = {
-        n: this.state.name,
-        e: this.state.email,
-        b: this.state.dob,
-        g: this.state.gender,
-        p: this.state.plan,
-        dn: this.state.displayName,
-        j: moment().format('LL')
-      };
 
-      var userQueriableJSON = {
-        dn: this.state.displayName,
-        p: this.state.plan
-      };
+        // All fields cleared
+        var userJson = {
+          n: this.state.name,
+          e: this.state.email,
+          b: this.state.dob,
+          g: this.state.gender,
+          p: this.state.plan,
+          dn: this.state.displayName,
+          j: moment().format('LL')
+        };
 
-      let createUser = await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password);
-      var user = await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password);
-      user = user.user;
-      this.setState({user:user});
-      // Set user info
-      firebase.database().ref('/users/'+(user.uid)+'/i/').set(userJson);
-      firebase.database().ref('/queriable/'+(user.uid)+'/').set(userQueriableJSON);
-      firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
+        var userQueriableJSON = {
+          dn: this.state.displayName,
+          p: this.state.plan
+        };
 
-      var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
-      var paymentToken = tokenId;
-      var plan = this.state.plan;
+        let createUser = await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password);
+        var user = await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password);
+        user = user.user;
+        this.setState({user:user});
+        // Set user info
+        firebase.database().ref('/users/'+(user.uid)+'/i/').set(userJson);
+        firebase.database().ref('/queriable/'+(user.uid)+'/').set(userQueriableJSON);
+        firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
 
-      axios.get(server_urls.createStripeUser, {params: {
-        idToken: idToken,
-        paymentToken: paymentToken,
-        plan: plan
-      }}).then(async function(customer_id) {
+        var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
+        var paymentToken = tokenId;
+        var plan = this.state.plan;
 
-        axios.get(server_urls.initPayments, {params: {
+        axios.get(server_urls.createStripeUser, {params: {
           idToken: idToken,
+          paymentToken: paymentToken,
           plan: plan
-        }}).then(async function(subscription) {
-          // Save subscription
-          // firebase.database().ref('/users/' + user.uid + '/subscription/').set(subscription);
-          window.history.pushState(null, '', '/vote')
+        }}).then(async function(customer_id) {
 
-          // Set user picture
-          await this.uploadPicture()
+          axios.get(server_urls.initPayments, {params: {
+            idToken: idToken,
+            plan: plan
+          }}).then(async function(subscription) {
+            // Save subscription
+            // firebase.database().ref('/users/' + user.uid + '/subscription/').set(subscription);
+            window.history.pushState(null, '', '/vote')
+
+            // Set user picture
+            await this.uploadPicture()
 
 
-          this.props.popup('Welcome to the future of donation..');
+            this.props.popup('Welcome to the future of donation..');
 
+
+          }.bind(this)).catch(function(err) {
+             this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. Please note this issue appears to stem from your payment information!');
+          }.bind(this))
 
         }.bind(this)).catch(function(err) {
-           alert('Initialize payments error: ' + err);
+          this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.');
         }.bind(this))
+      } catch (e) {
+        var user = firebase.auth().currentUser;
+        if (user) {
+          user.delete().then(function() {
+            // User deleted.
+          }).catch(function(error) {
+            // An error happened.
+          });
+        }
 
-      }.bind(this)).catch(function(err) {
-        alert('Create Stripe error: ' + err);
-      }.bind(this))
+      }
 
 
 
-    } else {
-      alert('Form not valid!')
 
     }
 
@@ -298,13 +322,24 @@ class SignUp extends Component {
 
     var fontSize = '20px';
     var col_width_wide = '150px';
-    var bottomMargin = '400px'
+    var bottomMargin = '400px';
+    var leftMargin = '40px';
+    var topMargin = 32;
 
     if (this.state.width < 700) {
       fontSize = '17px';
       col_width_wide = '100px';
       bottomMargin = '200px';
+      leftMargin = '40px';
     }
+
+    if (this.state.width < 500) {
+      fontSize = '15px';
+      col_width_wide = '80px';
+      leftMargin = '20px';
+      topMargin = topMargin+=3;
+    }
+
     var tbDimension = (isMobile ? textBoxDimensions.sm : textBoxDimensions.lg);
     if (this.state.width > 1500) {
         tbDimension.width = '33.3333%';
@@ -357,15 +392,15 @@ class SignUp extends Component {
     );
 
     return (
-      <div style={{ borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
+      <div style={{ fontSize: '12px'}} className='myGradientBackground'>
       <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
 
       <h1 style={{marginLeft: '20px', fontSize: '40px'}}>Join</h1><br/>
 
-        <div className='adjacentItemsParent'>
-          <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>NAME</h3><br/>
-          <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
->
+    <div style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
+          <h3 style={{color: 'black', fontWeight: '450',marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>NAME</h3><br/>
+        <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px', borderRadius: '5px'}} className='flexibleAdjacentChild'
+            >
                 <FormControl
                   aria-label="Default"
                   aria-describedby="inputGroup-sizing-default"
@@ -375,15 +410,15 @@ class SignUp extends Component {
                                  name:event.target.value
                               });
                            }}
-                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
                 />
               </InputGroup>
           <br />
         </div>
 
-        <div className='adjacentItemsParent'>
-          <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>EMAIL</h3><br/>
-          <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
+        <div style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
+          <h3 style={{color: 'black', fontWeight: '450', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>EMAIL</h3><br/>
+          <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'
             >
                 <FormControl
                   aria-label="Default"
@@ -394,17 +429,17 @@ class SignUp extends Component {
                                  email:event.target.value
                               });
                            }}
-                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
                 />
               </InputGroup>
           <br />
         </div>
 
 
-          <div className='adjacentItemsParent'>
-            <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>PASSWORD</h3><br/>
-            <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
-  >
+          <div style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
+            <h3 style={{color: 'black', fontWeight: '450', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PASSWORD</h3><br/>
+            <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'
+              >
                   <FormControl
                     placeholder='Min. length of 6 characters'
                     aria-label="Default"
@@ -415,15 +450,15 @@ class SignUp extends Component {
                                    password:event.target.value
                                 });
                              }}
-                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
                   />
                 </InputGroup>
             <br />
           </div>
 
-          <div className='adjacentItemsParent'>
-            <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '30px'}} className='fixedAdjacentChild'>DISPLAY NAME</h3><br/>
-            <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
+          <div  style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
+            <h3 style={{color: 'black', fontWeight: '450', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (this.state.width < 500 ? (topMargin-7)+'px' : topMargin+'px')}} className='fixedAdjacentChild'>DISPLAY NAME</h3><br/>
+            <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'
   >
                   <FormControl
                     placeholder='Min. length of 5 characters'
@@ -435,28 +470,30 @@ class SignUp extends Component {
                                    displayName:event.target.value
                                 });
                              }}
-                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
                   />
                 </InputGroup>
             <br />
           </div>
 
-        <div className='adjacentItemsParent' style={{marginTop: '10px'}}>
-          <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '25px'}} className='fixedAdjacentChild'>DOB</h3><br/>
-        <Datetime isValidDate={ valid } onChange={this.datePicked} timeFormat={false} inputProps={{ placeholder: 'Please select your DOB', readonly: 'true',  style: {width: '250px', marginTop: '15px', textAlign: 'center', backgroundColor: '#f4fbff', color: 'darkGrey', boxShadow: '4px 4px 4px grey'}}}/>
+        <div style={{color: 'black', fontWeight: '400'}} className='adjacentItemsParent' style={{marginTop: '10px', marginRight: '5px'}}>
+          <h3 style={{color: 'black', fontWeight: '400', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-13)+'px'}} className='fixedAdjacentChild'>DOB</h3><br/>
+
+        <Datetime isValidDate={ valid } onChange={this.datePicked} timeFormat={false} inputProps={{ marginRight: '10px',borderRadius: '5px', placeholder: 'Please select your DOB', readonly: 'true',  style: {width: '250px', fontWeight: '450',marginTop: '9px', textAlign: 'center', backgroundColor: '#f4fbff', color: 'black', fontWeight: '450', boxShadow: '4px 4px 4px grey'}}}/>
           <br />
         </div>
 
-        <div className='adjacentItemsParent' style={{marginTop: '0px'}}>
-          <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '20px'}} className='fixedAdjacentChild'>GENDER</h3><br/>
-        <ButtonToolbar className='flexibleAdjacentChild' style={{marginTop:"-5px", width: '200px'}}>
+        <div className='adjacentItemsParent' style={{marginTop: '0px', color: 'black', fontWeight: '400'}}>
+          <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-15)+'px'}} className='fixedAdjacentChild'>GENDER</h3><br/>
+        <ButtonToolbar className='flexibleAdjacentChild' style={{marginTop:"-5px", width: '200px', fontWeight: '400' }}>
                 <DropdownButton
                   drop='right'
                   variant="secondary"
                   title={(this.state.gender != '' ? this.state.gender : 'Please select your gender.')}
                   key='gender'
                   value={this.state.gender}
-                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey'}}
+                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'e3eff4', boxShadow: '4px 4px 4px grey', marginRight: '10px', borderRadius: '5px',fontWeight: '800'}}
+                  className='DropdownButton'
                 >
                   <MenuItem eventKey="Male" onClick={this.selectedGender.bind(this, "Male")}>Male</MenuItem>
                   <MenuItem eventKey="Female" onClick={this.selectedGender.bind(this, "Female")}>Female</MenuItem>
@@ -468,13 +505,13 @@ class SignUp extends Component {
         </div>
 
         <div className='adjacentItemsParent' style={{marginTop: '-5px'}}>
-          <h3 style={{marginLeft: '50px',fontSize: fontSize, width: col_width_wide, marginTop: '33px'}} className='fixedAdjacentChild'>PICTURE</h3><br/>
+          <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PICTURE</h3><br/>
           <div class="upload-btn-wrapper" style={{  borderRadius: '3px'}} onMouseEnter={() => this.toggleHover(4)} onMouseLeave={() => this.toggleHover(4)}>
             <button style={{height: '35px',background: c4, width: '250px'}} >{this.state.picture == null ? 'UPLOAD' : 'UPLOADED'}</button>
             <input type="file" name="im-a-file" onChange={ (e) => this.profilePictureSelected(e.target.files) } style={{  boxShadow: '4px 4px 0px grey'}}/>
           </div>
           <div id="container">
-            <h2 style={{marginLeft: '10px', height: '35px', marginTop: '30px'}}>{this.state.picture != null ? '👍' : '👎'}</h2>
+            <h2 style={{marginLeft: '10px', height: '35px', marginTop: '30px', marginRight: '10px'}}>{this.state.picture != null ? '👍' : '👎'}</h2>
           </div>
 
         </div>

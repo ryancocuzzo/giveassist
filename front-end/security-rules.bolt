@@ -1,0 +1,171 @@
+function isUser (auth, userKey) {
+  return auth.uid == userKey;
+}
+
+function isAdmin (auth) {
+  return root.child("admins").child(auth.uid).val() == true;
+}
+
+function permissionedUser(auth, uid) {
+    return isUser(auth, uid) || isAdmin(auth);
+} 
+
+function notOverFlowString(data) {
+    return (data != null && data.isString() && data.val().length < 50)
+}
+
+function notSuperOverFlowString(data) {
+    return (data != null && data.isString() && data.val().length < 90)
+}
+
+function isPlan(plan) {
+    return (plan == 'Premium X' || plan == 'Premium X' || plan == 'Premium Z');
+}
+
+function isValidNumber(newData, oldData) {
+    return (oldData != null ? 
+         newData.isNumber() && newData >= oldData :
+        newData.isNumber() && newData >= 0); 
+}
+
+function isValidDate(d) {
+  return true;
+}
+
+function testDate(date) {
+    return true;
+}
+
+function validateEmail(email) {
+return email.matches(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+}
+
+function testUserInfo(b,dn,e,g,j,n,p) {
+    return (
+        (notOverFlowString(b) && isValidDate(b) && testDate(b)) &&
+        (notOverFlowString(dn) && dn.length >= 5) && 
+        (notOverFlowString(e) && validateEmail(e)) &&
+        (notOverFlowString(g)) &&
+        (notOverFlowString(j) && isValidDate(j)) && 
+        (notOverFlowString(n)) &&
+        (notOverFlowString(p) && isPlan(p))
+    );
+}
+
+function validEvent(eid) {
+    return root.child("events").child(eid).val() != null;
+}
+
+function validVotingOption(eid, vid) {
+    return root.child("events").child(eid).child("o").child(vid).val() != null;
+}
+
+function validateUserVotePush(amountDonated, eventId, votedId ) {
+    return (
+        amountDonated != null ?
+        (
+            (amountDonated >= 99 && amountDonated < 200) ?
+                true
+                :
+                false
+        ) :
+        (
+            (validEvent(eventId) && validVotingOption(eventId, votedId)) ?
+                true
+                :
+                false                
+        )
+    )
+}
+
+
+
+/*
+    User permissions
+*/
+
+type UserInfo {
+  validate() { testUserInfo(this.b,this.dn,this.e,this.g,this.j,this.n,this.p) }
+  b: String,
+ dn: String,
+ e: String,
+ g: String,
+ j: String,
+ n: String,
+ p: String,
+}
+
+path /admins/{uid} {
+    read() { permissionedUser(auth, uid) }
+    write() { isAdmin(auth) }
+}
+
+path /users/{uid} {
+  read() { permissionedUser(auth, uid) }
+  index() { ["email"] }
+}
+
+path /users/{uid}/sub {
+  write() { permissionedUser(auth, uid) && notOverFlowString(this) }
+}
+
+path /users/{uid}/st {
+  write() { permissionedUser(auth, uid) && notOverFlowString(this.id) }
+}
+
+path /users/{uid}/img {
+  write() { permissionedUser(auth, uid) && notSuperOverFlowString(this.p) }
+}
+
+path /users/{uid}/d {
+  write() { permissionedUser(auth, uid) && isValidNumber(this.t, prior(this.t)) }
+}
+
+path /users/{uid}/i is UserInfo {
+    write() { permissionedUser(auth, uid) }
+}
+
+path /users/{uid}/v/{eventId} {
+    write() { permissionedUser(auth, uid) && validateUserVotePush(this.don.val(), eventId, this.c.val()) }
+}
+
+path /stripe_ids/{cust_id} {
+  read() { auth != null }
+  write() { isAdmin(auth) }
+}
+
+path /reciepts {
+  read() { true }
+  write() { isAdmin(auth) }
+}
+
+path /queriable {
+  read() { true }
+}
+
+path /queriable/{uid}/dn {
+  write() { permissionedUser(auth, uid) }
+}
+
+path /queriable/{uid}/p {
+  write() { isAdmin(auth) }
+}
+
+path /db {
+    write() { isAdmin(auth) }
+}
+
+path /db/active_event {
+    read() { true }
+}
+
+path /db/events {
+    read() { auth != null }
+}
+
+
+
+
+
+
+

@@ -183,22 +183,14 @@ export const getKey = () => {
   return firebase.database().ref().push().key;
 }
 
-export const castVote = (eventId, voteId, userId) => {
-
-    firebase.database().ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
-    firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c').set(voteId);
-
-    let event_ref = firebase.database().ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
-    let votes = 0;
-    event_ref.once('value').then(function(snapshot, err) {
-        if (snapshot) {
-          votes = Number(snapshot.val())
-        }
-        votes++;
-        event_ref.set(votes);
-
-    });
-
+export const castVote = async (eventId, voteId, token) => {
+  return new Promise( function(resolve, reject) {
+    axios.get(server_urls.castVote, {params: {eventId: eventId, idToken: token, voteId: voteId}}).then( function(response) {
+      resolve(true);
+    }).catch(function(e) {
+      reject(e);
+    })
+  })
 }
 
 export const getProfilePictureFilename = async (uid) => {

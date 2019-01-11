@@ -40,7 +40,7 @@ class MyNavBar extends Component {
       this.getProfilePicture(user.uid);
     }
 
-    this.login = this.login.bind(this); // <-- add this line
+    // this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
 
   }
@@ -52,7 +52,7 @@ class MyNavBar extends Component {
   }
 
   async getProfilePicture(uid) {
-    let ref = firebase.database().ref('/users/' + uid + '/images/profilePicture');
+    let ref = firebase.database().ref('/users/' + uid + '/img/p');
 
       ref.once('value').then (function(snap) {
           console.log('Snapback & unload');
@@ -145,9 +145,9 @@ class MyNavBar extends Component {
    */
   signInButton() {
     if (!this.state.user)
-      return <button style={{marginTop: '7px'}} onClick={this.login}>Log In</button>;
+      return <button style={{marginTop: '7px', marginLeft: '17px'}} onClick={this.login}>Log In</button>;
     else
-      return <button style={{marginTop: '7px'}} onClick={this.logout}>Log Out: {this.state.user.displayName || this.state.user.email}</button>;
+      return <button style={{marginTop: '7px', marginLeft: '17px'}} onClick={this.logout}>Log Out</button>;
 
   }
 
@@ -164,34 +164,34 @@ class MyNavBar extends Component {
     });
   }
 
-
-  /**
-   * Log in and set persistance of session
-   */
-  login() {
-    // Sign in popup
-    auth.signInWithPopup(provider)
-      .then((result) => {
-        // Get user (result)
-        const user = result.user;
-        //
-        this.setState({user: user});
-        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
-        .then(function() {
-          var provider = new firebase.auth.GoogleAuthProvider();
-          // In memory persistence will be applied to the signed in Google user
-          // even though the persistence was set to 'none' and a page redirect
-          // occurred.
-          return firebase.auth().signInWithProvider(provider);
-        })
-        .catch(function(error) {
-          // Handle Errors here.
-          var errorCode = error.code;
-          var errorMessage = error.message;
-          alert(errorMessage);
-        });
-      });
-  }
+  //
+  // /**
+  //  * Log in and set persistance of session
+  //  */
+  // login() {
+  //   // Sign in popup
+  //   auth.signInWithPopup(provider)
+  //     .then((result) => {
+  //       // Get user (result)
+  //       const user = result.user;
+  //       //
+  //       this.setState({user: user});
+  //       firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
+  //       .then(function() {
+  //         var provider = new firebase.auth.GoogleAuthProvider();
+  //         // In memory persistence will be applied to the signed in Google user
+  //         // even though the persistence was set to 'none' and a page redirect
+  //         // occurred.
+  //         return firebase.auth().signInWithProvider(provider);
+  //       })
+  //       .catch(function(error) {
+  //         // Handle Errors here.
+  //         var errorCode = error.code;
+  //         var errorMessage = error.message;
+  //         alert(errorMessage);
+  //       });
+  //     });
+  // }
 
   render() {
 
@@ -199,7 +199,11 @@ class MyNavBar extends Component {
 
       var header = (<Navbar.Header>
                 <a>
-                <span class="navbar-brand" style={{marginLeft: '0px'}}><img src={(this.state.picture) ? this.state.picture : imgs.unknown} width="50px" height="50px" alt="Picture" style={{marginTop: '6px', borderRadius: '5px'}}></img></span>
+
+                <span class="navbar-brand" style={{marginLeft: '-10px'}}>
+                  <div className='adjacentItemsParent'>
+                    <img src={imgs.logo_lg} height="50px" className='fixedAdjacentChild' alt="Picture" style={{marginTop: '6px', borderRadius: '5px', marginRight: '20px'}}></img>
+                  </div>  </span>
               </a>
               <Navbar.Toggle />
             </Navbar.Header>);
@@ -210,11 +214,11 @@ class MyNavBar extends Component {
 
     <Navbar.Collapse>
 
-      <Navbar.Text style={{marginTop: '24px'}}>
-        {this.signInButton()}
-      </Navbar.Text>
-
       <Nav pullRight>
+
+        <Navbar.Text style={{marginTop: '30px'}}>
+          {this.signInButton()}
+        </Navbar.Text>
 
         <NavItem  className='link' style={{border: 'none'}}>
           <Link to={urls.vaults} >
@@ -224,7 +228,7 @@ class MyNavBar extends Component {
 
         <NavItem  className='link' style={{border: 'none'}}>
           <Link to={urls.stats} >
-          <Button style={{}} className="button"> STATS </Button>
+          <Button style={{}} className="button"> INFO </Button>
           </Link>
         </NavItem>
 
@@ -243,7 +247,7 @@ class MyNavBar extends Component {
 
 
   return (
-    <Navbar fixedTop inverse collapseOnSelect style={{backgroundColor: '#357244', headerStyle: {
+    <Navbar fixedTop inverse collapseOnSelect style={{backgroundColor: '#0b5394ff', headerStyle: {
           height: '100px'
       }}} className='myNavbar'>
       {header}

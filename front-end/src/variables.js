@@ -22,7 +22,8 @@ var variables = {
     uploadProfilePicture: server_root + '/uploadProfilePicture',
     changePaymentSource: server_root + '/changePaymentSource',
     change_plan: server_root + '/change_plan',
-    deleteUser: server_root + '/deleteUser'
+    deleteUser: server_root + '/deleteUser',
+    castVote: server_root + '/castVote'
   }
 };
 

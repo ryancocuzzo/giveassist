@@ -49,6 +49,20 @@ class App extends React.Component {
     firebase.auth().onAuthStateChanged(function(user) {
         this.setState({user: user});
         console.log("Found user: " + user.displayName);
+        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(function() {
+          // var provider = new firebase.auth.GoogleAuthProvider();
+          // // In memory persistence will be applied to the signed in Google user
+          // // even though the persistence was set to 'none' and a page redirect
+          // // occurred.
+          // return firebase.auth().signInWithProvider(provider);
+        })
+        .catch(function(error) {
+          // Handle Errors here.
+          var errorCode = error.code;
+          var errorMessage = error.message;
+          alert(errorMessage);
+        });
     }.bind(this));
   }
 

@@ -97,6 +97,54 @@ class Vote extends React.Component {
     firebase.auth().onAuthStateChanged(function(user) {
         this.setState({user: user});
         if (user) {
+
+          getActiveEventId().then(function(eventId) {
+            eventSnapshot(eventId).then(function(event) {
+              if (!event) {
+                  return;
+              }
+              console.log('E: ' + JSON.stringify(event));
+              var e = {
+                title: event["t"],
+                summary: event["s"],
+                options: event["o"],
+                id: event['id']
+              }
+
+              var size = Object.keys(e.options).length -1;
+
+              var total = 0;
+
+               var dispersionArray = [];
+               if (event) {
+
+                   Object.keys(e.options).forEach(function(key) {
+                     if (e.options[key].t != null) {
+                       var opt = {
+                           id: key,
+                           title: e.options[key].t,
+                           votes: e.options[key].ttl
+                       }
+                       total += opt.votes;
+                        dispersionArray.push(opt);
+                     }
+
+                   });
+               }
+
+               this.setState({
+                 event: e,
+                 eventComponentWidth: 12 / size,
+                 dispersion: dispersionArray,
+                 total_votes: total
+               });
+
+               this.userHasAlreadyVoted(e.id, user.uid);
+
+            }.bind(this))
+          }.bind(this));
+
+
           firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
 
             this.setState({token: idToken});
@@ -116,51 +164,7 @@ class Vote extends React.Component {
 
     }.bind(this));
 
-    getActiveEventId().then(function(eventId) {
-      eventSnapshot(eventId).then(function(event) {
-        if (!event) {
-            return;
-        }
-        console.log('E: ' + JSON.stringify(event));
-        var e = {
-          title: event["t"],
-          summary: event["s"],
-          options: event["o"],
-          id: event['id']
-        }
 
-        var size = Object.keys(e.options).length -1;
-
-        var total = 0;
-
-         var dispersionArray = [];
-         if (event) {
-
-             Object.keys(e.options).forEach(function(key) {
-               if (e.options[key].t != null) {
-                 var opt = {
-                     id: key,
-                     title: e.options[key].t,
-                     votes: e.options[key].ttl
-                 }
-                 total += opt.votes;
-                  dispersionArray.push(opt);
-               }
-
-             });
-         }
-
-         this.setState({
-           event: e,
-           eventComponentWidth: 12 / size,
-           dispersion: dispersionArray,
-           total_votes: total
-         });
-
-         this.hasVotedCheck();
-
-      }.bind(this))
-    }.bind(this));
 
     window.addEventListener("resize", function(event) {
       console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
@@ -168,6 +172,24 @@ class Vote extends React.Component {
     }.bind(this))
 
   }
+
+   userHasAlreadyVoted = async (eventId, userId) => {
+        try {
+            let event_ref = firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c');
+            event_ref.once('value').then(function(snapshot, err) {
+                if (err) { this.setState({hasVoted: false}) }
+                if (snapshot && snapshot.val()) {
+                    this.setState({hasVoted: true})
+                } else {
+                    this.setState({hasVoted: false})
+                }
+            }.bind(this));
+
+        } catch (e) {
+
+            this.setState({hasVoted: false})
+        }
+    }
 
 
 
@@ -196,12 +218,12 @@ class Vote extends React.Component {
    * @param  {[int]} id [id of the event the user is selecting]
    */
   click = (optionId) => {
-    if (optionId != null) {
+    if (optionId != null && this.state.token != null) {
 
       let eventId = this.state.event.id;
-      let uid = firebase.auth().currentUser.uid;
+      let tkn = this.state.token;
 
-      castVote(eventId, optionId, uid);
+      castVote(eventId, optionId, tkn);
       this.setState({ hasVoted: true });
       this.setState({ something: true});
       Popup.alert('Your vote has been recieved.\nThanks for voting on this event!')

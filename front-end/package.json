@@ -32,6 +32,7 @@
     "react-moment": "^0.7.0",
     "react-motion": "^0.5.2",
     "react-numeric-input": "^2.2.3",
+    "react-parallax": "^2.0.1",
     "react-player": "^1.6.4",
     "react-popup": "^0.9.3",
     "react-pose": "^2.2.0",
