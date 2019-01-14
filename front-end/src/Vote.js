@@ -217,15 +217,22 @@ class Vote extends React.Component {
    * Click function for when a user selects their choice
    * @param  {[int]} id [id of the event the user is selecting]
    */
-  click = (optionId) => {
+  click = (optionId, i) => {
     if (optionId != null && this.state.token != null) {
 
       let eventId = this.state.event.id;
       let tkn = this.state.token;
 
       castVote(eventId, optionId, tkn);
-      this.setState({ hasVoted: true });
-      this.setState({ something: true});
+
+      this.state.dispersion[i].votes = this.state.dispersion[i].votes + 1;
+      this.state.total_votes = this.state.total_votes + 1;
+      this.setState({
+         hasVoted: true,
+         something: true,
+
+        });
+
       Popup.alert('Your vote has been recieved.\nThanks for voting on this event!')
     }
   }
@@ -236,15 +243,32 @@ class Vote extends React.Component {
    * @param  {[String]} summary [summary of event]
    * @return {[Object]}         [react element of an event]
    */
-  eventComponent = (name, summary, id) => {
+  eventComponent = (name, summary, id, i) => {
+    var s = (size) => {
+      if (size < 600) return '400px'
+      else if (size < 770) return '300px'
+      else if (size < 850) return '580px'
+      else if (size < 1000) return '500px'
+      else if (size < 1300) return '450px'
+      else return '350px'
+    }
+    var h = s(this.state.width)
     if (name != null && summary != null) {
       var size = this.state.eventComponentWidth;
       return (<Col sm={size} md={size} lg={size}>
-        <div className="eventComponent" style={{padding: '10px', backgroundColor: '#A9DBEF', boxShadow: '0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08)', marginBottom: '20px', textAlign: 'center', borderRadius: '7px', fontSize: '12px', }}>
-          <h1 style={{display: 'inline-block', fontWeight: '500'}}>{name}</h1>
+        <div className="eventComponent" style={{padding: '10px', height: h, backgroundColor: '#D4F5F5', boxShadow: '0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08)', marginBottom: '20px', textAlign: 'center', borderRadius: '7px', fontSize: '12px', }}>
+          <h1 style={{display: 'inline-block', fontWeight: '700'}}>{name}</h1>
           <br></br>
-          <p>{summary}</p>
-        <button onClick={() => this.click(id)}>VOTE</button>
+          <p style={{fontSize: '15px', 'letter-spacing': '1px', fontWeight: '550'}}>{summary}</p>
+      <div style={{position: 'absolute',
+                  bottom: '0',
+                  marginTop: '-30px',
+                  marginLeft: '-25px',
+                  marginBottom: '40px',
+                  width: '100%',
+                  height: '-140px',}}>
+                  <button onClick={() => this.click(id, i)}>VOTE</button>
+      </div>
         </div>
       </Col>);
     } else {
@@ -303,7 +327,7 @@ class Vote extends React.Component {
       var eventMap;
 
     if (event) {
-      eventMap = objArray.map(function(event) {
+      eventMap = objArray.map(function(event, i) {
         var firstProp;
         var k;
         for(var key in event) {
@@ -313,14 +337,14 @@ class Vote extends React.Component {
                 break;
             }
         }
-        return this.eventComponent(firstProp.t, firstProp.s, k);
+        return this.eventComponent(firstProp.t, firstProp.s, k, i);
       }.bind(this))
     } else {
       eventMap = <p></p>;
     }
 
     var hasVotedComponent = (
-      <div style={{textAlign: 'center'}}><h4 style={{marginLeft: '20px', display: 'inline-block'}}>You've already voted for this event!</h4></div>
+      <div style={{textAlign: 'center'}}><h3 style={{marginLeft: '20px', display: 'inline-block', fontWeight: '600'}}>You've already voted for this event!</h3></div>
     )
 
     var dynamic_vote_component;
@@ -389,7 +413,6 @@ class Vote extends React.Component {
       eventMap = <div></div>;
     };
 
-
     var createEventComponent_local = (this.state.canCreateEvents == true) ? this.createEventComponent() : (<div></div>);
 
 
@@ -398,9 +421,9 @@ class Vote extends React.Component {
       <div className='myGradientBackground'>
         <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
         <span>
-          <h1 style={{marginLeft: '20px', fontWeight: '500'}}>{event ? ("EVENT: " + event.title) : ""}
+          <h1 style={{marginLeft: '20px', fontWeight: '900'}}>{event ? (event.title) : ""}
           </h1>
-          <p style={{marginLeft: '20px'}}>
+          <p style={{marginLeft: '20px', fontSize: '18px', 'letter-spacing': '1px', fontWeight: '500px'}}>
             {event ? (event.summary) : ""}
           </p>
           {createEventComponent_local}

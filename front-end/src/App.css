@@ -4,6 +4,14 @@ html {
   background-color: #dfedd6;
 
 }
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+.container {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
 div {
   font-family: Thasadith;
 }
@@ -443,6 +451,31 @@ button {
   margin-top: 10px;
 }
 
+.navigationButton {
+  white-space: nowrap;
+  border: 0;
+  outline: 0;
+  display: inline-block;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 14px;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  background-color: #6babc4;
+  text-decoration: none;
+  -webkit-transition: all 150ms ease;
+  transition: all 150ms ease;
+  margin-top: 10px;
+}
+
+.navigationButton2 {
+}
+
 form {
   margin-bottom: 40px;
   padding-bottom: 40px;
@@ -456,6 +489,19 @@ button:hover {
   background-color: #3e819b;
   transform: translateY(-1px);
   box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
+}
+
+.navigationButton:hover {
+  color: #fff;
+  cursor: pointer;
+  background-color: rgb(91,234,165);
+  transform: translateY(-1px);
+  box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
+}
+
+
+.navigationButton2:hover {
+  cursor: pointer;
 }
 
 button::selection {
@@ -772,10 +818,12 @@ input {
     }
 }
 
+
 .fixedAdjacentChild3 {
   width: 240px;
   /* Just so it's visible */
 }
+
 
 #bottomAlign {
     height: 150px;/*Only for the demo.*/
@@ -812,6 +860,96 @@ input {
   transform: translateY(-1px);
 }
 
+
+.link:after {
+    content: ""; /* This is necessary for the pseudo element to work. */
+    display: block; /* This will put the pseudo element on its own line. */
+    margin: 0 auto; /* This will center the border. */
+    height: 50%; /* Change this to whatever width you want. */
+    margin-top: -40%;
+    padding-top: 40px; /* This creates some space between the element and the border. */
+    border-right: 1px solid black; /* This creates the border. Replace black with whatever color you want. */
+}
+.link2:after {
+    content: ""; /* This is necessary for the pseudo element to work. */
+    display: block; /* This will put the pseudo element on its own line. */
+    margin: 0 auto; /* This will center the border. */
+    height: 50%; /* Change this to whatever width you want. */
+    margin-top: -40%;
+    padding-top: 40px; /* This creates some space between the element and the border. */
+    border-right: 1px solid black; /* This creates the border. Replace black with whatever color you want. */
+}
+.link3:after {
+    content: ""; /* This is necessary for the pseudo element to work. */
+    display: block; /* This will put the pseudo element on its own line. */
+    margin: 0 auto; /* This will center the border. */
+    height: 50%; /* Change this to whatever width you want. */
+    margin-top: -40%;
+    padding-top: 40px; /* This creates some space between the element and the border. */
+    border-right: 1px solid black; /* This creates the border. Replace black with whatever color you want. */
+}
+@media (max-width: 985px) {
+  .link:after {
+    margin-top: -44%;
+    padding-top: 10px; /* This creates some space between the element and the border. */
+  }
+  .link2:after {
+    margin-top: -42%;
+    padding-top: 10px; /* This creates some space between the element and the border. */
+  }
+  .link3:after {
+    margin-top: -42%;
+    padding-top: 10px; /* This creates some space between the element and the border. */
+  }
+}
+
+@media (min-width: 986px) {
+  .link:after {
+    margin-top: -43%;
+  }
+  .link2:after {
+    margin-top: -41%;
+  }
+  .link3:after {
+    margin-top: -39%;
+  }
+}
+
+@media (min-width: 1144px) {
+  .link:after {
+    margin-top: -36%;
+  }
+  .link2:after {
+    margin-top: -34%;
+  }
+  .link3:after {
+    margin-top: -32%;
+  }
+}
+
+@media (max-width: 980px){
+  .link:after {
+    padding-top: 10px; /* This creates some space between the element and the border. */
+  }
+  .link2:after {
+    padding-top: 10px; /* This creates some space between the element and the border. */
+  }
+  .link3:after {
+    padding-top: 10px; /* This creates some space between the element and the border. */
+  }
+}
+@media (min-width: 981px){
+  .link:after {
+    padding-top: 20px; /* This creates some space between the element and the border. */
+  }
+  .link2:after {
+    padding-top: 20px; /* This creates some space between the element and the border. */
+  }
+  .link3:after {
+    padding-top: 20px; /* This creates some space between the element and the border. */
+  }
+}
+
 @media (max-width: 768px) {
   .fixedAdjacentChild2 {
     width: 240px;
@@ -821,6 +959,7 @@ input {
     width: 240px;
     margin-left: -3px
   }
+
 
 }
 @media (min-width: 769px) {
@@ -834,6 +973,30 @@ input {
     /* Just so it's visible */
   }
 
+
+
+}
+.blackOnHover {
+  color: black;
+  background-color: white;
+}
+.blackOnHover:hover {
+  color: white;
+  background-image: linear-gradient(90deg, rgba(83,236,152,1) 0%, rgba(76,219,154,1) 49%, rgba(73,213,129,1) 100%);
+}
+.blackOnHover:active {
+  color: white;
+  background-image: linear-gradient(90deg, rgba(83,236,152,1) 0%, rgba(76,219,154,1) 49%, rgba(73,213,129,1) 100%);
+}
+
+.blackOnHover:checked {
+  color: white;
+  background-image: linear-gradient(90deg, rgba(83,236,152,1) 0%, rgba(76,219,154,1) 49%, rgba(73,213,129,1) 100%);
+}
+
+.blackOnHover:focus {
+  color: white;
+  background-image: linear-gradient(90deg, rgba(83,236,152,1) 0%, rgba(76,219,154,1) 49%, rgba(73,213,129,1) 100%);
 }
 
 @media (max-width: 468px) {
@@ -843,4 +1006,8 @@ input {
     margin-left: 3px
   }
 
+}
+
+.nav>li {
+    display: inline-block;
 }

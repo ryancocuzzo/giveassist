@@ -76,7 +76,7 @@
           ".write": "(auth.uid == $uid || newData.parent().parent().parent().child('admins').child(auth.uid).val() == true)"
         },
         "p": {
-          ".write": "newData.parent().parent().parent().child('admins').child(auth.uid).val() == true"
+          ".write": "data.val() != null ? newData.parent().parent().parent().child('admins').child(auth.uid).val() == true : (auth.uid == $uid || newData.parent().parent().parent().child('admins').child(auth.uid).val() == true)"
         }
       }
     },

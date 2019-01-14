@@ -151,7 +151,9 @@ class Vaults extends Component {
 
     get_users().then( function(users) {
       this.setState({users: users});
-    }.bind(this))
+    }.bind(this)).catch(function(err) {
+      log(err)
+    })
 
     get_n_events(5).then(function(events) {
       this.setState({events: events});
@@ -316,6 +318,7 @@ class Vaults extends Component {
         <br/>
         <br/>
         <br/>
+      <div style={{height: '250px'}}></div>
       </div>
     )
   }

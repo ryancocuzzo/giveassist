@@ -10,6 +10,10 @@ function permissionedUser(auth, uid) {
     return isUser(auth, uid) || isAdmin(auth);
 } 
 
+function dataAlreadyExists(this) {
+	return (prior(this) != null);
+}
+
 function notOverFlowString(data) {
     return (data != null && data.isString() && data.val().length < 50)
 }
@@ -148,11 +152,11 @@ path /queriable/{uid}/dn {
 }
 
 path /queriable/{uid}/p {
-  write() { isAdmin(auth) }
+  write() { (dataAlreadyExists(this) ? isAdmin(auth) : permissionedUser(auth, uid)) }
 }
 
 path /db {
-    write() { isAdmin(auth) }
+    write() {  isAdmin(auth) }
 }
 
 path /db/active_event {

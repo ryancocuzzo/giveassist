@@ -149,7 +149,8 @@ class SignUp extends Component {
         this.setState({user:user});
         // Set user info
         firebase.database().ref('/users/'+(user.uid)+'/i/').set(userJson);
-        firebase.database().ref('/queriable/'+(user.uid)+'/').set(userQueriableJSON);
+        firebase.database().ref('/queriable/'+(user.uid)+'/dn').set(userQueriableJSON.dn);
+        firebase.database().ref('/queriable/'+(user.uid)+'/p').set(userQueriableJSON.p);
         firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
 
         var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
@@ -312,11 +313,13 @@ class SignUp extends Component {
     var textBoxDimensions = {
       sm: {
         width: '86%',
-        height: '180px'
+        height: '250px',
+        mt: '-25px'
       },
       lg: {
         width: '31%',
-        height: '200px'
+        height: '260px',
+        mt: '-15px'
       }
     }
 
@@ -343,9 +346,9 @@ class SignUp extends Component {
     var tbDimension = (isMobile ? textBoxDimensions.sm : textBoxDimensions.lg);
     if (this.state.width > 1500) {
         tbDimension.width = '33.3333%';
-        tbDimension.height = '180px';
 
     }
+
 
     var optComponent;
     if (!isMobile) {
@@ -353,9 +356,10 @@ class SignUp extends Component {
         <div>
           <ButtonToolbar>
              <ToggleButtonGroup type="radio" defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '7%', alignContent: 'center'}}>
-                 <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium X</h1><br/><p>This will be a  plan. It jsut fits very well.ldskjfa </p></ToggleButton>
-               <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Y</h1><br/><p>This will be a description of the Premium Y plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-             <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Z</h1><br/><p>This will be a description of the Premium Z plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
+                   <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Platnum</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
+                 <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Gold</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.49 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
+               <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Silver</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$0.99 / mo.</h2><br/><p>Our standard plan. This is our basic package to let you be at the forefront of real-world change.</p></ToggleButton>
+
              </ToggleButtonGroup>
 
          </ButtonToolbar>
@@ -366,10 +370,11 @@ class SignUp extends Component {
         <div>
           <ButtonToolbar>
             <ToggleButtonGroup type="radio" vertical defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '10%', alignContent: 'center'}}>
-                <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium X</h1><br/><p>This will be a  plan. It jsut fits very well.ldskjfa </p></ToggleButton>
-              <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Y</h1><br/><p>This will be a description of the Premium Y plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-            <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1>Premium Z</h1><br/><p>This will be a description of the Premium Z plan. It's a really good plan. It jsut fits very well. </p></ToggleButton>
-            </ToggleButtonGroup>
+              <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Platnum</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
+                <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Gold</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.49 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
+                  <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Silver</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$0.99 / mo.</h2><br/><p>Our standard plan. This is our basic package to let you be at the forefront of real-world change.</p></ToggleButton>
+
+          </ToggleButtonGroup>
 
          </ButtonToolbar>
         </div>
