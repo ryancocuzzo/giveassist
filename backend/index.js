@@ -310,7 +310,7 @@ var createSubscription = async (firebase_user_token, planName) => {
 
                             log('Got subscription!')
                             root.ref('/users/' + uid + '/sub/').set(subscription.id);
-                            root.ref('/queriable/'+(user.uid)+'/p').set(planName);
+                            root.ref('/queriable/'+uid+'/p').set(planName);
                             resolve(subscription.id)
                           } else {
                             reject(err);
