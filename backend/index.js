@@ -590,8 +590,11 @@ app.post('/event_log', async function(request, response) {
 
             log('Finished processing charge!');
                 
+            response.send("Done processing!");
+                
             } else {
                 log('Caught duplicate for user ' + uid + ' on event ' + active_event);
+                response.send("Not sure it worked!!!");
             }
 
             
@@ -624,7 +627,7 @@ app.post('/event_log', async function(request, response) {
         }
         
     }else {
-        
+        response.send("You good! Nothing happened though!");
     }
     
 });
@@ -664,8 +667,6 @@ app.get('/changePaymentSource', async (req,res) => {
                   }
             }); 
             
-            
-
         } else {
             log('No decoded token!')
             res.send(new Error('No decoded token!'));
