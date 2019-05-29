@@ -44,15 +44,13 @@ function validateEmail(email) {
 return email.matches(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
 }
 
-function testUserInfo(b,dn,e,g,j,n,p) {
+function testUserInfo(n,e,p,dn,j) {
     return (
-        (notOverFlowString(b) && isValidDate(b) && testDate(b)) &&
-        (notOverFlowString(dn) && dn.length >= 5) && 
-        (notOverFlowString(e) && validateEmail(e)) &&
-        (notOverFlowString(g)) &&
-        (notOverFlowString(j) && isValidDate(j)) && 
         (notOverFlowString(n)) &&
-        (notOverFlowString(p) && isPlan(p))
+        (notOverFlowString(e) && validateEmail(e)) &&
+        (notOverFlowString(p) && isPlan(p)) &&
+        (notOverFlowString(dn) && dn.length >= 5) && 
+        (notOverFlowString(j) && isValidDate(j))
     );
 }
 
@@ -89,14 +87,12 @@ function validateUserVotePush(amountDonated, eventId, votedId ) {
 */
 
 type UserInfo {
-  validate() { testUserInfo(this.b,this.dn,this.e,this.g,this.j,this.n,this.p) }
-  b: String,
- dn: String,
+  validate() { testUserInfo(this.n,this.e,this.p,this.dn,this.j) }
+  n: String,
  e: String,
- g: String,
- j: String,
- n: String,
  p: String,
+ dn: String,
+ j: String
 }
 
 path /admins/{uid} {

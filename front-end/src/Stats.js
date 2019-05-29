@@ -19,8 +19,6 @@ var moneyFormat = (number) => {
   return numeral(number).format('$0,0.00');
 }
 
-
-
 let server_urls = variables.server_urls;
 
 class Stats extends React.Component {
@@ -340,7 +338,7 @@ class Stats extends React.Component {
                   action: function () {
                       /** Close this popup. Close will always close the current visible one, if one is visible */
                       Popup.close();
-                  }
+                  }.bind(this)
               }],
               right: [ {
                   text: 'Confirm',
@@ -351,10 +349,10 @@ class Stats extends React.Component {
 
                       /** Close this popup. Close will always close the current visible one, if one is visible */
                       Popup.close();
-                  }
+                  }.bind(this)
               }]
           }
-      }.bind(this));
+      });
     }
 
    changePaymentSource = (paymentToken) => {
@@ -434,16 +432,13 @@ class Stats extends React.Component {
         mt: '-25px'
       },
       lg: {
-        width: '31%',
+        width: '350px',
         height: '260px',
         mt: '-15px'
       }
     }
     var tbDimension = (isMobile ? textBoxDimensions.sm : textBoxDimensions.lg);
-    if (this.state.width > 1500) {
-        tbDimension.width = '33.3333%';
 
-    }
 
     var fontSize = 22;
     var col_width_wide = 150;
@@ -473,10 +468,8 @@ class Stats extends React.Component {
         <div>
           <ButtonToolbar>
              <ToggleButtonGroup type="radio" defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '7%', alignContent: 'center'}}>
-                   <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Platnum</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
-                 <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Gold</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.49 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
-               <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Silver</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$0.99 / mo.</h2><br/><p>Our standard plan. This is our basic package to let you be at the forefront of real-world change.</p></ToggleButton>
-
+                   <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium X</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$3.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
+                 <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium Y</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
              </ToggleButtonGroup>
 
          </ButtonToolbar>
@@ -487,10 +480,8 @@ class Stats extends React.Component {
         <div>
           <ButtonToolbar>
             <ToggleButtonGroup type="radio" vertical defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '10%', alignContent: 'center'}}>
-              <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Platnum</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
-            <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Gold</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.49 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
-                  <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Silver</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$0.99 / mo.</h2><br/><p>Our standard plan. This is our basic package to let you be at the forefront of real-world change.</p></ToggleButton>
-
+              <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium X</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$3.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
+            <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium Y</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
           </ToggleButtonGroup>
 
          </ButtonToolbar>
@@ -604,9 +595,6 @@ class Stats extends React.Component {
                   <br />
                 </div>
 
-
-
-
           </div>
 
             <StripeProvider apiKey="pk_test_eDgW1qWOGdRdCnIQocPje0Gg">
@@ -624,7 +612,6 @@ class Stats extends React.Component {
                 (
                   <div></div>
                 )
-
 
               }
 
@@ -665,7 +652,14 @@ class Stats extends React.Component {
           }
 
             <button style={{marginLeft: '30px', marginTop: '10px'}} onClick={() => this.changeEditing()}>{(this.state.isEditingInfo ? 'DONE' : 'EDIT')}</button>
+            <br/>
+              <div style={{textAlign: 'center'}}>
+                <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
+                  <br/>
+                    <br/>
+                      <br/>
 
+              </div>
             <div style={{width: '100%', height: bottomMargin}}></div>
           </div>
         </Col>

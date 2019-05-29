@@ -65,7 +65,19 @@ class SignUp extends Component {
 
   }
 
+  scrollToTop = () => {
+      window.scrollTo({
+          top:0,
+          behavior: "smooth" // optional
+      });
+  };
+
   selectedPlan = (plan) => {
+    this.state.hover1 = false;
+    this.state.hover2 = false;
+    this.state.hover3 = false;
+
+
     console.log(plan)
     this.setState({plan: plan});
 
@@ -101,20 +113,20 @@ class SignUp extends Component {
     let passIsOk = this.state.password != null && this.state.password.length >= 6;
     let displayNameIsOk = this.state.displayName != null && this.state.displayName.length >= 5;
     if (!nameIsOk)
-      Popup.alert('Please check your name, it doesn\n appear to be valid!')
+      Popup.alert('Please check your name, it doesn\'t\n appear to be valid!')
     else if (!emailIsOk)
-    Popup.alert('Please check your email, it doesn\n appear to be valid!')
-    else if (!dobIsOk)
-    Popup.alert('Please check your date of birth, it doesn\n appear to be valid!')
-    else if (!genderIsOk)
-    Popup.alert('Please check your gender, it doesn\n appear to be selected!')
+    Popup.alert('Please check your email, it doesn\'t\n appear to be valid!')
+    // else if (!dobIsOk)
+    // Popup.alert('Please check your date of birth, it doesn\'t\n appear to be valid!')
+    // else if (!genderIsOk)
+    // Popup.alert('Please check your gender, it doesn\'t\n appear to be selected!')
     else if (!passIsOk)
-    Popup.alert('Please check your password, it doesn\n appear to be valid!')
+    Popup.alert('Please check your password, it doesn\'t\n appear to be valid!')
     else if (!planIsOk)
-    Popup.alert('Please check your plan, it doesn\n appear to be selected!')
+    Popup.alert('Please check your plan, it doesn\'t\n appear to be selected!')
     else if (!displayNameIsOk)
-    Popup.alert('Please check your display name, it doesn\n appear to be valid!')
-    if (nameIsOk && emailIsOk && dobIsOk && genderIsOk && planIsOk && passIsOk && displayNameIsOk)
+    Popup.alert('Please check your display name, it doesn\'t\n appear to be valid!')
+    if (nameIsOk && emailIsOk && planIsOk && passIsOk && displayNameIsOk)
       return true;
     else
       return false;
@@ -131,8 +143,6 @@ class SignUp extends Component {
         var userJson = {
           n: this.state.name,
           e: this.state.email,
-          b: this.state.dob,
-          g: this.state.gender,
           p: this.state.plan,
           dn: this.state.displayName,
           j: moment().format('LL')
@@ -147,15 +157,16 @@ class SignUp extends Component {
         var user = await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password);
         user = user.user;
         this.setState({user:user});
+        this.scrollToTop();
         // Set user info
         firebase.database().ref('/users/'+(user.uid)+'/i/').set(userJson);
         firebase.database().ref('/queriable/'+(user.uid)+'/dn').set(userQueriableJSON.dn);
-        firebase.database().ref('/queriable/'+(user.uid)+'/p').set(userQueriableJSON.p);
         firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
 
         var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
         var paymentToken = tokenId;
         var plan = this.state.plan;
+
 
         axios.get(server_urls.createStripeUser, {params: {
           idToken: idToken,
@@ -187,6 +198,9 @@ class SignUp extends Component {
         }.bind(this))
       } catch (e) {
         var user = firebase.auth().currentUser;
+        Popup.Create();
+        firebase.database().ref('/users/'+(user.uid)).set(null);
+        firebase.database().ref('/queriable/'+(user.uid)).set(null);
         if (user) {
           user.delete().then(function() {
             // User deleted.
@@ -317,7 +331,7 @@ class SignUp extends Component {
         mt: '-25px'
       },
       lg: {
-        width: '31%',
+        width: '350px',
         height: '260px',
         mt: '-15px'
       }
@@ -344,10 +358,7 @@ class SignUp extends Component {
     }
 
     var tbDimension = (isMobile ? textBoxDimensions.sm : textBoxDimensions.lg);
-    if (this.state.width > 1500) {
-        tbDimension.width = '33.3333%';
 
-    }
 
 
     var optComponent;
@@ -356,10 +367,8 @@ class SignUp extends Component {
         <div>
           <ButtonToolbar>
              <ToggleButtonGroup type="radio" defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '7%', alignContent: 'center'}}>
-                   <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Platnum</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
-                 <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Gold</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.49 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
-               <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Silver</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$0.99 / mo.</h2><br/><p>Our standard plan. This is our basic package to let you be at the forefront of real-world change.</p></ToggleButton>
-
+                   <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium X</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$3.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
+                 <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium Y</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
              </ToggleButtonGroup>
 
          </ButtonToolbar>
@@ -370,10 +379,8 @@ class SignUp extends Component {
         <div>
           <ButtonToolbar>
             <ToggleButtonGroup type="radio" vertical defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '10%', alignContent: 'center'}}>
-              <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Platnum</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
-                <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Gold</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.49 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
-                  <ToggleButton value='Premium Z' onClick={() => this.selectedPlan('Premium Z')} onMouseEnter={() => this.toggleHover(3)} onMouseLeave={() => this.toggleHover(3)} style={{background: c3,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Silver</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$0.99 / mo.</h2><br/><p>Our standard plan. This is our basic package to let you be at the forefront of real-world change.</p></ToggleButton>
-
+              <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium X</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$3.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
+            <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium Y</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
           </ToggleButtonGroup>
 
          </ButtonToolbar>
@@ -399,6 +406,13 @@ class SignUp extends Component {
     return (
       <div style={{ fontSize: '12px'}} className='myGradientBackground'>
       <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
+
+        <Popup />
+          <div style={{textAlign: 'center'}}>
+            <Link to={urls.home} style={{fontSize: '22px', fontWeight: 'bold', height: '40px'}}>
+              <button style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: '100px', backgroundColor: 'transparent'}} > HOME </button>
+            </Link><br></br>
+        </div>
 
       <h1 style={{marginLeft: '20px', fontSize: '40px'}}>Join</h1><br/>
 
@@ -481,45 +495,53 @@ class SignUp extends Component {
             <br />
           </div>
 
-        <div style={{color: 'black', fontWeight: '400'}} className='adjacentItemsParent' style={{marginTop: '10px', marginRight: '5px'}}>
-          <h3 style={{color: 'black', fontWeight: '400', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-13)+'px'}} className='fixedAdjacentChild'>DOB</h3><br/>
+          {/*
 
-        <Datetime isValidDate={ valid } onChange={this.datePicked} timeFormat={false} inputProps={{ marginRight: '10px',borderRadius: '5px', placeholder: 'Please select your DOB', readonly: 'true',  style: {width: '250px', fontWeight: '450',marginTop: '9px', textAlign: 'center', backgroundColor: '#f4fbff', color: 'black', fontWeight: '450', boxShadow: '4px 4px 4px grey'}}}/>
-          <br />
-        </div>
+            SUCKS THAT  WE CAN'T USE!!!!! -> UX SHITT
 
-        <div className='adjacentItemsParent' style={{marginTop: '0px', color: 'black', fontWeight: '400'}}>
-          <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-15)+'px'}} className='fixedAdjacentChild'>GENDER</h3><br/>
-        <ButtonToolbar className='flexibleAdjacentChild' style={{marginTop:"-5px", width: '200px', fontWeight: '400' }}>
-                <DropdownButton
-                  drop='right'
-                  variant="secondary"
-                  title={(this.state.gender != '' ? this.state.gender : 'Please select your gender.')}
-                  key='gender'
-                  value={this.state.gender}
-                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'e3eff4', boxShadow: '4px 4px 4px grey', marginRight: '10px', borderRadius: '5px',fontWeight: '800'}}
-                  className='DropdownButton'
-                >
-                  <MenuItem eventKey="Male" onClick={this.selectedGender.bind(this, "Male")}>Male</MenuItem>
-                  <MenuItem eventKey="Female" onClick={this.selectedGender.bind(this, "Female")}>Female</MenuItem>
-                  <MenuItem eventKey="Other" onClick={this.selectedGender.bind(this, "Other")}>Other</MenuItem>
-                  <MenuItem eventKey="Rather not choose" onClick={this.selectedGender.bind(this, "Rather not choose")}>Rather not choose</MenuItem>
-                </DropdownButton>
-            </ButtonToolbar>
-          <br />
-        </div>
+            <div style={{color: 'black', fontWeight: '400'}} className='adjacentItemsParent' style={{marginTop: '10px', marginRight: '5px'}}>
+              <h3 style={{color: 'black', fontWeight: '400', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-13)+'px'}} className='fixedAdjacentChild'>DOB</h3><br/>
 
-        <div className='adjacentItemsParent' style={{marginTop: '-5px'}}>
-          <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PICTURE</h3><br/>
-          <div class="upload-btn-wrapper" style={{  borderRadius: '3px'}} onMouseEnter={() => this.toggleHover(4)} onMouseLeave={() => this.toggleHover(4)}>
-            <button style={{height: '35px',background: c4, width: '250px'}} >{this.state.picture == null ? 'UPLOAD' : 'UPLOADED'}</button>
-            <input type="file" name="im-a-file" onChange={ (e) => this.profilePictureSelected(e.target.files) } style={{  boxShadow: '4px 4px 0px grey'}}/>
-          </div>
-          <div id="container">
-            <h2 style={{marginLeft: '10px', height: '35px', marginTop: '30px', marginRight: '10px'}}>{this.state.picture != null ? '👍' : '👎'}</h2>
-          </div>
+            <Datetime isValidDate={ valid } onChange={this.datePicked} timeFormat={false} inputProps={{ marginRight: '10px',borderRadius: '5px', placeholder: 'Please select your DOB', readonly: 'true',  style: {width: '250px', fontWeight: '450',marginTop: '9px', textAlign: 'center', backgroundColor: '#f4fbff', color: 'black', fontWeight: '450', boxShadow: '4px 4px 4px grey'}}}/>
+              <br />
+            </div>
 
-        </div>
+            <div className='adjacentItemsParent' style={{marginTop: '0px', color: 'black', fontWeight: '400'}}>
+              <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-15)+'px'}} className='fixedAdjacentChild'>GENDER</h3><br/>
+            <ButtonToolbar className='flexibleAdjacentChild' style={{marginTop:"-5px", width: '200px', fontWeight: '400' }}>
+                    <DropdownButton
+                      drop='right'
+                      variant="secondary"
+                      title={(this.state.gender != '' ? this.state.gender : 'Please select your gender.')}
+                      key='gender'
+                      value={this.state.gender}
+                      style={{width: '250px', backgroundColor: '#f4fbff', color: 'e3eff4', boxShadow: '4px 4px 4px grey', marginRight: '10px', borderRadius: '5px',fontWeight: '800'}}
+                      className='DropdownButton'
+                    >
+                      <MenuItem eventKey="Male" onClick={this.selectedGender.bind(this, "Male")}>Male</MenuItem>
+                      <MenuItem eventKey="Female" onClick={this.selectedGender.bind(this, "Female")}>Female</MenuItem>
+                      <MenuItem eventKey="Other" onClick={this.selectedGender.bind(this, "Other")}>Other</MenuItem>
+                      <MenuItem eventKey="Rather not choose" onClick={this.selectedGender.bind(this, "Rather not choose")}>Rather not choose</MenuItem>
+                    </DropdownButton>
+                </ButtonToolbar>
+              <br />
+            </div>
+
+            <div className='adjacentItemsParent' style={{marginTop: '-5px'}}>
+              <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PICTURE</h3><br/>
+              <div class="upload-btn-wrapper" style={{  borderRadius: '3px'}} onMouseEnter={() => this.toggleHover(4)} onMouseLeave={() => this.toggleHover(4)}>
+                <button style={{height: '35px',background: c4, width: '250px'}} >{this.state.picture == null ? 'UPLOAD' : 'UPLOADED'}</button>
+                <input type="file" name="im-a-file" onChange={ (e) => this.profilePictureSelected(e.target.files) } style={{  boxShadow: '4px 4px 0px grey'}}/>
+              </div>
+              <div id="container">
+                <h2 style={{marginLeft: '10px', height: '35px', marginTop: '30px', marginRight: '10px'}}>{this.state.picture != null ? '👍' : '👎'}</h2>
+              </div>
+
+            </div>
+
+            */}
+
+
 
         <h1 style={{marginLeft: '20px'}}>Select your plan.</h1><br/>
 
@@ -537,6 +559,13 @@ class SignUp extends Component {
      </StripeProvider>
 
      <br />
+       <div style={{textAlign: 'center'}}>
+         <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
+           <br/>
+             <br/>
+               <br/>
+
+       </div>
         <br />
       <br />
 

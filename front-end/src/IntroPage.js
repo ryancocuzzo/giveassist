@@ -7,6 +7,7 @@ import TypeWriter from 'react-typewriter';
 import imgs from './ImgFactory.js';
 import { Parallax, Background } from 'react-parallax';
 import Slider, { Range } from 'rc-slider';
+import Popup from 'react-popup';
 import 'rc-slider/assets/index.css';
 import numeral from 'numeral';
 import { DropdownButton, MenuItem, Button, ButtonToolbar, ButtonGroup, Navbar, NavItem, NavDropdown, Nav } from 'react-bootstrap';
@@ -49,7 +50,6 @@ class IntroPage extends Component {
       };
 
 
-
   }
 
 
@@ -72,6 +72,11 @@ class IntroPage extends Component {
           this.setState({navOpacity: formattedOpacity})
 
      }
+
+     Popup.create({
+         title: 'BETA TESTING',
+         content: 'For the month of June we are in a live BETA mode. Nothing changes except we don\'t charge for the month. Live payments turn on July 1st. Enjoy!',
+     });
 
      // this.scrollToMyRef();
 
@@ -179,9 +184,10 @@ dynamicHComponent = (txt, size) => {
   navigationBar = (margin, textSizeH) => {
     let marginTop = textSizeH < 4 ? '10px' : (textSizeH < 5 ? '8px' : '10px');
     if (this.state.width >= 770) {
-      return <Navbar expand="xl" fixedTop  collapseOnSelect style={{backgroundColor: this.state.navOpacity, border: 'none', headerStyle: {
+      return <Navbar expand="xl" fixedTop collapseOnSelect style={{backgroundColor: this.state.navOpacity, border: 'none', headerStyle: {
             borderBottomWidth: 0,
-        }}} className='myNavbar'>
+        }}} className='myNavbar' onToggle={this.setNavExpanded}
+                expanded={this.state.navExpanded}>
         <Navbar.Header style={{marginLeft: '', marginTop: '6px'}} pullLeft>
           <img src={imgs.logo_lg} height="50px" className='fixedAdjacentChild' alt="Picture" style={{marginTop: '16px', marginBottom: '20px', marginTop: '20px', borderRadius: '5px'}}></img>
 
@@ -238,14 +244,14 @@ dynamicHComponent = (txt, size) => {
           <Nav pullRight style={{marginTop: marginTop}}>
 
             <ButtonGroup aria-label="Basic example" vertical style={{marginTop: marginTop}}>
-              <div className='navigationButton2' style={{border: 'none', 'letter-spacing': '2px', width: '220px', marginLeft: '10px',height: '50px', marginTop: '-5px'}} value={this.whoWeAre} onClick={this.scrollToWhoWeAre}>
+              <div className='navigationButton2' style={{border: 'none', 'letter-spacing': '2px', width: '220px', marginLeft: '20px',height: '50px', marginTop: '-5px'}} value={this.whoWeAre} onClick={this.scrollToWhoWeAre}>
                 {this.dynamicHComponent('WHO WE ARE',textSizeH)}
               </div>
               <div style={{marginLeft: '10%', width: '90%', marginRight: '10%', height: '3px'}}/>
               <span class="divider"></span>
 
 
-            <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '10px',height: '50px', marginTop: '7px'}} value={this.theProblem} onClick={this.scrollToTheProblem}>
+            <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}} value={this.theProblem} onClick={this.scrollToTheProblem}>
               {this.dynamicHComponent('THE PROBLEM',textSizeH)}
               </div>
               <div style={{marginLeft: '10%', width: '90%', marginRight: '10%', height: '3px'}}/>
@@ -253,14 +259,14 @@ dynamicHComponent = (txt, size) => {
               <span class="divider"></span>
 
 
-            <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '10px',height: '50px', marginTop: '7px'}} value={this.theSolution} onClick={this.scrollToTheSolution}>
+            <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}} value={this.theSolution} onClick={this.scrollToTheSolution}>
                 {this.dynamicHComponent('THE SOLUTION',textSizeH)}
 
               </div>
               <div style={{marginLeft: '10%', width: '90%', marginRight: '10%', height: '3px'}}/>
 
 
-              <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '10px',height: '50px', marginTop: '7px'}} value={this.moneyBreakdown} onClick={this.scrollToMoneyView}>
+            <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}} value={this.moneyBreakdown} onClick={this.scrollToMoneyView}>
                 {this.dynamicHComponent('MONEY',textSizeH)}
               </div>
             </ButtonGroup>
@@ -291,7 +297,7 @@ dynamicHComponent = (txt, size) => {
       sm: {
         mL: '25%',
         width: '50%',
-        fontSize: '70px',
+        fontSize: '50px',
         mb: '20px'
       },
       lg: {
@@ -344,37 +350,55 @@ dynamicHComponent = (txt, size) => {
 
     }
 
+    var buttonsMT = '-5px'
+    if (this.state.width > 900) {
+      textSizeH = 3;
+      buttonsMT = '-15px';
+    } else {
+      buttonsMT = '-5px'
+    }
+
+
+
     let dedection_per_user = dec_numberFormat(this.calcTakeFromEachUser(this.state.someVal));
 
     var sizeAlertButton = <button onCLick={() => alert(this.state.width)}>SIZE</button>;
 
+      var gap = (this.state.width > 770 ? '140px' : '140px')
+      var lh = (this.state.width > 770 ? 0.8 : 1)
+
       var comp = (
-        <div>
-          <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: 1, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>Welcome</h1>
-        <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: 1, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>to the</h1>
-        <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: 1, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize, fontWeight: '900'}}> FUTURE</h1>
-      <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: 1, marginBottom: '10px', fontSize: correct_dim.fontSize}}>of donation.</h1>
+        <div style={{marginBottom: buttonsMT}}>
+          <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>Welcome</h1>
+        <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight:lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>to the</h1>
+        <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize, fontWeight: '900'}}> FUTURE</h1>
+      <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: buttonsMT, fontSize: correct_dim.fontSize}}>of donation.</h1>
         </div>
 
     );
+
+
 
     var welcomeAndButtonsComponent = (
       <div style={{fontSize: '12px', width: '100%'}} className='myGradientBackground'>
           {this.navigationBar(navMarginLeft, textSizeH)}
           <div >
-              <br/><br/><br/><br/><br/>
-            <TypeWriter fixed typing={0.4} style={{margin: '10px', fontSize: correct_dim.fontSize }}>
-              {comp}
+            <div style={{width: '100%', height: gap}}></div>
+          <div style={{margin: '10px', fontSize: correct_dim.fontSize }}>
 
-            </TypeWriter>
+              {comp}
+              <div style={{width: '100%', height: '60px'}}></div>
+
             </div>
+            </div>
+
             <Link to={urls.signUp} style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: correct_dim.mL, width: correct_dim.width}}>
               <button style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: correct_dim.width}} > JOIN </button>
             </Link><br/>
             <Link to={urls.login} style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: correct_dim.mL, width: correct_dim.width}}>
               <button style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: correct_dim.width}} > LOGIN </button>
             </Link><br/>
-          <div style={{width: '100%', height: '200px'}}></div>
+          <div style={{width: '100%', height: '150px'}}></div>
       </div>
       )
 
@@ -386,18 +410,18 @@ dynamicHComponent = (txt, size) => {
             bgImageAlt="Fox"
             strength={800}
             >
-              <div style={{ height: '150px' }} />
+              <div style={{ height: '120px' }} />
             <div style={{color: 'white', textAlign: 'center'}}>
               <h1 style={{color: 'white', display: 'inline-block', width: '100%', 'letter-spacing': '2px'}} >Who we are</h1>
-            <h3 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>Sparknotes version: An easy, inexpensive, subscription-based donation platform.
-                Long version: We are a dynamic link between you and those who need your help. We are a nonprofit donation distribution service that believes
+            <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}><strong>Sparknotes version:</strong> An easy, inexpensive, subscription-based donation platform.
+                <strong> Long version:</strong> We are a dynamic link between you and those who need your help. We are a nonprofit donation distribution service that believes
                 that large buildings are built using many small bricks, that everyone collaborating drives the most change. For only a dollar or two a month, depending on your selected plan,
                 you are immediately a donor contributing to the user-voted most pressing cause of the month (from our handpicked options - more info below).
                 We believe everyone can make a difference in the donation space, and now we are looking to prove it.
-              </h3>
+              </h4>
             </div>
 
-          <div style={{ height: '150px' }} />
+          <div style={{ height: '120px' }} />
 
         </Parallax>
 
@@ -512,57 +536,67 @@ dynamicHComponent = (txt, size) => {
 
     }
 
+    // var moneyAndSliderComponent = (
+    //   <div>
+    //     <div style={{color: 'black', textAlign: 'center'}}>
+    //         <br/>
+    //       <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar quesition...</h1><br/>
+    //         <h2 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2><br/>
+    //       <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We gaurantee that 90% of your money goes directly to its intended recipient.</strong></h4>
+    //
+    //     <br/><br/><br/><br/>
+    //
+    //       {this.state.width > 900 ? (
+    //         <Slider
+    //             min={1}
+    //             max={1000}
+    //             step={1}
+    //             defaultValue={this.state.sliderVal}
+    //             value={(this.state.sliderVal)}
+    //             orientation='horizontal'
+    //             tooltip={true}
+    //             onChange={this.sliderChanged}
+    //             style={{ marginLeft: '10%', height: '100px', width: '80%'}}
+    //             trackStyle={{height: '60px', background: '#249cb5', background: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)', background: '-webkit-linear-gradient(left, #249cb5 0%,#b3ea8f 100%)', background: 'linear-gradient(to right, #249cb5 0%,#b3ea8f 100%)', filter: 'progid:DXImageTransform.Microsoft.gradient( startColorstr=\'#249cb5\', endColorstr=\'#b3ea8f\',GradientType=1 )'}}
+    //             railStyle={{height: '60px'}}
+    //             handleStyle={{height: '100px', width: '100px', marginTop: '-20px', border: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)'}}
+    //           ></Slider>
+    //       ) : (
+    //         <Slider
+    //             min={1}
+    //             max={1000}
+    //             step={1}
+    //             defaultValue={this.state.sliderVal}
+    //             value={(this.state.sliderVal)}
+    //             orientation='horizontal'
+    //             tooltip={true}
+    //             onChange={this.sliderChanged}
+    //             style={{ marginLeft: '15%', height: '100px', width: '70%'}}
+    //             trackStyle={{height: '40px', background: '#249cb5', background: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)', background: '-webkit-linear-gradient(left, #249cb5 0%,#b3ea8f 100%)', background: 'linear-gradient(to right, #249cb5 0%,#b3ea8f 100%)', filter: 'progid:DXImageTransform.Microsoft.gradient( startColorstr=\'#249cb5\', endColorstr=\'#b3ea8f\',GradientType=1 )'}}
+    //             railStyle={{height: '40px'}}
+    //             handleStyle={{height: '70px', width: '70px', marginTop: '-15px', border: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)'}}
+    //           ></Slider>
+    //       )
+    //     }
+    //
+    //
+    //             <h2><strong>{numberFormat(Math.round(this.state.someVal))}</strong> USERS</h2>
+    //           <h2>We deduct {moneyFormat(dedection_per_user)} from each user's donation. </h2>
+    //         <h2>Which would make our monthly net gain: <span style={{marginLeft: '9px', fontWeight: '600', 'letter-spacing': '1px', color: this.calcTotalRevenue(dedection_per_user, Math.round(this.state.someVal)) >= 0 ? 'green' : 'red'}}>{moneyFormat(this.calcTotalRevenue(dedection_per_user, Math.round(this.state.someVal)))}</span></h2>
+    //
+    //           <br/><br/><br/><br/>
+    //         </div>
+    //   </div>
+    //   )
+    //
+
     var moneyAndSliderComponent = (
       <div>
         <div style={{color: 'black', textAlign: 'center'}}>
             <br/>
-          <h1 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar quesition...</h1><br/>
-            <h2 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2><br/>
-            <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> Short answer: To wherever users vote it to.. mostly. (Longer answer) The only hitch
-            in this is that we do have to at least partially cover operating costs of about $99 a month. This is to pay for servers, business/domain fees, and our awesome developers :).
-            We are a nonprofit, so we are, at most, looking to break even. Some rough math should tell you that taking about $1 per user makes this tough, but we are okay taking a loss until
-            our user base can manage to support our operating costs. We will never take more than $0.60 per donation, but that number comes down super quickly as the user base grows even only a little.
-            </h4>
-
-        <br/><br/><br/><br/>
-
-          {this.state.width > 900 ? (
-            <Slider
-                min={1}
-                max={1000}
-                step={1}
-                defaultValue={this.state.sliderVal}
-                value={(this.state.sliderVal)}
-                orientation='horizontal'
-                tooltip={true}
-                onChange={this.sliderChanged}
-                style={{ marginLeft: '10%', height: '100px', width: '80%'}}
-                trackStyle={{height: '60px', background: '#249cb5', background: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)', background: '-webkit-linear-gradient(left, #249cb5 0%,#b3ea8f 100%)', background: 'linear-gradient(to right, #249cb5 0%,#b3ea8f 100%)', filter: 'progid:DXImageTransform.Microsoft.gradient( startColorstr=\'#249cb5\', endColorstr=\'#b3ea8f\',GradientType=1 )'}}
-                railStyle={{height: '60px'}}
-                handleStyle={{height: '100px', width: '100px', marginTop: '-20px', border: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)'}}
-              ></Slider>
-          ) : (
-            <Slider
-                min={1}
-                max={1000}
-                step={1}
-                defaultValue={this.state.sliderVal}
-                value={(this.state.sliderVal)}
-                orientation='horizontal'
-                tooltip={true}
-                onChange={this.sliderChanged}
-                style={{ marginLeft: '15%', height: '100px', width: '70%'}}
-                trackStyle={{height: '40px', background: '#249cb5', background: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)', background: '-webkit-linear-gradient(left, #249cb5 0%,#b3ea8f 100%)', background: 'linear-gradient(to right, #249cb5 0%,#b3ea8f 100%)', filter: 'progid:DXImageTransform.Microsoft.gradient( startColorstr=\'#249cb5\', endColorstr=\'#b3ea8f\',GradientType=1 )'}}
-                railStyle={{height: '40px'}}
-                handleStyle={{height: '70px', width: '70px', marginTop: '-15px', border: '-moz-linear-gradient(left, #249cb5 0%, #b3ea8f 100%)'}}
-              ></Slider>
-          )
-        }
-
-
-                <h2><strong>{numberFormat(Math.round(this.state.someVal))}</strong> USERS</h2>
-              <h2>We deduct {moneyFormat(dedection_per_user)} from each user's donation. </h2>
-            <h2>Which would make our monthly gain/loss: <span style={{marginLeft: '5px', fontWeight: '400', color: this.calcTotalRevenue(dedection_per_user, Math.round(this.state.someVal)) >= 0 ? 'green' : 'red'}}>{moneyFormat(this.calcTotalRevenue(dedection_per_user, Math.round(this.state.someVal)))}</span></h2>
+          <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar quesition...</h1><br/>
+            <h2 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2><br/>
+          <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We gaurantee that 90% of your money goes directly to its intended recipient.</strong></h4>
 
               <br/><br/><br/><br/>
             </div>
@@ -572,14 +606,14 @@ dynamicHComponent = (txt, size) => {
     var closingComponent = (
       <div style={{color: 'black', textAlign: 'center'}}>
         <br/>
-          <h1 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}}>All set? Join and become part of the change.</h1><br/>
+          <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%', 'letter-spacing': '2px', fontWeight: '600'}}>All set? Join and become part of the change.</h1><br/>
             <br/>
               <Link to={urls.signUp} style={{fontSize: '25px', fontWeight: 'bold', height: '40px', width: correct_dim.width}}>
                 <button style={{fontSize: '27px', 'letter-spacing': '2px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: correct_dim.width}} > JOIN </button>
               </Link><br/>
           <br></br>
           <div style={{ height: '200px' }} />
-          <h5 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}}>Copyright @ giveassist LLC 2018.</h5><br/>
+        <h5 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}}>Copyright @ giveassist LLC 2019.</h5><br/>
           <div style={{ height: '50px' }} />
 
       </div>
@@ -603,6 +637,15 @@ dynamicHComponent = (txt, size) => {
         {solutionComponent}
         {moneyAndSliderComponent}
         {closingComponent}
+        <br/>
+
+        <div style={{textAlign: 'center'}}>
+          <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
+            <br/>
+              <br/>
+                <br/>
+
+        </div>
       </div>
     );
   }

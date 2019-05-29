@@ -222,8 +222,8 @@ app.get('/createStripeUser', async (req,res) => {
         if (customer) {
             let customer_id = customer.id;
             if (uid && customer_id) {
-                console.log('UID: ' + uid)
-                console.log('Customer ID: ' + customer_id)
+                console.log('sUID: ' + uid)
+                console.log('sCustomer ID: ' + customer_id)
                 root.ref('/users/' + uid + '/st/id/').set(customer_id)
                 root.ref('/stripe_ids/' + customer_id + '/uid/').set(uid);
                 res.send(customer_id);
@@ -249,13 +249,11 @@ var planIDForName = (name) => {
     log('pIDforName gets ' + name)
     if (name) {
         if (name == 'Premium X') {
-            return 'plan_EFkZOvEIVafjem';
+            return 'plan_F9mzY5SYtinHvc';
         }
         else if (name == 'Premium Y') {
-            return 'plan_EFkayLyiJZhC3a';
-        } else if (name == 'Premium Z') {
-            return 'plan_EFkawavkpzywuN';
-        }  
+            return 'plan_F9myF1XvfL04xa';
+        }
         else {
             console.log('Inavlid plan param: not one of options!')
             return new Error('Invalid plan parameter!');
@@ -272,13 +270,11 @@ var createSubscription = async (firebase_user_token, planName) => {
             var plan;
             if (planName) {
                 if (planName == 'Premium X') {
-                    plan = 'plan_EFkZOvEIVafjem';
+                    plan = 'plan_F9mzY5SYtinHvc';
                 }
                 else if (planName == 'Premium Y') {
-                    plan = 'plan_EFkayLyiJZhC3a';
-                } else if (planName == 'Premium Z') {
-                    plan = 'plan_EFkawavkpzywuN';
-                }  
+                    plan = 'plan_F9myF1XvfL04xa';
+                }
                 else {
                     console.log('Inavlid plan param!')
                     reject(new Error('Invalid plan parameter!'));
@@ -768,6 +764,7 @@ app.get('/deleteUser', async (req,res) => {
                     
                     // Clear firebase references
                     root.ref('/users/' + uid + '/').set(null);
+                    root.ref('/queriable/' + uid + '/').set(null);
                     root.ref('/stripe_ids/' + cust_id + '/').set(null);
                     // Delete user from auth
                     admin.auth().deleteUser(uid)
@@ -830,18 +827,50 @@ var castVote = async (eventId, voteId, userId) => {
                 root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
                 root.ref('/users/' + userId + '/v/' + eventId + '/c').set(voteId);
 
-                let event_ref = root.ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
+                logn("Attempting to cast vote on { " + eventId + ", " + voteId + " }...");
+
+                /*
+                    Cast vote to the place
+                */
+
+                let vote_ref = root.ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
                 let votes = 0;
-                event_ref.once('value').then(function(snapshot, err) {
-                    if (err) { reject(err) }
+                vote_ref.once('value').then(function(snapshot, err) {
+                    if (err) { 
+                        logn("Error on ttl lookup: " + err);
+                        reject(err)
+                     }
                     if (snapshot) {
                       votes = Number(snapshot.val())
                     }
                     votes++;
-                    event_ref.set(votes);
-                    resolve(true)   
+                    vote_ref.set(votes);
+                    logn("Set votes to " + votes);
+
+                    /*
+                        Update event's total as well
+                    */
+
+                    let event_ref = root.ref('/db/events/'+eventId+'/o/ttl');
+                    votes = 0;
+                    event_ref.once('value').then(function(snapshot, err) {
+                        if (err) { 
+                            logn("Error on ttl lookup: " + err);
+                            reject(err)
+                        }
+                        if (snapshot) {
+                        votes = Number(snapshot.val())
+                        }
+                        votes++;
+                        event_ref.set(votes);
+                        resolve(true)   
+                    });
+
                 });
+
+                
             } else {
+                logn("\nUser has already voted.")
                 reject(new Error('It seems you have already voted'));
             }
 
@@ -890,6 +919,8 @@ var getRandomEmail = () => {
     return randomString + emailTag;
 }
 
-
+// eventId = '-LUZFB34udESrmnBrQHn'
+// voteId = ''
+// root.ref('/db/events/'+eventId+'/o/'+voteId+'/ttl').set(999);
 
 app.listen(port, () => console.log('Server running on port '+ port + '!\n'))

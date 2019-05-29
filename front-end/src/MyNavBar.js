@@ -268,7 +268,7 @@ class MyNavBar extends Component {
             </Link>
             <Link to={urls.vote} >
               <button  className='navigationButton' style={{border: 'none', marginRight: '0px',height: '50px'}}  onClick={this.closeNav}>
-                {this.dynamicHComponent('STATS',textSizeH)}
+                {this.dynamicHComponent('VOTE',textSizeH)}
               </button>
             </Link>
             </ButtonGroup>
@@ -297,14 +297,14 @@ class MyNavBar extends Component {
 
             <ButtonGroup aria-label="Basic example" vertical style={{marginTop: marginTop}}>
 
-              <div className='navigationButton2' style={{border: 'none', 'letter-spacing': '2px', width: '220px', marginLeft: '10px',height: '50px', marginTop: '-5px'}} onClick={this.logout}>
+              <div className='navigationButton2' style={{border: 'none', 'letter-spacing': '2px', width: '220px', marginLeft: '20px',height: '50px', marginTop: '-5px'}} onClick={this.logout}>
                 {this.dynamicHComponent('LOGOUT',textSizeH)}
               </div>
               <div style={{marginLeft: '10%', width: '90%', marginRight: '10%', height: '3px'}}/>
               <span class="divider"></span>
 
               <Link to={urls.vaults} >
-                <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '10px',height: '50px', marginTop: '7px'}}  onClick={this.closeNav}>
+                <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}}  onClick={this.closeNav}>
                   {this.dynamicHComponent('VAULTS',textSizeH)}
                 </div>
               </Link>
@@ -313,14 +313,14 @@ class MyNavBar extends Component {
               <span class="divider"></span>
 
                 <Link to={urls.stats} >
-                  <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '10px',height: '50px', marginTop: '7px'}}  onClick={this.closeNav}>
+                  <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}}  onClick={this.closeNav}>
                     {this.dynamicHComponent('INFO',textSizeH)}
                   </div>
                 </Link>
               <div style={{marginLeft: '10%', width: '90%', marginRight: '10%', height: '3px'}}/>
 
               <Link to={urls.vote}>
-              <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '10px',height: '50px', marginTop: '7px'}}  onClick={this.closeNav}>
+              <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}}  onClick={this.closeNav}>
                 {this.dynamicHComponent('VOTE',textSizeH)}
               </div>
               </Link>

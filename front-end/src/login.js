@@ -13,6 +13,7 @@ import firebase, { auth, provider } from './firebase.js';
 import * as util from 'util' // has no default export
 import { inspect } from 'util' // or directly
 import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo} from './Database.js';
+let urls = variables.local_urls;
 
 
 class Login extends React.Component {
@@ -33,7 +34,6 @@ class Login extends React.Component {
     window.history.pushState(null, '', '/login')
 
   }
-
 
     componentDidMount() {
       window.addEventListener("resize", function(event) {
@@ -80,14 +80,14 @@ class Login extends React.Component {
 
     var fontSize = '20px';
     var col_width_wide = '150px';
-    var bottomMargin = '400px';
+    var bottomMargin = '800px';
     var leftMargin = '40px';
     var topMargin = 32;
 
     if (this.state.width < 700) {
       fontSize = '17px';
       col_width_wide = '100px';
-      bottomMargin = '200px';
+      bottomMargin = '800px';
       leftMargin = '35px';
     }
 
@@ -103,6 +103,11 @@ class Login extends React.Component {
             <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
 
             <Popup />
+              <div style={{textAlign: 'center'}}>
+                <Link to={urls.home} style={{fontSize: '22px', fontWeight: 'bold', height: '40px'}}>
+                  <button style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: '100px', backgroundColor: 'transparent'}} > HOME </button>
+                </Link><br></br>
+            </div>
 
           <h1 style={{marginLeft: '20px', fontSize: '40px'}}>LOGIN</h1><br/>
 
@@ -149,6 +154,15 @@ class Login extends React.Component {
 
             <hr/>
           <button style={{marginLeft: '50px'}} onClick={() => this.login()}>LOGIN</button>
+          <br/>
+
+            <div style={{textAlign: 'center'}}>
+              <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
+                <br/>
+                  <br/>
+                    <br/>
+
+            </div>
         <div style={{width: '100%', height: bottomMargin}}></div>
           </div>
 

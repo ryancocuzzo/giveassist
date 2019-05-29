@@ -432,6 +432,14 @@ class Vote extends React.Component {
         </span>
         {dispersedComponent}
         <br/>
+          <div style={{textAlign: 'center'}}>
+            
+            <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
+              <br/>
+                <br/>
+                  <br/>
+
+          </div>
         <br/>
         <br/>
         <br/>

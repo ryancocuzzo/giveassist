@@ -318,7 +318,14 @@ class Vaults extends Component {
         <br/>
         <br/>
         <br/>
-      <div style={{height: '250px'}}></div>
+          <div style={{textAlign: 'center'}}>
+            <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
+              <br/>
+                <br/>
+                  <br/>
+
+          </div>
+      <div style={{height: '210px'}}></div>
       </div>
     )
   }
