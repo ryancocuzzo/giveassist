@@ -390,9 +390,9 @@ class Vote extends React.Component {
     var percentageCalc = (count) => {
       if (total_votes != 0) {
         var p = (count *1.0 / total_votes);
-        p = Math.round(p * 100) / 100;
+        p = Math.round(Math.round(p * 100) / 100);
         if (p == 1) return '100%';
-        else return (p + '%');
+        else return (100*p + '%');
       } else {
         return '';
       }
@@ -433,7 +433,7 @@ class Vote extends React.Component {
         {dispersedComponent}
         <br/>
           <div style={{textAlign: 'center'}}>
-            
+
             <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
               <br/>
                 <br/>

@@ -188,7 +188,7 @@ dynamicHComponent = (txt, size) => {
             borderBottomWidth: 0,
         }}} className='myNavbar' onToggle={this.setNavExpanded}
                 expanded={this.state.navExpanded}>
-        <Navbar.Header style={{marginLeft: '', marginTop: '6px'}} pullLeft>
+        <Navbar.Header style={{marginLeft: '', marginTop: '10px'}} pullLeft>
           <img src={imgs.logo_lg} height="50px" className='fixedAdjacentChild' alt="Picture" style={{marginTop: '16px', marginBottom: '20px', marginTop: '20px', borderRadius: '5px'}}></img>
 
             <Navbar.Toggle className='blackOnHover' style={{height: '50px'}}>
@@ -521,7 +521,7 @@ dynamicHComponent = (txt, size) => {
                 <br/>
 
               <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
-                Every month the cumulative funds raised go to an important cuase at that time in specific. So every donor can rest assured that they are making real, important change.
+                Every month the cumulative funds raised go to an important cause at that time in specific. So every donor can rest assured that they are making real, important change.
               </h4>
               </Col>
           </Row>
@@ -594,9 +594,9 @@ dynamicHComponent = (txt, size) => {
       <div>
         <div style={{color: 'black', textAlign: 'center'}}>
             <br/>
-          <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar quesition...</h1><br/>
+          <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar question...</h1><br/>
             <h2 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2><br/>
-          <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We gaurantee that 90% of your money goes directly to its intended recipient.</strong></h4>
+          <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We guarantee that 90% of your money goes directly to its intended recipient.</strong></h4>
 
               <br/><br/><br/><br/>
             </div>
@@ -618,6 +618,27 @@ dynamicHComponent = (txt, size) => {
 
       </div>
       );
+
+      var faq_q = (question, answer) => (
+        <div>
+          <h3 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}> {question} </h3>
+        ` `<br/>
+      <h5 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> {answer} </h5>
+      <br/>
+        </div>
+      );
+
+      var faq = (
+        <div style={{color: 'black', textAlign: 'center'}}>
+            <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>FAQ</h1>
+          {faq_q('Who are you guys and what do you do?', 'We are a service that allows you to focus on what’s important in your life, while taking an interest in what’s important to the world. We streamline the donation process to only a click a month - from your phone!')}
+          {faq_q('Why are you different than what exists?','There are a few different things that makes us stand out in the donation space. The first being we are a subscription-based model, allowing for you to make a difference without manual action. Secondly, we vary where the money is donated, each time to a cause that is relevant at the moment, helping us make the greatest impact possible. Lastly, we built our pricing structure to accommodate all different demographics, which we believe is the cornerstone of our model. We believe everyone can be impactful.')}
+          {faq_q('Why should I sign up if I can just donate myself?','You are, we’re just helping you out! Through our service, you are donating to each cause, but life gets in the way! Sometimes you may forget to donate, or not have time to research where to donate to, and that’s where we come in. We do these things for you, and make this process super easy!')}
+          {faq_q('How are the causes for each month chosen?','We use our proprietary, custom-built web-scraping technology to do the hard researching for us and, from there, we handpick the causes we feel are most important, recent, and relevant. We factor in the amount of attention a cause is receiving, the magnitude of the cause, and the recency of the emergence of the cause.')}
+          {faq_q('Where does the other 9% go?','We have operating costs to run the company! We have a bunch of different kinds of expenses (servers, namespaces,  marketing, business tools & essentials, employees, etc. ).')}
+        </div>
+      );
+
     //
     // return (
     //   <div>
@@ -636,6 +657,8 @@ dynamicHComponent = (txt, size) => {
         {problemComponent}
         {solutionComponent}
         {moneyAndSliderComponent}
+        {faq}
+
         {closingComponent}
         <br/>
 

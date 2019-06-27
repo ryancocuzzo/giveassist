@@ -35,7 +35,7 @@ class SignUp extends Component {
         hover3: false,
         hover4: false,
 
-        displayName: '',
+        displayName: this.makeid(),
         width: document.body.clientWidth
       };
 
@@ -72,6 +72,8 @@ class SignUp extends Component {
       });
   };
 
+
+
   selectedPlan = (plan) => {
     this.state.hover1 = false;
     this.state.hover2 = false;
@@ -89,6 +91,17 @@ class SignUp extends Component {
     }
     console.log(this.state.activeButton);
   }
+
+   makeid = () => {
+    var length = 15;
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
 
   handleChange = (value, formattedValue) => {
       this.setState({
@@ -134,6 +147,7 @@ class SignUp extends Component {
 
   signUpUser = async (tokenId) => {
     console.log('Signing up user');
+    // Popup.alert('Signing up..');
     // Validate form
     if (this.formIsValid()) {
       try {
@@ -154,16 +168,22 @@ class SignUp extends Component {
         };
 
         let createUser = await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password);
+        console.log('Hey devs, was able to create user!');
         var user = await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password);
+        console.log('Hey devs, was able to log in user!');
         user = user.user;
         this.setState({user:user});
         this.scrollToTop();
         // Set user info
         firebase.database().ref('/users/'+(user.uid)+'/i/').set(userJson);
+        console.log('Hey devs, was able to set i!');
         firebase.database().ref('/queriable/'+(user.uid)+'/dn').set(userQueriableJSON.dn);
+        console.log('Hey devs, was able to set dn!');
         firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
+        console.log('Hey devs, was able to set d/t!');
 
         var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
+
         var paymentToken = tokenId;
         var plan = this.state.plan;
 
@@ -190,15 +210,17 @@ class SignUp extends Component {
 
 
           }.bind(this)).catch(function(err) {
-             this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. Please note this issue appears to stem from your payment information!');
+             this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. Please note this issue appears to stem from your payment information!  (Code: 3)');
           }.bind(this))
 
         }.bind(this)).catch(function(err) {
-          this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.');
+          this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.  (Code: 4)');
         }.bind(this))
       } catch (e) {
+        Popup.alert('It seems your information is incorrect. If this issue persists, please reload the page and try again! Issue: ' + e);
+        console.log('\nHey devs! Heres the error: ' + e);
         var user = firebase.auth().currentUser;
-        Popup.Create();
+        // Popup.Create();
         firebase.database().ref('/users/'+(user.uid)).set(null);
         firebase.database().ref('/queriable/'+(user.uid)).set(null);
         if (user) {
@@ -214,6 +236,9 @@ class SignUp extends Component {
 
 
 
+    } else {
+
+      Popup.alert('It seems your information is incorrect. If this issue persists, please reload the page and try again!');
     }
 
 
@@ -475,10 +500,10 @@ class SignUp extends Component {
             <br />
           </div>
 
-          <div  style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
+          {/* <div  style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
+            
             <h3 style={{color: 'black', fontWeight: '450', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (this.state.width < 500 ? (topMargin-7)+'px' : topMargin+'px')}} className='fixedAdjacentChild'>DISPLAY NAME</h3><br/>
-            <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'
-  >
+            <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'>
                   <FormControl
                     placeholder='Min. length of 5 characters'
                     aria-label="Default"
@@ -493,7 +518,7 @@ class SignUp extends Component {
                   />
                 </InputGroup>
             <br />
-          </div>
+          </div> */}
 
           {/*
 

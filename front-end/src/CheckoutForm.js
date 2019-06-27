@@ -24,7 +24,7 @@ class CheckoutForm extends Component {
     return (
       <div className="checkout">
         <Popup />
-      <h4 style={{'letter-spacing': '1px', lineHeight: '20px'}}>Please enter your payment information into our <span style={{fontWeight: '600'}}>secure</span> form. This info is stored securely as an illegible token. </h4>
+      <h4 style={{'letter-spacing': '1px', lineHeight: '20px'}}>Please enter your payment information into our <span style={{fontWeight: '600'}}>secure</span> form. This info is sent to our third-party payment-processing platform securely as an illegible token. <strong>We do not store payment information.</strong> </h4>
     <br/>
         <CardElement style={{base: {fontSize: '18px'}}} />
       <button onClick={this.submit}>JOIN</button>
