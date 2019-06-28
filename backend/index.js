@@ -333,8 +333,10 @@ app.get('/initPayments', async (req,res) => {
     var planName = req.query.plan;
     try {
         let subscription = await createSubscription(idToken, planName);
+        log('Found subscription! resolving..');
         res.send(subscription);
     } catch (e) {
+        log('Found an error: ' + e);
         res.send(e);
     }
 });
