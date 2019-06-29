@@ -341,6 +341,40 @@ app.get('/initPayments', async (req,res) => {
     }
 });
 
+function getToday() {
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth() + 1; //January is 0!
+
+    var yyyy = today.getFullYear();
+    if (dd < 10) {
+      dd = '0' + dd;
+    } 
+    if (mm < 10) {
+      mm = '0' + mm;
+    } 
+    var td = mm + '/' + dd + '/' + yyyy;
+    return td;
+}
+app.get('/updateJoinedDate', (req, res) => {
+    
+        var uid = req.query.uid;
+        let ref = root.ref('/users/' + uid + '/j');
+    
+    ref.once('value').then(function(snapshot) {
+      if (!(snapshot instanceof String)) {
+           ref.set(getToday());
+          res.send('Done!');
+      } else {
+          res.send(snapshot != null);
+      }
+    }).catch(function(err) {
+      res.send(err.message);
+    });
+
+    
+});
+
 
 var getFirebaseUserFromCustomerId = async (cust_id) => {
     return new Promise( function(resolve, reject) {

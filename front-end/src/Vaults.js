@@ -214,13 +214,12 @@ class Vaults extends Component {
 
     if (this.state.users) {
       var count = 1;
-      var c = (count) => {return (count % 2 ? '#7fc48f' : '#6babc4')};
+      var c = (count) => {return (count % 2 ? '#474747' : '#333232')};
       var objArray = this.convert_to_iterable_object(this.state.users);
       userComponent = objArray.map(function(user) {
-        var topBorder = (count == 1 ? '1px solid black' : '')
         count++;
         return <div>
-                <div className='adjacentItemsParent' style={{backgroundColor: c(count), borderTop: topBorder, borderBottom: '1px solid black'}}>
+                <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700'}}>
                   <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}} >{user.value.dn}</h3><br/>
                 <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{user.value.p}</h3><br/>
                   <br />
@@ -233,13 +232,13 @@ class Vaults extends Component {
 
     if (this.state.events) {
       var count = 1;
-      var c = (count) => {return (count % 2 ? '#7fc48f' : '#6babc4')};
+      var c = (count) => {return (count % 2 ? '#474747' : '#333232')};
       var objArray = this.convert_to_iterable_object(this.state.events);
       eventsComponent = objArray.map(function(event) {
         var topBorder = (count == 1 ? '1px solid black' : '')
         count++;
         return <div >
-                <div className='adjacentItemsParent' style={{backgroundColor: c(count), borderTop: topBorder, borderBottom: '1px solid black'}}>
+                <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700'}}>
                   <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}}>{event.value.id}</h3><br/>
                 <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.ttl*0.01)}</h3><br/>
                   <br />

@@ -22,13 +22,14 @@ class CheckoutForm extends Component {
 
   render() {
     return (
-      <div className="checkout">
-        <Popup />
+      <div className="checkout" style={{alignContent: 'center', width: '100%'}}>
+      <Popup />
       <h4 style={{'letter-spacing': '1px', lineHeight: '20px'}}>Please enter your payment information into our <span style={{fontWeight: '600'}}>secure</span> form. This info is sent to our third-party payment-processing platform securely as an illegible token. <strong>We do not store payment information.</strong> </h4>
-    <br/>
-        <CardElement style={{base: {fontSize: '18px'}}} />
-      <button onClick={this.submit}>JOIN</button>
-      </div>
+      <br/>
+      <CardElement style={{base: {fontSize: '18px'}, margin: 'auto', width: '100%'}} />
+      <br/>
+    <button style={{marginLeft: '0%',width: '100%',marginRight: '0%', height: '45px', fontSize: '20px', fontWeight: '2000'}} onClick={this.submit}><strong>JOIN</strong></button>
+      <br /><br /><br /><br /><br /><br /></div>
     );
   }
 }

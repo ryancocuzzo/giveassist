@@ -36,10 +36,11 @@ class IntroPage extends Component {
 
       window.history.pushState(null, '', '/home')
 
-      this.whoWeAre = React.createRef(); // Create a ref
-      this.theProblem = React.createRef(); // Create a ref
-      this.theSolution = React.createRef(); // Create a ref
-      this.moneyBreakdown = React.createRef(); // Create a ref
+      this.whoWeAre =        React.createRef(); // Create a ref
+      this.theProblem =      React.createRef(); // Create a ref
+      this.theSolution =     React.createRef(); // Create a ref
+      this.moneyBreakdown =  React.createRef(); // Create a ref
+      this.faq =             React.createRef(); // Create a ref
 
       this.state = {
         width: document.body.clientWidth,
@@ -155,6 +156,14 @@ scrollToMoneyView = () => {
     });
 };
 
+scrollToFaq = () => {
+  this.closeNav();
+    window.scrollTo({
+        top:this.faq.current.offsetTop-115,
+        behavior: "smooth" // optional
+    });
+};
+
   // Scroll to ref function
 scroll = (to) => {
     window.scrollTo({
@@ -176,9 +185,9 @@ dynamicHComponent = (txt, size) => {
   if (size == 3) {
     return <h4 style={{color:'black', fontWeight: '850'}}>{txt}</h4>
   } else if (size==4)
-  return <h4 style={{color:'black'}}>{txt}</h4>
+  return <h5 style={{color:'black', fontWeight: '850'}}>{txt}</h5>
     else if (size==5)
-   return <h4 style={{color:'black'}}>{txt}</h4>
+   return <h4 style={{color:'black', fontWeight: '850'}}>{txt}</h4>
 }
 
   navigationBar = (margin, textSizeH) => {
@@ -216,9 +225,14 @@ dynamicHComponent = (txt, size) => {
 
               </button>
 
-              <button  className='navigationButton' style={{border: 'none', marginRight: '0px',height: '50px'}} value={this.moneyBreakdown} onClick={this.scrollToMoneyView}>
+              <button  className='navigationButton' style={{border: 'none', marginRight: '5px',height: '50px'}} value={this.moneyBreakdown} onClick={this.scrollToMoneyView}>
                 {this.dynamicHComponent('MONEY',textSizeH)}
               </button>
+
+              <button  className='navigationButton' style={{border: 'none', marginRight: '0px',height: '50px'}} value={this.faq} onClick={this.scrollToFaq}>
+                {this.dynamicHComponent('FAQ',textSizeH)}
+              </button>
+
             </ButtonGroup>
 
 
@@ -268,6 +282,13 @@ dynamicHComponent = (txt, size) => {
 
             <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}} value={this.moneyBreakdown} onClick={this.scrollToMoneyView}>
                 {this.dynamicHComponent('MONEY',textSizeH)}
+              </div>
+
+              <div style={{marginLeft: '10%', width: '90%', marginRight: '10%', height: '3px'}}/>
+
+
+            <div  className='navigationButton2' style={{border: 'none', width: '220px', marginLeft: '20px',height: '50px', marginTop: '7px'}} value={this.faq} onClick={this.scrollToFaq}>
+                {this.dynamicHComponent('FAQ',textSizeH)}
               </div>
             </ButtonGroup>
 
@@ -345,8 +366,11 @@ dynamicHComponent = (txt, size) => {
       navMarginLeft = '-150px';
     }
 
-    if (this.state.width < 600) {
+    if (this.state.width < 750) {
       textSizeH = 3;
+
+    } else if (this.state.width < 1200) {
+      textSizeH = 4;
 
     }
 
@@ -511,7 +535,7 @@ dynamicHComponent = (txt, size) => {
                 <br/>
 
               <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
-                Our solution is, generally speaking, on the less expensive side. This is because believe everyone can be a part of change, not just a few select people.
+                We push to keep our solution on the less-expensive side. This is because we believe everyone can be a part of change, not just a few select people.
               </h4>
               </Col>
               <Col sm={12} md={4}>
@@ -596,7 +620,7 @@ dynamicHComponent = (txt, size) => {
             <br/>
           <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar question...</h1><br/>
             <h2 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2><br/>
-          <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We guarantee that 90% of your money goes directly to its intended recipient.</strong></h4>
+          <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We guarantee that 91% of your money goes directly to its intended recipient.</strong></h4>
 
               <br/><br/><br/><br/>
             </div>
@@ -613,7 +637,7 @@ dynamicHComponent = (txt, size) => {
               </Link><br/>
           <br></br>
           <div style={{ height: '200px' }} />
-        <h5 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}}>Copyright @ giveassist LLC 2019.</h5><br/>
+        <h5 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}}>Copyright @ GiveAssist Inc. 2019.</h5><br/>
           <div style={{ height: '50px' }} />
 
       </div>
@@ -629,7 +653,7 @@ dynamicHComponent = (txt, size) => {
       );
 
       var faq = (
-        <div style={{color: 'black', textAlign: 'center'}}>
+        <div style={{color: 'black', textAlign: 'center'}} ref={this.faq}>
             <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>FAQ</h1>
           {faq_q('Who are you guys and what do you do?', 'We are a service that allows you to focus on what’s important in your life, while taking an interest in what’s important to the world. We streamline the donation process to only a click a month - from your phone!')}
           {faq_q('Why are you different than what exists?','There are a few different things that makes us stand out in the donation space. The first being we are a subscription-based model, allowing for you to make a difference without manual action. Secondly, we vary where the money is donated, each time to a cause that is relevant at the moment, helping us make the greatest impact possible. Lastly, we built our pricing structure to accommodate all different demographics, which we believe is the cornerstone of our model. We believe everyone can be impactful.')}

@@ -14,7 +14,6 @@ import { getProfilePictureFilename } from './Database.js';
 // Creates a client
 // const storage = new Storage();
 
-
 let urls = vars.local_urls;
 
 class MyNavBar extends Component {
@@ -38,9 +37,9 @@ class MyNavBar extends Component {
       navExpanded: false
     };
 
-    if (user) {
-      this.getProfilePicture(user.uid);
-    }
+    // if (user) {
+    //   this.getProfilePicture(user.uid);
+    // }
 
     // this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
@@ -53,74 +52,74 @@ class MyNavBar extends Component {
     });
   }
 
-  async getProfilePicture(uid) {
-    let ref = firebase.database().ref('/users/' + uid + '/img/p');
-
-      ref.once('value').then (function(snap) {
-          console.log('Snapback & unload');
-          console.log(snap.val())
-          if (snap && snap.val()) {
-              let raw_filename = snap.val();
-              console.log('X_found raw filename: ' + raw_filename);
-              // Create a reference to the file we want to download
-              var ref = firebase.storage().ref(uid+'/profilePicture/' + raw_filename);
-              console.log('found ref: ' + ref);
-              // Get the download URL
-              ref.getDownloadURL().then(function(url) {
-                console.log('Found download URL: ' + url);
-                this.setState({
-                    picture: url
-                });
-              }.bind(this)).catch(function(error) {
-
-                // A full list of error codes is available at
-                // https://firebase.google.com/docs/storage/web/handle-errors
-                switch (error.code) {
-                  case 'storage/object-not-found':
-                    // File doesn't exist
-                    break;
-
-                  case 'storage/unauthorized':
-                    // User doesn't have permission to access the object
-                    break;
-
-                  case 'storage/canceled':
-                    // User canceled the upload
-                    break;
-
-                  case 'storage/unknown':
-                    // Unknown error occurred, inspect the server response
-                    break;
-                }
-              });
-          } else {
-            console.log('No prifdaaj pic!')
-          }
-      }.bind(this))
-
-
-    // let destFilename = './' + raw_filename;
-    //
-    // const bucketName = uid;
-    // const srcFilename = raw_filename;
-    // const options = {
-    //   // The path to which the file should be downloaded, e.g. "./file.txt"
-    //   destination: destFilename,
-    // };
-    //
-    // // // Downloads the file
-    // // await storage
-    // //   .bucket(bucketName)
-    // //   .file(srcFilename)
-    // //   .download(options);
-    //
-    // console.log(
-    //   `gs://${bucketName}/${srcFilename} downloaded to ${destFilename}.`
-    // );
-
-
-
-  }
+  // async getProfilePicture(uid) {
+  //   let ref = firebase.database().ref('/users/' + uid + '/img/p');
+  //
+  //     ref.once('value').then (function(snap) {
+  //         console.log('Snapback & unload');
+  //         console.log(snap.val())
+  //         if (snap && snap.val()) {
+  //             let raw_filename = snap.val();
+  //             console.log('X_found raw filename: ' + raw_filename);
+  //             // Create a reference to the file we want to download
+  //             var ref = firebase.storage().ref(uid+'/profilePicture/' + raw_filename);
+  //             console.log('found ref: ' + ref);
+  //             // Get the download URL
+  //             ref.getDownloadURL().then(function(url) {
+  //               console.log('Found download URL: ' + url);
+  //               this.setState({
+  //                   picture: url
+  //               });
+  //             }.bind(this)).catch(function(error) {
+  //
+  //               // A full list of error codes is available at
+  //               // https://firebase.google.com/docs/storage/web/handle-errors
+  //               switch (error.code) {
+  //                 case 'storage/object-not-found':
+  //                   // File doesn't exist
+  //                   break;
+  //
+  //                 case 'storage/unauthorized':
+  //                   // User doesn't have permission to access the object
+  //                   break;
+  //
+  //                 case 'storage/canceled':
+  //                   // User canceled the upload
+  //                   break;
+  //
+  //                 case 'storage/unknown':
+  //                   // Unknown error occurred, inspect the server response
+  //                   break;
+  //               }
+  //             });
+  //         } else {
+  //           console.log('No prifdaaj pic!')
+  //         }
+  //     }.bind(this))
+  //
+  //
+  //   // let destFilename = './' + raw_filename;
+  //   //
+  //   // const bucketName = uid;
+  //   // const srcFilename = raw_filename;
+  //   // const options = {
+  //   //   // The path to which the file should be downloaded, e.g. "./file.txt"
+  //   //   destination: destFilename,
+  //   // };
+  //   //
+  //   // // // Downloads the file
+  //   // // await storage
+  //   // //   .bucket(bucketName)
+  //   // //   .file(srcFilename)
+  //   // //   .download(options);
+  //   //
+  //   // console.log(
+  //   //   `gs://${bucketName}/${srcFilename} downloaded to ${destFilename}.`
+  //   // );
+  //
+  //
+  //
+  // }
 
   /**
    * When the component mounts..
@@ -142,13 +141,11 @@ class MyNavBar extends Component {
       this.setState({width: document.body.clientWidth});
     }.bind(this))
 
-    window.onscroll =()=>{
+    window.onscroll =() => {
         let THRESHHOLD = 300;
         let currentY = (window.scrollY > THRESHHOLD) ? THRESHHOLD : window.scrollY;
         let opacity = (window.scrollY / THRESHHOLD)
-     //   console.log(opacity)
         let formattedOpacity = 'rgba(255, 255, 255, ' + opacity + ')';
-
         this.setState({navOpacity: formattedOpacity})
 
    }
@@ -470,42 +467,42 @@ var dim = {
   sm: {
     mL: '25%',
     width: '50%',
-    fontSize: '40px',
+    fontSize: '30px',
     mb: '20px'
   },
   lg: {
     mL: '30%',
     width: '40%',
-    fontSize: '60px',
+    fontSize: '40px',
     mb: '30px'
   },
   xl: {
     mL: '35%',
     width: '30%',
-    fontSize: '80px',
+    fontSize: '60px',
     mb: '40px'
   },
   xxl: {
     mL: '40%',
     width: '20%',
-    fontSize: '100px',
+    fontSize: '80px',
     mb: '50px'
   }
 }
 
-if (this.state.width < 1000) {
+if (this.state.width < 1200) {
   correct_dim = dim.sm;
   navMarginLeft = '0px';
   textSizeH = 5;
-} else if (this.state.width >= 1000 && this.state.width < 1150) {
+} else if (this.state.width >= 1200 && this.state.width < 1350) {
   correct_dim = dim.lg;
   navMarginLeft = '-20px';
   textSizeH = 4;
-} else if (this.state.width >= 1150 && this.state.width < 1300) {
+} else if (this.state.width >= 1350 && this.state.width < 1500) {
   correct_dim = dim.xl;
   navMarginLeft = '-35px';
   textSizeH = 3;
-} else if (this.state.width >= 1000 && this.state.width < 1500) {
+} else if (this.state.width >= 1500 && this.state.width < 2500) {
   textSizeH = 3;
   correct_dim = dim.xxl;
   navMarginLeft = '-50px';

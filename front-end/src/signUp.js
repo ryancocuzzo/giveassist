@@ -7,14 +7,22 @@ import variables from './variables.js';
 import Datetime from 'react-datetime';
 import {Elements, StripeProvider} from 'react-stripe-elements';
 import CheckoutForm from './CheckoutForm';
-import PaymentRequestForm from './PaymentRequestForm';
 import axios from 'axios';
 import Popup from 'react-popup';
 import moment from 'moment';
 import grad from './GradientSVG.js';
+import PayPlanOption from "./PayPlanOption";
+import MyInput from './MyInput.js';
 
 let urls = variables.local_urls;
 let server_urls = variables.server_urls;
+
+var strong_pass_regex = new RegExp(
+  "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,})"
+);
+const email_regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+const phone_regex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
 
 class SignUp extends Component {
 
@@ -23,45 +31,61 @@ class SignUp extends Component {
       this.state = {
         name: '',
         email: '',
-        dob: '',
-        unformatted_dob: '',
-        gender: '',
-        picture: null,
         plan: '',
         password: '',
-        activeButton: null,
-        hover1: false,
-        hover2: false,
-        hover3: false,
-        hover4: false,
+        phone: '',
+        name_good: false,
+        email_good: false,
+        pass_good: false,
+        phone_good: false,
+        selected_option: false,
 
         displayName: this.makeid(),
         width: document.body.clientWidth
       };
 
-      this.selectedPlan = this.selectedPlan.bind(this);
-      this.selectedGender = this.selectedGender.bind(this);
   }
+
+
+  nameSubmitted = value => {
+    this.setState({ name_good: true, name: value });
+  };
+
+  emailSubmitted = value => {
+    this.setState({ email_good: true, email: value });
+  };
+
+  passSubmitted = value => {
+    this.setState({ pass_good: true, password: value });
+  };
+
+  phoneSubmitted = value => {
+    this.setState({ phone_good: true, password: value });
+  };
+
+  option_selected = title => {
+    this.state.selected_option = title;
+    this.setState({ selected_option: title });
+    this.forceUpdate();
+  };
+
+  getComp = (title, c, desc, sel) => {
+    return (
+      <PayPlanOption
+        title={title}
+        cost={c}
+        description={desc}
+        callback={this.option_selected}
+        isSelected={sel}
+      />
+    );
+  };
 
   componentDidMount() {
     window.addEventListener("resize", function(event) {
-      console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
+      // console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
       this.setState({width: document.body.clientWidth});
     }.bind(this))
-
-  }
-
-  selectedGender = (gender) => {
-    console.log(gender)
-    if (gender != null && gender != '') {
-      if (gender != 'Rather not choose') {
-        console.log('Setting gender to ' + gender);
-        this.setState({gender: gender})
-      }
-      else {
-        this.setState({gender: 'Preferred not to respond'})
-      }
-    }
 
   }
 
@@ -71,26 +95,6 @@ class SignUp extends Component {
           behavior: "smooth" // optional
       });
   };
-
-
-
-  selectedPlan = (plan) => {
-    this.state.hover1 = false;
-    this.state.hover2 = false;
-    this.state.hover3 = false;
-
-
-    console.log(plan)
-    this.setState({plan: plan});
-
-    if (this.state.activeButton === plan) {
-      console.log('Setting AB to null');
-      this.setState({activeButton : null})
-    } else {
-      this.setState({activeButton : plan})
-    }
-    console.log(this.state.activeButton);
-  }
 
    makeid = () => {
     var length = 15;
@@ -103,68 +107,69 @@ class SignUp extends Component {
     return result;
  }
 
-  handleChange = (value, formattedValue) => {
-      this.setState({
-        unformatted_dob: value, // ISO String, ex: "2016-11-19T12:00:00.000Z"
-        dob: formattedValue, // Formatted String, ex: "11/19/2016"
-      });
-  }
+ validateEmail = (email) => {
+   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+   return re.test(String(email).toLowerCase());
+}
+
+validatePhone = (phone) => {
+    var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
+    return phone.test(String(phone));
+}
+
+extractPhoneNumber = (uncleaned) => {
+    var cleaned = uncleaned.replace('(','').replace(')','').replace('+','').replace('-','');
+    return cleaned;
+}
 
 
-   validateEmail = (email) => {
-      var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return re.test(String(email).toLowerCase());
-  }
 
   formIsValid = () => {
+
     // Validate each property
-    let nameIsOk = this.state.name != null && this.state.name != '';
+    let nameIsOk = this.state.name != null && this.state.name != '' && this.state.name.length > 4;
     let emailIsOk = this.state.email != null && this.validateEmail(this.state.email);
-    let dobIsOk = this.state.dob != null && this.state.dob != '';
-    let genderIsOk = this.state.gender != null && this.state.gender != '';
-    let planIsOk = this.state.plan != null && this.state.plan != '';
-    let passIsOk = this.state.password != null && this.state.password.length >= 6;
-    let displayNameIsOk = this.state.displayName != null && this.state.displayName.length >= 5;
-    if (!nameIsOk)
+    let planIsOk = this.state.selected_option != null && this.state.selected_option != '';
+    let passIsOk = this.state.password != null && this.state.password.length >= 7;
+    let phoneIsOk = this.state.phoneIsOk != null && this.validatePhone(this.state.phone);
+    if (!nameIsOk)  {
       Popup.alert('Please check your name, it doesn\'t\n appear to be valid!')
-    else if (!emailIsOk)
-    Popup.alert('Please check your email, it doesn\'t\n appear to be valid!')
-    // else if (!dobIsOk)
-    // Popup.alert('Please check your date of birth, it doesn\'t\n appear to be valid!')
-    // else if (!genderIsOk)
-    // Popup.alert('Please check your gender, it doesn\'t\n appear to be selected!')
-    else if (!passIsOk)
-    Popup.alert('Please check your password, it doesn\'t\n appear to be valid!')
-    else if (!planIsOk)
-    Popup.alert('Please check your plan, it doesn\'t\n appear to be selected!')
-    else if (!displayNameIsOk)
-    Popup.alert('Please check your display name, it doesn\'t\n appear to be valid!')
-    if (nameIsOk && emailIsOk && planIsOk && passIsOk && displayNameIsOk)
-      return true;
-    else
       return false;
+    }  else if (!emailIsOk) {
+      Popup.alert('Please check your email, it doesn\'t\n appear to be valid!');
+      return false;
+    }  else if (!passIsOk) {
+      Popup.alert('Please check your password, it doesn\'t\n appear to be valid!')
+      return false;
+    } else if (!phoneIsOk) {
+      Popup.alert('Please check your phone number, it doesn\'t\n appear to be valid!')
+      return false;
+    } else if (!planIsOk) {
+      Popup.alert('Please check your plan, it doesn\'t\n appear to be selected!')
+      return false;
+    }
+    return true;
   }
 
   signUpUser = async (tokenId) => {
     console.log('Signing up user');
-    // Popup.alert('Signing up..');
     // Validate form
     if (this.formIsValid()) {
       try {
 
-
         // All fields cleared
         var userJson = {
-          n: this.state.name,
-          e: this.state.email,
-          p: this.state.plan,
-          dn: this.state.displayName,
-          j: moment().format('LL')
+          n: this.state.name,                             // name
+          e: this.state.email,                            // email
+          p: this.state.selected_option,                  // plan
+          dn: this.state.displayName,                     // display naem
+          j: moment().format('LL'),                       // timestamp
+          z: this.extractPhoneNumber(this.state.phone)    // phone number
         };
 
         var userQueriableJSON = {
           dn: this.state.displayName,
-          p: this.state.plan
+          p: this.state.selected_option
         };
 
         let createUser = await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password);
@@ -182,11 +187,14 @@ class SignUp extends Component {
         firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
         console.log('Hey devs, was able to set d/t!');
 
+        axios.get(server_urls.createStripeUser, {params: { uid: user.uid }});
+
+
         var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
 
-        var paymentToken = tokenId;
-        var plan = this.state.plan;
 
+        var paymentToken = tokenId;
+        var plan = this.state.selected_option;
 
         axios.get(server_urls.createStripeUser, {params: {
           idToken: idToken,
@@ -198,23 +206,49 @@ class SignUp extends Component {
             idToken: idToken,
             plan: plan
           }}).then(async function(subscription) {
+            // alert('good stuff..');
             // Save subscription
             // firebase.database().ref('/users/' + user.uid + '/subscription/').set(subscription);
             window.history.pushState(null, '', '/vote')
 
-            // Set user picture
-            await this.uploadPicture()
-
+            // // Set user picture
+            // await this.uploadPicture()
 
             this.props.popup('Welcome to the future of donation..');
 
-
           }.bind(this)).catch(function(err) {
-             this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. Please note this issue appears to stem from your payment information!  (Code: 3)');
+            var user = firebase.auth().currentUser;
+            // Popup.Create();
+            firebase.database().ref('/users/'+(user.uid)).set(null);
+            firebase.database().ref('/queriable/'+(user.uid)).set(null);
+            if (user) {
+              user.delete().then(function() {
+                this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 7)');
+                // User deleted.
+              }).catch(function(error) {
+                // An error happened.
+                // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 8)');
+              });
+            }
           }.bind(this))
 
+          // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. Please note this issue appears to stem from your payment information!  (Code: 3)');
+
+
         }.bind(this)).catch(function(err) {
-          this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.  (Code: 4)');
+          var user = firebase.auth().currentUser;
+          // Popup.Create();
+          firebase.database().ref('/users/'+(user.uid)).set(null);
+          firebase.database().ref('/queriable/'+(user.uid)).set(null);
+          if (user) {
+            user.delete().then(function() {
+              this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.  (Code: 4) => ' + err);
+              // User deleted.
+            }).catch(function(error) {
+              // An error happened.
+              // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.  (Code: 9)');
+            });
+          }
         }.bind(this))
       } catch (e) {
         Popup.alert('It seems your information is incorrect. If this issue persists, please reload the page and try again! Issue: ' + e);
@@ -225,16 +259,15 @@ class SignUp extends Component {
         firebase.database().ref('/queriable/'+(user.uid)).set(null);
         if (user) {
           user.delete().then(function() {
+            // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 7)');
             // User deleted.
           }).catch(function(error) {
             // An error happened.
+            // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 8) => ' +error);
           });
         }
 
       }
-
-
-
 
     } else {
 
@@ -242,194 +275,70 @@ class SignUp extends Component {
     }
 
 
-
-
-
   }
-
-
-  datePicked = (current) => {
-    // console.log(current);
-    this.setState({dob: current.format('LL')})
-
-    // if (moment(current).isValid()) {
-    //   console.log('Valid');
-    // } else {
-    //   this.setState({dob: ''})
-    //
-    // }
-  }
-
-  myColor = (position) => {
-   if (this.state.plan === position) {
-     return "#e6ffe6";
-   }
-   return "";
- }
-
- toggle = (position) => {
-    if (this.state.activeButton === position) {
-      console.log('Setting AB to null');
-      this.setState({activeButton : null})
-    } else {
-      this.setState({activeButton : position})
-    }
-  }
-
-  profilePictureSelected = (files) => {
-    console.log('State picture now: ' + files[0]);
-    this.setState({
-      picture: files[0]
-    });
-
-  }
-
-  uploadPicture = () => {
-    if (this.state.picture && this.state.picture != '') {
-      const body = this.state.picture;
-      console.log(body);
-      // Get current username
-      var user = firebase.auth().currentUser.uid;
-
-      let str = '' + user + '/profilePicture/' + body.name;
-
-
-        // Create a Storage Ref w/ username
-        var storageRef = firebase.storage().ref().child(str);
-        console.log('Attempting to put image into ref ' + storageRef);
-        // Upload file
-        var task = storageRef.put(body);
-        storageRef.put(body).then(function(snapshot) {
-          console.log('Uploaded a blob or file!');
-        }).catch(function(e) {
-          console.log(e);
-        });
-
-            // Post profile picture to database
-           firebase.database().ref('/users/' + user + '/img/p').set(body.name);
-
-    }
-
-  }
-
-
-  toggleHover(id) {
-    console.log('Hovering ' + id);
-    let s = 'hover' + id;
-    var b = !this.state[s];
-    this.setState({[s]: b})
-    console.log('setting hover' + id + ' to ' + b);
-  }
-
-
 
   render () {
 
-    var background =  'linear-gradient(red, yellow)';
-
-
-    var min = Datetime.moment().subtract( 16, 'year' );
-    var valid = function( current ){
-        return current.isBefore( min );
+    var name_component = () => {
+      return (
+        <MyInput
+          id={1}
+          label="Name"
+          locked={false}
+          active={false}
+          minLength={4}
+          handleSubmit={this.nameSubmitted}
+        />
+      );
     };
-    console.log('AB: ' + this.state.activeButton);
 
-    var c1 = (this.state.hover1) ? '#e6ffe6' : '#f4fbff';
-    var c2 = (this.state.hover2) ? '#e6ffe6' : '#f4fbff';
-    var c3 = (this.state.hover3) ? '#e6ffe6' : '#f4fbff';
-    var c4 = (this.state.hover4) ? '#3e819b' : '#6babc4';
+    var email_component = () => {
+      return (
+        <MyInput
+          id={2}
+          label="Email"
+          locked={!this.state.name_good}
+          active={false}
+          regex={email_regex}
+          handleSubmit={this.emailSubmitted}
+        />
+      );
+    };
 
-    console.log('c4:' + c4);
-    if (this.state.plan === 'Premium X') {
-      c1 = '#e6ffe6';
-    } else if (this.state.plan === 'Premium Y') {
-      c2 = '#e6ffe6';
-    }  else if (this.state.plan === 'Premium Z') {
-      c3 = '#e6ffe6';
-    }
+    var pass_component = () => {
+      return (
+        <MyInput
+          id={3}
+          label="Password"
+          locked={!this.state.name_good || !this.state.email_good}
+          active={false}
+          minLength={7}
+          handleSubmit={this.passSubmitted}
+        />
+      );
+    };
+
+    var phone_component = () => {
+      return (
+        <MyInput
+          id={4}
+          label="Phone Number"
+          locked={!this.state.name_good || !this.state.email_good || !this.state.pass_good}
+          active={false}
+          regex={phone_regex}
+          handleSubmit={this.passSubmitted}
+        />
+      );
+    };
+
+    var a = this.state.selected_option == "Premium X";
+    var b = this.state.selected_option == "Premium Y";
+    var c = this.state.selected_option == "Premium Z";
 
     var isMobile = this.state.width <= 800;
-    var textBoxDimensions = {
-      sm: {
-        width: '86%',
-        height: '250px',
-        mt: '-25px'
-      },
-      lg: {
-        width: '350px',
-        height: '260px',
-        mt: '-15px'
-      }
-    }
-
-    var fontSize = '20px';
-    var col_width_wide = '150px';
-    var bottomMargin = '400px';
-    var leftMargin = '40px';
-    var topMargin = 32;
-
-    if (this.state.width < 700) {
-      fontSize = '17px';
-      col_width_wide = '100px';
-      bottomMargin = '200px';
-      leftMargin = '40px';
-    }
-
-    if (this.state.width < 500) {
-      fontSize = '15px';
-      col_width_wide = '80px';
-      leftMargin = '20px';
-      topMargin = topMargin+=3;
-    }
-
-    var tbDimension = (isMobile ? textBoxDimensions.sm : textBoxDimensions.lg);
-
-
-
-    var optComponent;
-    if (!isMobile) {
-      optComponent = (
-        <div>
-          <ButtonToolbar>
-             <ToggleButtonGroup type="radio" defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '7%', alignContent: 'center'}}>
-                   <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium X</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$3.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
-                 <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium Y</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
-             </ToggleButtonGroup>
-
-         </ButtonToolbar>
-        </div>
-      )
-    } else {
-      optComponent = (
-        <div>
-          <ButtonToolbar>
-            <ToggleButtonGroup type="radio" vertical defaultValue='Premium Pro' name="toggle plan" style={{marginLeft: '10%', alignContent: 'center'}}>
-              <ToggleButton value='Premium X' onClick={() => this.selectedPlan('Premium X')} onMouseEnter={() => this.toggleHover(1)} onMouseLeave={() => this.toggleHover(1)} style={{background: c1,  whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium X</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$3.99 / mo.</h2><br/><p>Our premier plan. This is an elite tier for benefactors looking to make the most change.</p></ToggleButton>
-            <ToggleButton value='Premium Y' onClick={() => this.selectedPlan('Premium Y')} onMouseEnter={() => this.toggleHover(2)} onMouseLeave={() => this.toggleHover(2)} style={{background: c2,   whiteSpace: 'normal', width: tbDimension.width, height: tbDimension.height}}><h1 style={{fontWeight: '900'}}>Premium Y</h1><br/><h2 style={{marginTop: tbDimension.mt}}>$1.99 / mo.</h2><br/><p>Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results.</p></ToggleButton>
-          </ToggleButtonGroup>
-
-         </ButtonToolbar>
-        </div>
-      )
-    }
-
-    var oldFileComp = (
-      <div >
-        <form ref={el => (this.form = el)} className='adjacentItemsParent'>
-          <h1 style={{marginLeft: '50px', fontSize: '20px'}} className='fixedAdjacentChild'>PICTURE</h1><br/>
-        <input style={{marginTop: '20px', backgroundColor: 'transparent', boxShadow: '0px'}}  />
-        </form>
-        <div class="upload-btn-wrapper" style={{  borderRadius: '3px'}} onMouseEnter={() => this.toggleHover(4)} onMouseLeave={() => this.toggleHover(4)}>
-          <button style={{height: '35px',background: c4}} >Upload a file</button>
-          <input type="file" name="im-a-file" onChange={ (e) => this.profilePictureSelected(e.target.files) } style={{  boxShadow: '4px 4px 0px grey'}}/>
-        </div>
-
-
-      </div>
-    );
 
     return (
-      <div style={{ fontSize: '12px'}} className='myGradientBackground'>
+      <div style={{ fontSize: '12px', paddingLeft: '12%', paddingRight: '12%'}} className='myGradientBackground'>
       <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
 
         <Popup />
@@ -439,147 +348,49 @@ class SignUp extends Component {
             </Link><br></br>
         </div>
 
-      <h1 style={{marginLeft: '20px', fontSize: '40px'}}>Join</h1><br/>
+      <h1 style={{fontSize: '40px'}}>Join</h1><br/>
 
-    <div style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
-          <h3 style={{color: 'black', fontWeight: '450',marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>NAME</h3><br/>
-        <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px', borderRadius: '5px'}} className='flexibleAdjacentChild'
-            >
-                <FormControl
-                  aria-label="Default"
-                  aria-describedby="inputGroup-sizing-default"
-                  value = {this.state.name}
-                  onChange={(event)=>{
-                              this.setState({
-                                 name:event.target.value
-                              });
-                           }}
-                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
-                />
-              </InputGroup>
-          <br />
-        </div>
+        {/* INSERT FIELD COMPONENTS */}
 
-        <div style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
-          <h3 style={{color: 'black', fontWeight: '450', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>EMAIL</h3><br/>
-          <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'
-            >
-                <FormControl
-                  aria-label="Default"
-                  aria-describedby="inputGroup-sizing-default"
-                  value = {this.state.email}
-                  onChange={(event)=>{
-                              this.setState({
-                                 email:event.target.value
-                              });
-                           }}
-                  style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
-                />
-              </InputGroup>
-          <br />
-        </div>
+        {name_component()}
+        <br />
+        {email_component()}
+        <br />
+        {pass_component()}
+        <br />
+        {phone_component()}
+        <br/>
 
+        <h1 style={{}}>Select your plan.</h1><br/>
 
-          <div style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
-            <h3 style={{color: 'black', fontWeight: '450', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PASSWORD</h3><br/>
-            <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'
-              >
-                  <FormControl
-                    placeholder='Min. length of 6 characters'
-                    aria-label="Default"
-                    aria-describedby="inputGroup-sizing-default"
-                    value = {this.state.password}
-                    onChange={(event)=>{
-                                this.setState({
-                                   password:event.target.value
-                                });
-                             }}
-                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
-                  />
-                </InputGroup>
-            <br />
-          </div>
+        {/* INSERT PLAN COMPONENTS */}
 
-          {/* <div  style={{color: 'black', fontWeight: '700'}} className='adjacentItemsParent'>
-            
-            <h3 style={{color: 'black', fontWeight: '450', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (this.state.width < 500 ? (topMargin-7)+'px' : topMargin+'px')}} className='fixedAdjacentChild'>DISPLAY NAME</h3><br/>
-            <InputGroup className="mb-3" style={{marginTop:"15px", marginRight: '10px'}} className='flexibleAdjacentChild'>
-                  <FormControl
-                    placeholder='Min. length of 5 characters'
-                    aria-label="Default"
-                    aria-describedby="inputGroup-sizing-default"
-                    value = {this.state.displayName}
-                    onChange={(event)=>{
-                                this.setState({
-                                   displayName:event.target.value
-                                });
-                             }}
-                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
-                  />
-                </InputGroup>
-            <br />
-          </div> */}
-
-          {/*
-
-            SUCKS THAT  WE CAN'T USE!!!!! -> UX SHITT
-
-            <div style={{color: 'black', fontWeight: '400'}} className='adjacentItemsParent' style={{marginTop: '10px', marginRight: '5px'}}>
-              <h3 style={{color: 'black', fontWeight: '400', marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-13)+'px'}} className='fixedAdjacentChild'>DOB</h3><br/>
-
-            <Datetime isValidDate={ valid } onChange={this.datePicked} timeFormat={false} inputProps={{ marginRight: '10px',borderRadius: '5px', placeholder: 'Please select your DOB', readonly: 'true',  style: {width: '250px', fontWeight: '450',marginTop: '9px', textAlign: 'center', backgroundColor: '#f4fbff', color: 'black', fontWeight: '450', boxShadow: '4px 4px 4px grey'}}}/>
-              <br />
-            </div>
-
-            <div className='adjacentItemsParent' style={{marginTop: '0px', color: 'black', fontWeight: '400'}}>
-              <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin-15)+'px'}} className='fixedAdjacentChild'>GENDER</h3><br/>
-            <ButtonToolbar className='flexibleAdjacentChild' style={{marginTop:"-5px", width: '200px', fontWeight: '400' }}>
-                    <DropdownButton
-                      drop='right'
-                      variant="secondary"
-                      title={(this.state.gender != '' ? this.state.gender : 'Please select your gender.')}
-                      key='gender'
-                      value={this.state.gender}
-                      style={{width: '250px', backgroundColor: '#f4fbff', color: 'e3eff4', boxShadow: '4px 4px 4px grey', marginRight: '10px', borderRadius: '5px',fontWeight: '800'}}
-                      className='DropdownButton'
-                    >
-                      <MenuItem eventKey="Male" onClick={this.selectedGender.bind(this, "Male")}>Male</MenuItem>
-                      <MenuItem eventKey="Female" onClick={this.selectedGender.bind(this, "Female")}>Female</MenuItem>
-                      <MenuItem eventKey="Other" onClick={this.selectedGender.bind(this, "Other")}>Other</MenuItem>
-                      <MenuItem eventKey="Rather not choose" onClick={this.selectedGender.bind(this, "Rather not choose")}>Rather not choose</MenuItem>
-                    </DropdownButton>
-                </ButtonToolbar>
-              <br />
-            </div>
-
-            <div className='adjacentItemsParent' style={{marginTop: '-5px'}}>
-              <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PICTURE</h3><br/>
-              <div class="upload-btn-wrapper" style={{  borderRadius: '3px'}} onMouseEnter={() => this.toggleHover(4)} onMouseLeave={() => this.toggleHover(4)}>
-                <button style={{height: '35px',background: c4, width: '250px'}} >{this.state.picture == null ? 'UPLOAD' : 'UPLOADED'}</button>
-                <input type="file" name="im-a-file" onChange={ (e) => this.profilePictureSelected(e.target.files) } style={{  boxShadow: '4px 4px 0px grey'}}/>
-              </div>
-              <div id="container">
-                <h2 style={{marginLeft: '10px', height: '35px', marginTop: '30px', marginRight: '10px'}}>{this.state.picture != null ? '👍' : '👎'}</h2>
-              </div>
-
-            </div>
-
-            */}
-
-
-
-        <h1 style={{marginLeft: '20px'}}>Select your plan.</h1><br/>
-
-      {optComponent}
+        <PayPlanOption
+          title="Premium X"
+          cost={3.99}
+          description="Our premier plan. This is an elite tier for benefactors looking to make the most change."
+          callback={this.option_selected}
+          isSelected={a}
+        />
+        <PayPlanOption
+          title="Premium Y"
+          cost={1.99}
+          description="Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results."
+          callback={this.option_selected}
+          isSelected={b}
+        />
 
        <br/>
 
        <StripeProvider apiKey="pk_test_eDgW1qWOGdRdCnIQocPje0Gg">
-         <div className="example" style={{marginLeft: '20px', width: '90%'}} >
+         <div className="example" >
            <h1>Payment Information</h1>
-           <Elements>
-             <CheckoutForm onSignUp={this.signUpUser} style={{}}/>
+         <div style={{ marginLeft: '1%', marginRight: '1%', width: '98%'}} >
+           <Elements >
+             <CheckoutForm onSignUp={this.signUpUser} style={{width: '100%'}}/>
            </Elements>
+         </div>
+
          </div>
      </StripeProvider>
 

@@ -13,7 +13,11 @@ import firebase, { auth, provider } from './firebase.js';
 import * as util from 'util' // has no default export
 import { inspect } from 'util' // or directly
 import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo} from './Database.js';
+import MyInput from './MyInput.js';
 let urls = variables.local_urls;
+
+const email_regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
 
 
 class Login extends React.Component {
@@ -43,6 +47,16 @@ class Login extends React.Component {
 
     }
 
+    emailSubmitted = value => {
+      this.setState({ email_good: true, email: value });
+      // alert("Email submitted w/ value: " + value);
+    };
+
+    passSubmitted = value => {
+      this.setState({ pass_good: true, password: value });
+      // alert("Password submitted w/ value: " + value);
+    };
+
 
      validateEmail = (email) => {
         var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -50,12 +64,6 @@ class Login extends React.Component {
       }
 
 
-    myColor = (position) => {
-     if (this.state.plan === position) {
-       return "#e6ffe6";
-     }
-     return "";
-   }
 
    login = async () => {
      let email = this.state.email;
@@ -76,30 +84,46 @@ class Login extends React.Component {
      }
    }
 
+   sendPasswordReset = (email) => {
+     if (this.validateEmail(email))  {
+       firebase.auth().sendPasswordResetEmail(email);
+       Popup.alert('Sent!');
+     } else {
+       Popup.alert('Please enter a valid email!');
+     }
+   }
+
   render() {
 
-    var fontSize = '20px';
-    var col_width_wide = '150px';
-    var bottomMargin = '800px';
-    var leftMargin = '40px';
-    var topMargin = 32;
+    var email_component = () => {
+      return (
+        <MyInput
+          id={1}
+          label="Email"
+          locked={false}
+          active={false}
+          regex={email_regex}
+          handleSubmit={this.emailSubmitted}
+        />
+      );
+    };
 
-    if (this.state.width < 700) {
-      fontSize = '17px';
-      col_width_wide = '100px';
-      bottomMargin = '800px';
-      leftMargin = '35px';
-    }
-
-    if (this.state.width < 500) {
-      fontSize = '14px';
-      col_width_wide = '80px';
-      leftMargin = '30px';
-      topMargin = topMargin+=3;
-    }
+    var pass_component = () => {
+      return (
+        <MyInput
+          id={2}
+          label="Password"
+          locked={!this.state.email_good}
+          active={false}
+          minLength={7}
+          handleSubmit={this.passSubmitted}
+          type={'password'}
+        />
+      );
+    };
 
     return (
-          <div style={{  borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
+          <div style={{  borderRadius: '7px', fontSize: '12px', paddingLeft: '20%', paddingRight: '20%'}} className='myGradientBackground'>
             <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
 
             <Popup />
@@ -109,61 +133,28 @@ class Login extends React.Component {
                 </Link><br></br>
             </div>
 
+<br/>
+
           <h1 style={{marginLeft: '20px', fontSize: '40px'}}>LOGIN</h1><br/>
 
-
-          <div className='adjacentItemsParent' style={{color: 'black', fontWeight: '700'}}>
-            <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>EMAIL</h3><br/>
-            <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
-              >
-                  <FormControl
-                    aria-label="Default"
-                    aria-describedby="inputGroup-sizing-default"
-                    value = {this.state.email}
-                    onChange={(event)=>{
-                                this.setState({
-                                   email:event.target.value
-                                });
-                             }}
-                    style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
-                  />
-                </InputGroup>
-            <br />
-          </div>
-
-
-            <div className='adjacentItemsParent' style={{color: 'black', fontWeight: '700'}}>
-              <h3 style={{marginLeft: leftMargin,fontSize: fontSize, width: col_width_wide, marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>PASSWORD</h3><br/>
-              <InputGroup className="mb-3" style={{marginTop:"15px"}} className='flexibleAdjacentChild'
-                >
-                    <FormControl
-                      placeholder='Min. length of 6 characters'
-                      aria-label="Default"
-                      aria-describedby="inputGroup-sizing-default"
-                      value = {this.state.password}
-                      onChange={(event)=>{
-                                  this.setState({
-                                     password:event.target.value
-                                  });
-                               }}
-                      style={{width: '250px', backgroundColor: '#f4fbff', color: 'black', boxShadow: '4px 4px 4px grey', borderRadius: '5px'}}
-                    />
-                  </InputGroup>
-              <br />
-            </div>
+          {email_component()}
+          <br />
+        {pass_component()}
+          <br />
 
             <hr/>
-          <button style={{marginLeft: '50px'}} onClick={() => this.login()}>LOGIN</button>
+            <button style={{marginLeft: '50px'}} onClick={() => this.login()}>LOGIN</button>
+          <button style={{marginLeft: '50px'}} onClick={() => this.sendPasswordReset(this.state.email)}>FORGOT MY PASSWORD</button>
           <br/>
 
+
+          <br/><br/><br/>
             <div style={{textAlign: 'center'}}>
               <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
-                <br/>
-                  <br/>
-                    <br/>
+                <br/><br/><br/>
 
             </div>
-        <div style={{width: '100%', height: bottomMargin}}></div>
+        <div style={{width: '100%', height: '300px'}}></div>
           </div>
 
     );
