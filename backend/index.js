@@ -3,7 +3,7 @@ var axios = require('axios');
 var https = require('https');
 var bodyParser = require('body-parser');
 var fs = require('fs');
-var firebase = require('firebase');
+// var firebase = require('firebase');
 var admin = require("firebase-admin");
 var renderToString = require("react-dom/server");
 var React = require('react');
@@ -16,6 +16,8 @@ var multer  = require('multer')
 var Storage = require('@google-cloud/storage')
 var fileType = require('file-type');
 var Module = require('module');
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
+
 
 Module._extensions['.png'] = function(module, fn) {
   var base64 = fs.readFileSync(fn).toString('base64');
@@ -82,6 +84,8 @@ admin.initializeApp({
 });
 
 
+
+
 function log(output) {
     console.log(output)
 }
@@ -93,6 +97,37 @@ function logn(output) {
 // Get a reference to the root of the Database
 var root = admin.database();
 var storage_root = admin.storage();
+
+/**
+ * Gets the snapshot for an event
+ * @param  {[String]} eventId [event id]
+ * @return {[Object]} snapshot
+ */
+var eventSnapshot = async (eventId) => {
+
+  // ref
+  let event_ref = root.ref('/db/events/' + eventId);
+
+  return new Promise( async function (resolve, reject) {
+
+    event_ref.once('value').then( async function(snapshot, err) {
+      if (err) {
+        console.log(err);
+        reject(err.message);
+    } else {
+        if (snapshot.val()) {
+          let event = snapshot.val();
+          event['id'] = eventId;
+          resolve(event)
+        } else {
+          resolve(snapshot.val());
+        }
+
+
+      }
+    });
+  })
+}
 
 var canPostEvents = async (uid) => {
     
@@ -108,10 +143,220 @@ var canPostEvents = async (uid) => {
   })
 }
 
+const accountSid = '[REDACTED]';
+const twilio_phoneNumber = '+19083049973';
+const authToken = '[REDACTED]';
+const client = require('twilio')(accountSid, authToken);
+
+function send_text_message(pn, body) {
+  if (pn == null) { log('Warning: Could not send text to empty number!'); return; }
+  log('Sending message to ' + pn + '..');
+  client.messages
+  .create({
+     body: body,
+     from: twilio_phoneNumber,
+     to: ('' + pn)
+   }).then(message => console.log(message.sid)).catch(function(err) {log('ERR: ' + err)});
+}
+
+function groupText(pn_list, body) {
+  log('Group texting ' + body );
+  pn_list.forEach(function(pn) {  send_text_message(pn, body); } );
+}
+
+let group  =  ['9086420950', '9086420949', '9086421391'];
+// groupText(group, 'hello - Ryan');
+
+var spamChecker = {};
+function updateSpamChecker(phone) {
+  if (spamChecker[phone] == null) {
+    spamChecker[phone] = 1;
+  } else {
+    spamChecker[phone] = Number(spamChecker[phone]) + 1;
+  }
+  
+  if (spamChecker[phone] > 8) {
+    send_text_message('9086421391', 'GIVEASSIST SERVER AUTO MSG: WE ARE GETTING SPAMMED FROM ' + phone);
+  }
+
+}
+
+app.post('/sms', async (req, res) =>  {
+    try {
+
+      var user_vote = req.body.Body;
+      var msg_from = req.body.From;
+
+      log('Got user reply info..');
+
+      updateSpamChecker(msg_from);
+  
+      let user_id = await idFromNumber(msg_from);
+      log('got user id ' + user_id);
+      if (user_id != null) {
+        log('Got user id (non-null)..');
+        let active_event = await getActiveEventId();
+        let voting_options = await getOptionsDispersion();
+        log('Got active event & voting options..');
+
+        // check text is a number
+        if(isNaN(user_vote)){
+          // it's NOT a number
+          throw('User text was not a number');
+         } else { 
+          //  it's a number
+          if (voting_options.length > Number(user_vote))  {
+            // can vote this..  VOTE
+            let voteId = voting_options[Number(user_vote)-1 /* we give them 1..n not 0..n */ ].id;
+            log('Got vote id.. casting vote with: \n EventId: '+active_event +'\n VoteId: ' + voteId + '\n UID: ' + user_id);
+            let casted_vote = await castVote(active_event,voteId, user_id);
+
+            const twiml = new MessagingResponse();
+
+            twiml.message('Vote submitted!');
+          
+            res.writeHead(200, {'Content-Type': 'text/xml'});
+            res.end(twiml.toString());
+
+            
+
+            // send_text_message(msg_from, 'Vote submitted!');
+          } else {
+            //can't vote this
+            throw('User text was not a valid vote index');
+          }
+         }
+      }
+
+    } catch (e)  {
+      log('Caught SMS Error: ' + e);
+      const twiml = new MessagingResponse();
+      twiml.message('Sorry, we couldn\'t process your vote! Please double-check that the option you\'ve selected is valid!');
+      res.writeHead(500, {'Content-Type': 'text/xml'});
+      res.end(twiml.toString());
+    }
+})
+
+let nl = '%0a';  // NEWLINE ?????
+
+var unlocked = false;
+
+// listen for new event change
+root.ref('/db/active_event/').on('value', async function(snapshot) {
+  // if (!unlocked) { unlocked = true; return;}
+  try {
+    var user_phoneNumbers  = await get_all_user_phoneNumbers();
+    if (user_phoneNumbers == null) { log('No user phone numbers!'); return; }
+    let voting_options = await getOptionsDispersion();
+    if (voting_options == null) { log('No voting options!'); return; }
+    var resp = 'Hi there, this is the team at GiveAssist letting you know the voting window is open! Feel free to reply with the digit of your selected option of the month! ';
+    var index = 1;
+    voting_options.forEach(function(opt) {
+      // let option = voting_options[index-1];
+      // log('Options: ' + JSON.stringify(opt));
+      if ((opt['name'] != null && opt['summary'] != null)) { 
+        resp += ('\n\n' + index + '. ');
+          let option_string = opt['name'] + '\n' + (opt['summary'].length < 70 ? opt.summary : (opt.summary.substring(0, 70) + '.. [Read more on our site!]'));
+          // log('Option string: ' + option_string);
+          resp += option_string;
+          index++;
+      }
+    })
+    resp += '\n\nhttps://giveassist.org/vote'
+    
+    groupText(user_phoneNumbers, resp);
+    // groupText(user_phoneNumbers, 'https://giveassist.org/vote');
+  } catch (e)   {
+    log('active event val change error: ' +e );
+  }
+
+  });
+
+
+app.post('/smserror', (req, res) =>  {
+    log('TWILIO ERROR: ' + JSON.stringify(req.body.ErrorCode));
+    const twiml = new MessagingResponse();
+    twiml.message('Sorry, we couldn\'t process your vote! Please double-check that the option you\'ve selected is valid!');
+    res.writeHead(500, {'Content-Type': 'text/xml'});
+    res.end(twiml.toString());
+})
+
 app.get('/', (req, res)  => {
     res.send('Running..')
 })
 
+var get_all_user_phoneNumbers = async () => {
+  return new Promise( function(resolve, reject) {
+    var numbers = [];
+      let ref = root.ref('/users/');
+      ref.once('value', function(snap) {
+        snap.forEach((child) => {
+          // console.log(child.key, child.val()); 
+          var user = child.val();
+          var user_id = child.key;
+          if (user['i'] != null) {
+            var user_phone  = user['i']['z'];
+            if (user_phone != null) {
+              numbers.push(user_phone);
+            }
+          }
+        });
+      })
+      resolve(numbers);
+  })
+}
+
+String.prototype.replaceAll = function(search, replacement) {
+  var target = this;
+  return target.split(search).join(replacement);
+};
+
+
+var extractPhoneNumber = (uncleaned) => {
+  var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
+  return cleaned;
+}
+
+var comparePhoneNumbers  = (a, b) => {
+  var same_10 = (extractPhoneNumber(a).slice(-10) == extractPhoneNumber(b).slice(-10));
+  return same_10; // no country compare yet
+}
+
+var s = '908-642-1391';
+var  x =  extractPhoneNumber(s);
+log(x);
+
+var idFromNumber = async (phone) => {
+  return new Promise( function(resolve, reject) {
+      let ref = root.ref('/users/');
+      ref.once('value', function(snap) {
+        snap.forEach((child) => {
+          // console.log(child.key, child.val()); 
+          var user = child.val();
+          var user_id = child.key;
+          if (user['i'] != null) {
+            // log('found user info!: ' + JSON.stringify(user['i']));
+            var user_phone  = user['i']['z'];
+            if (user_phone != null) {
+              
+              // log('found user phone!: ' + extractPhoneNumber(user_phone) + ' (v. ' + extractPhoneNumber(phone) + ' => ' + (user_phone == phone ? 'TRUE' : 'FALSE') + ' )');
+              // match
+              if (comparePhoneNumbers(user_phone, phone)){
+                // log('resolving id-from-number');
+                  resolve(user_id);
+              }
+            }
+          }
+
+        });
+        log('rejecting id-from-number');
+        reject(null);
+      })
+
+  })
+}
+
+// idFromNumber(s).then(function(z) {log('RESP: '+z);}).catch(function(q){log('ERR:' + q);});
 
 // Get the priveledges of a user
 app.get('/eventPriviledges', (req, res)  => {
@@ -458,56 +703,32 @@ var mostRecentlyAddedEvent = async () => {
   })
 }
 
-/**
- * Gets the snapshot for an event
- * @param  {[String]} eventId [event id]
- * @return {[Object]} snapshot
- */
-var eventSnapshot = async (eventId) => {
-
-  // ref
-  let event_ref = firebase.database().ref('/db/events/' + eventId);
-
-  return new Promise( function (resolve, reject) {
-
-    event_ref.once('value').then(function(snapshot, err) {
-      if (err) {
-        console.log(err);
-        reject(err.message);
-    } else {
-        if (snapshot.val()) {
-          let event = snapshot.val();
-          event['id'] = eventId;
-          resolve(event)
-        } else {
-          resolve(snapshot.val());
-        }
 
 
-      }
-    });
-  })
-}
-
-var getOptionsDispersion = async (eventId) => {
+var getOptionsDispersion = async () => {
   return new Promise ( async function(resolve, reject) {
    try {
        let active_event_id = await getActiveEventId();
-       let eventSnapshot = await eventSnapshot(active_event_id);
+       
+       let snap = await eventSnapshot(active_event_id);
        let event = {
-          title: event["t"],
-          summary: event["s"],
-          options: event["o"],
-          id: event['id']
+          title: snap["t"],
+          summary: snap["s"],
+          options: snap["o"],
+          id: snap['id']
         };
         var objArray = [];
         if (event) {
 
             Object.keys(event.options).forEach(function(key) {
-                var votes = event.options[key].voters.length;
+              let op_snap = event.options[key];
+
+              // this is the stuff we're using
                 var opt = {
-                    votes: votes,
-                    id: key
+                    name: op_snap['t'],
+                    summary: op_snap['s'],
+                    link: op_snap['link'],
+                    id: key,
                 };
                 objArray.push(opt);
             });
@@ -520,6 +741,8 @@ var getOptionsDispersion = async (eventId) => {
    }      
   })
 }
+
+
 
 var getWinningOptionForEvent = async (eventId) => {
   return new Promise ( async function(resolve, reject) {
@@ -651,6 +874,8 @@ app.post('/event_log', async function(request, response) {
             root.ref('/db/active_event/').set(nextEvent.id);
             
             response.send('Good!');
+
+            
             
         } catch (e) {
             

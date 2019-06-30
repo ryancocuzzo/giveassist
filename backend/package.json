@@ -21,7 +21,8 @@
     "preact-render-to-string": "^4.1.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
-    "stripe": "^6.20.0"
+    "stripe": "^6.20.0",
+    "twilio": "^3.33.0"
   },
   "devDependencies": {},
   "scripts": {
