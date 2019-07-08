@@ -58,8 +58,8 @@ app.use(bodyParser.urlencoded({
 
 process.env.NODE_ENV = 'production';
 
-let PRICE_PREM_X = 3.99;
-let PRICE_PREM_Y = 1.99;
+let PRICE_PREM_X = 4.99;
+let PRICE_PREM_Y = 2.99;
 let PRICE_PREM_Z = 1.00;
 
 
@@ -646,10 +646,10 @@ var planIDForNameAndAmt = (untrimmed_nameAndAmt) => {
     return new Error('Invalid planIDForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
   }
   if (name == 'PX') {
-      return 'plan_F9mzY5SYtinHvc';
+      return 'plan_FOXcPq3uHNqx4X';
   }
   else if (name == 'PY') {
-      return 'plan_F9myF1XvfL04xa';
+      return 'plan_FOXdWHDyLP44tO';
   }
   else if (name == 'PZ') {
     return 'plan_FNDp8ntFqUpWgO';
