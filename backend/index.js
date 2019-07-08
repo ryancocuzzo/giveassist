@@ -636,6 +636,8 @@ var untrimSelectedOptionName = (opt) =>  {
 // trim the 'remium ' out of each option (for space)
 var untrimSelectedOptionAmount = (opt) =>  {
   opt = opt + '';
+  let spl = opt.split(',');
+  log(spl);
   return opt.split(',')[1];
 }
 
@@ -659,24 +661,28 @@ var planIDForNameAndAmt = (untrimmed_nameAndAmt) => {
 
 
 var quantityForNameAndAmt = (untrimmed_nameAndAmt) => {
-  let amt = untrimSelectedOptionName(untrimSelectedOptionAmount);
-  let name = planIDForNameAndAmt(untrimmed_nameAndAmt);
+    log('Quantity for name and amt.. IN: ' + untrimmed_nameAndAmt)
+  let name = untrimSelectedOptionName(untrimmed_nameAndAmt);
+  log('name is ' + name);
+
+  let amt = Number(parseFloat(untrimSelectedOptionAmount(untrimmed_nameAndAmt)));
+  log('amt is ' + amt);
   if (amt == null || name == null || isNaN(amt)) {
     return new Error('Invalid quantityForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
   }
-  amt = Number(amt);
+  // amt = Number(amt);
   if (name == 'PX') {
-      let q = Math.round(amt / PRICE_PREM_X);
+      let q = Math.round(amt.toFixed(2) / PRICE_PREM_X.toFixed(2));
       log('User buying '  + q + ' units of ' + name + '..');
       return q;
   }
   else if (name == 'PY') {
-    let q = Math.round(amt / PRICE_PREM_Y);
+    let q = Math.round(amt.toFixed(2) / PRICE_PREM_Y.toFixed(2));
     log('User buying '  + q + ' units of ' + name + '..');
     return q;
     }
   else if (name == 'PZ') {
-    let q = Math.round(amt / PRICE_PREM_Z);
+    let q = Math.round(amt.toFixed(2) / PRICE_PREM_Z.toFixed(2));
     log('User buying '  + q + ' units of ' + name + '..');
     return q;
     }
@@ -686,7 +692,7 @@ var quantityForNameAndAmt = (untrimmed_nameAndAmt) => {
 
 var createSubscription = async (firebase_user_token, planNameAndAmount) => {
     return new Promise( async function(resolve, reject) {
-        
+        log('creating sub of: ' + planNameAndAmount);
         var plan = planIDForNameAndAmt(planNameAndAmount);
         var amt = quantityForNameAndAmt(planNameAndAmount)
 
