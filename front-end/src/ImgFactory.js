@@ -1,6 +1,6 @@
 import profile_default from './images/profile_unknown.jpg';
 import logo_sm from './images/new_logo_sm.jpg';
-import logo_lg from './images/new_logo_wide.jpg';
+import logo_lg from './images/new_logo_wide_2.jpg';
 import logo_sm2 from './images/new_logo_sm.jpg';
 import logo_lg2 from './images/new_logo_sm.jpg';
 import hands_in from './images/hands_in.jpg';
@@ -14,6 +14,7 @@ import clockB from './images/clockB.png';
 import clockW from './images/clockW.png';
 import earthB from './images/earth-globe.png';
 import earthW from './images/earth-globe-2.png';
+import home from './images/homeIcon.svg';
 
 var ImgFactory = {
   unknown: profile_default,
@@ -29,7 +30,8 @@ var ImgFactory = {
   clockB: clockB,
   clockW: clockW,
   earthB: earthB,
-  earthW: earthW
+  earthW: earthW,
+  home: home
 };
 
 export default ImgFactory;

@@ -10,7 +10,12 @@ import Slider, { Range } from 'rc-slider';
 import Popup from 'react-popup';
 import 'rc-slider/assets/index.css';
 import numeral from 'numeral';
+// import variables from './variables.js';
 import { DropdownButton, MenuItem, Button, ButtonToolbar, ButtonGroup, Navbar, NavItem, NavDropdown, Nav } from 'react-bootstrap';
+import axios from 'axios';
+
+let server_urls = variables.server_urls;
+
 
 var numberFormat = (number) => {
   return numeral(number).format('0,0');
@@ -59,6 +64,47 @@ class IntroPage extends Component {
      */
     componentDidMount() {
 
+      // All fields cleared
+      var userJson = {
+        n: 'lsajhhaskhs',                             // name
+        e: 'ljhalskh@kjflskah.com',                            // email
+        p: 'PX',                             // plan
+        dn: 'jaslhlshklsh',                     // display name
+        z: '3939393993'   // phone number
+      };
+
+      // axios.post(server_urls.postUserInfo, {params: {
+      //   idToken: 'skljhalhfsdajl;',
+      //   n: userJson.n,
+      //   e: userJson.e,
+      //   p: userJson.p,
+      //   dn: userJson.dn,
+      //   z: userJson.z,
+      // }}).then(function(x){
+      //   console.log('__________' + x);
+      //
+      //   alert(x);
+      // }).catch(function(e) {
+      //   console.log('__________' + e);
+      //   alert(e);
+      // });
+      //
+      // axios.post('http://localhost:1234/postUserInfoo', {params: {
+      //   idToken: 'skljhalhfsdajl;',
+      //   n: userJson.n,
+      //   e: userJson.e,
+      //   p: userJson.p,
+      //   dn: userJson.dn,
+      //   z: userJson.z,
+      // }}).then(function(x){
+      //   console.log('__________' + x);
+      //
+      //   alert(x);
+      // }).catch(function(e) {
+      //   console.log('__________' + e);
+      //   alert(e);
+      // });
+
       window.addEventListener("resize", function(event) {
         this.setState({width: document.body.clientWidth});
       }.bind(this))
@@ -76,7 +122,7 @@ class IntroPage extends Component {
 
      Popup.create({
          title: 'BETA TESTING',
-         content: 'For the month of June we are in a live BETA mode. Nothing changes except we don\'t charge for the month. Live payments turn on July 1st. Enjoy!',
+         content: 'We are currently in a live BETA mode. Nothing changes except we don\'t charge your payments. Your account will be deleted prior to us releasing the live platform. Live payments turn on July 12th. Enjoy!',
      });
 
      // this.scrollToMyRef();
@@ -201,7 +247,7 @@ dynamicHComponent = (txt, size) => {
           <img src={imgs.logo_lg} height="50px" className='fixedAdjacentChild' alt="Picture" style={{marginTop: '16px', marginBottom: '20px', marginTop: '20px', borderRadius: '5px'}}></img>
 
             <Navbar.Toggle className='blackOnHover' style={{height: '50px'}}>
-              <h4 style={{marginTop: '7px',height: '50px'}}>JUMP</h4>
+              <h4 style={{marginTop: '7px',height: '50px'}}>MENU</h4>
             </Navbar.Toggle>
         </Navbar.Header>
         <Navbar.Collapse >
@@ -657,7 +703,7 @@ dynamicHComponent = (txt, size) => {
             <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>FAQ</h1>
           {faq_q('Who are you guys and what do you do?', 'We are a service that allows you to focus on what’s important in your life, while taking an interest in what’s important to the world. We streamline the donation process to only a click a month - from your phone!')}
           {faq_q('Why are you different than what exists?','There are a few different things that makes us stand out in the donation space. The first being we are a subscription-based model, allowing for you to make a difference without manual action. Secondly, we vary where the money is donated, each time to a cause that is relevant at the moment, helping us make the greatest impact possible. Lastly, we built our pricing structure to accommodate all different demographics, which we believe is the cornerstone of our model. We believe everyone can be impactful.')}
-          {faq_q('Why should I sign up if I can just donate myself?','You are, we’re just helping you out! Through our service, you are donating to each cause, but life gets in the way! Sometimes you may forget to donate, or not have time to research where to donate to, and that’s where we come in. We do these things for you, and make this process super easy!')}
+          {faq_q('Why should I sign up if I can just donate myself?','You are donating it yourself, we’re just helping you out! Through our service, you are donating to each cause, but life gets in the way! Sometimes you may forget to donate, or not have time to research where to donate to, and that’s where we come in. We do these things for you, and make this process super easy!')}
           {faq_q('How are the causes for each month chosen?','We use our proprietary, custom-built web-scraping technology to do the hard researching for us and, from there, we handpick the causes we feel are most important, recent, and relevant. We factor in the amount of attention a cause is receiving, the magnitude of the cause, and the recency of the emergence of the cause.')}
           {faq_q('Where does the other 9% go?','We have operating costs to run the company! We have a bunch of different kinds of expenses (servers, namespaces,  marketing, business tools & essentials, employees, etc. ).')}
         </div>

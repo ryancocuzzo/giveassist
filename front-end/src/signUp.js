@@ -13,9 +13,18 @@ import moment from 'moment';
 import grad from './GradientSVG.js';
 import PayPlanOption from "./PayPlanOption";
 import MyInput from './MyInput.js';
-
+import imgs from './ImgFactory.js';
+import { _signUpUser } from './User.js';
 let urls = variables.local_urls;
 let server_urls = variables.server_urls;
+
+String.prototype.replaceAll = function(search, replacement) {
+  var target = this;
+  return target.split(search).join(replacement);
+};
+
+
+
 
 var strong_pass_regex = new RegExp(
   "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,})"
@@ -29,38 +38,54 @@ class SignUp extends Component {
   constructor(props) {
       super(props);
       this.state = {
-        name: '',
-        email: '',
-        plan: '',
-        password: '',
-        phone: '',
-        name_good: false,
-        email_good: false,
-        pass_good: false,
-        phone_good: false,
-        selected_option: false,
+        name: props.name || '',
+        email: props.email || '',
+        plan: props.plan || '',
+        password: props.password || '',
+        phone: props.phone || '',
+        name_good: props.name_good || false,
+        email_good: props.email_good || false,
+        pass_good: props.pass_good || false,
+        phone_good: props.phone_good || false,
+        selected_option: props.selected_option || false,
+        custom_plan_amt: 0,
 
         displayName: this.makeid(),
-        width: document.body.clientWidth
+        width: props.clientWidth || document.body.clientWidth
       };
+
+
 
   }
 
-
   nameSubmitted = value => {
     this.setState({ name_good: true, name: value });
+    // alert(this.state.email);
+    let emailIsOk = this.state.email != null && this.validateEmail(this.state.email);
+    if (emailIsOk) {
+      this.emailSubmitted(this.state.email);
+    }
   };
 
   emailSubmitted = value => {
+    // alert('em');
     this.setState({ email_good: true, email: value });
   };
 
   passSubmitted = value => {
+    // alert('pass');
+
     this.setState({ pass_good: true, password: value });
   };
 
   phoneSubmitted = value => {
+    // alert('phone');
+
     this.setState({ phone_good: true, password: value });
+  };
+
+  customPlanSubmitted = (id, value) => {
+    this.setState({ custom_plan_amt: value });
   };
 
   option_selected = title => {
@@ -82,6 +107,9 @@ class SignUp extends Component {
   };
 
   componentDidMount() {
+
+
+
     window.addEventListener("resize", function(event) {
       // console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
       this.setState({width: document.body.clientWidth});
@@ -96,8 +124,8 @@ class SignUp extends Component {
       });
   };
 
-   makeid = () => {
-    var length = 15;
+  makeid = () => {
+    var length = 5;
     var result           = '';
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
@@ -105,309 +133,323 @@ class SignUp extends Component {
        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
- }
+  }
 
- validateEmail = (email) => {
+validateEmail = (email) => {
    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
    return re.test(String(email).toLowerCase());
 }
 
 validatePhone = (phone) => {
     var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-    return phone.test(String(phone));
+    return re.test(String(phone));
 }
 
 extractPhoneNumber = (uncleaned) => {
-    var cleaned = uncleaned.replace('(','').replace(')','').replace('+','').replace('-','');
-    return cleaned;
+  var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
+  return cleaned;
 }
 
+formIsValid = () => {
 
-
-  formIsValid = () => {
-
-    // Validate each property
-    let nameIsOk = this.state.name != null && this.state.name != '' && this.state.name.length > 4;
-    let emailIsOk = this.state.email != null && this.validateEmail(this.state.email);
-    let planIsOk = this.state.selected_option != null && this.state.selected_option != '';
-    let passIsOk = this.state.password != null && this.state.password.length >= 7;
-    let phoneIsOk = this.state.phoneIsOk != null && this.validatePhone(this.state.phone);
-    if (!nameIsOk)  {
-      Popup.alert('Please check your name, it doesn\'t\n appear to be valid!')
-      return false;
-    }  else if (!emailIsOk) {
-      Popup.alert('Please check your email, it doesn\'t\n appear to be valid!');
-      return false;
-    }  else if (!passIsOk) {
-      Popup.alert('Please check your password, it doesn\'t\n appear to be valid!')
-      return false;
-    } else if (!phoneIsOk) {
-      Popup.alert('Please check your phone number, it doesn\'t\n appear to be valid!')
-      return false;
-    } else if (!planIsOk) {
-      Popup.alert('Please check your plan, it doesn\'t\n appear to be selected!')
-      return false;
-    }
-    return true;
+  // Validate each property
+  let nameIsOk = this.state.name != null && this.state.name != '' && this.state.name.length > 4;
+  let emailIsOk = this.state.email != null && this.validateEmail(this.state.email);
+  let planIsOk = this.state.selected_option != null && this.state.selected_option != '';
+  let passIsOk = this.state.password != null && this.state.password.length >= 7;
+  let phoneIsOk = this.state.phone != null && this.validatePhone(this.state.phone);
+  if (!nameIsOk)  {
+    Popup.alert('Please check your name, it doesn\'t\n appear to be valid!')
+    return false;
+  }  else if (!emailIsOk) {
+    Popup.alert('Please check your email, it doesn\'t\n appear to be valid!');
+    return false;
+  }  else if (!passIsOk) {
+    Popup.alert('Please check your password, it doesn\'t\n appear to be valid!')
+    return false;
+  } else if (!phoneIsOk) {
+    Popup.alert('Please check your phone number ('+ this.state.phone+ '), it doesn\'t\n appear to be valid!')
+    return false;
+  } else if (!planIsOk) {
+    Popup.alert('Please check your plan, it doesn\'t\n appear to be selected!')
+    return false;
   }
+  return true;
+}
 
-  signUpUser = async (tokenId) => {
-    console.log('Signing up user');
-    // Validate form
-    if (this.formIsValid()) {
-      try {
+signUpUser = async (paymentTokenId) => {
+  console.log('Signing up user');
+  //Validate form
+  if (this.formIsValid()) {
 
-        // All fields cleared
-        var userJson = {
-          n: this.state.name,                             // name
-          e: this.state.email,                            // email
-          p: this.state.selected_option,                  // plan
-          dn: this.state.displayName,                     // display naem
-          j: moment().format('LL'),                       // timestamp
-          z: this.extractPhoneNumber(this.state.phone)    // phone number
-        };
+      let amountPaid = this.state.selected_option == 'Premium X' ? 4.99 : this.state.selected_option == 'Premium Y' ? 2.99 : this.state.custom_plan_amt;
 
-        var userQueriableJSON = {
-          dn: this.state.displayName,
-          p: this.state.selected_option
-        };
+      _signUpUser(paymentTokenId, this.state.name, this.state.email, this.state.password, this.state.phone, this.state.displayName, this.state.selected_option, amountPaid)
+      .then(function(signUp_response) {
 
-        let createUser = await firebase.auth().createUserWithEmailAndPassword(this.state.email, this.state.password);
-        console.log('Hey devs, was able to create user!');
-        var user = await firebase.auth().signInWithEmailAndPassword(this.state.email, this.state.password);
-        console.log('Hey devs, was able to log in user!');
-        user = user.user;
-        this.setState({user:user});
+        console.log('Got Signup response: ' + JSON.stringify(signUp_response));
+
+        // document.location.reload(true);
+
+        // alert(signUp_response);
+
+        // Done!
+
+        this.setState({user:signUp_response.user});
+
+        window.history.pushState(null, '', '/vote')
         this.scrollToTop();
-        // Set user info
-        firebase.database().ref('/users/'+(user.uid)+'/i/').set(userJson);
-        console.log('Hey devs, was able to set i!');
-        firebase.database().ref('/queriable/'+(user.uid)+'/dn').set(userQueriableJSON.dn);
-        console.log('Hey devs, was able to set dn!');
-        firebase.database().ref('/users/' + user.uid + '/d/t').set(0);
-        console.log('Hey devs, was able to set d/t!');
+        Popup.alert('Welcome to the future of donation..');
 
-        axios.get(server_urls.createStripeUser, {params: { uid: user.uid }});
+      }.bind(this)).catch(function(error)  {
 
+        Popup.alert('It seems we couldn\'t process your request! Here\'s why: ' + error.message);
 
-        var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
+        setTimeout(function () {
+              // Oops, error!
+              document.location.reload(true);
+        }, 3000);
 
 
-        var paymentToken = tokenId;
-        var plan = this.state.selected_option;
-
-        axios.get(server_urls.createStripeUser, {params: {
-          idToken: idToken,
-          paymentToken: paymentToken,
-          plan: plan
-        }}).then(async function(customer_id) {
-
-          axios.get(server_urls.initPayments, {params: {
-            idToken: idToken,
-            plan: plan
-          }}).then(async function(subscription) {
-            // alert('good stuff..');
-            // Save subscription
-            // firebase.database().ref('/users/' + user.uid + '/subscription/').set(subscription);
-            window.history.pushState(null, '', '/vote')
-
-            // // Set user picture
-            // await this.uploadPicture()
-
-            this.props.popup('Welcome to the future of donation..');
-
-          }.bind(this)).catch(function(err) {
-            var user = firebase.auth().currentUser;
-            // Popup.Create();
-            firebase.database().ref('/users/'+(user.uid)).set(null);
-            firebase.database().ref('/queriable/'+(user.uid)).set(null);
-            if (user) {
-              user.delete().then(function() {
-                this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 7)');
-                // User deleted.
-              }).catch(function(error) {
-                // An error happened.
-                // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 8)');
-              });
-            }
-          }.bind(this))
-
-          // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. Please note this issue appears to stem from your payment information!  (Code: 3)');
 
 
-        }.bind(this)).catch(function(err) {
-          var user = firebase.auth().currentUser;
-          // Popup.Create();
-          firebase.database().ref('/users/'+(user.uid)).set(null);
-          firebase.database().ref('/queriable/'+(user.uid)).set(null);
-          if (user) {
-            user.delete().then(function() {
-              this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.  (Code: 4) => ' + err);
-              // User deleted.
-            }).catch(function(error) {
-              // An error happened.
-              // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit.  (Code: 9)');
-            });
-          }
-        }.bind(this))
-      } catch (e) {
-        Popup.alert('It seems your information is incorrect. If this issue persists, please reload the page and try again! Issue: ' + e);
-        console.log('\nHey devs! Heres the error: ' + e);
-        var user = firebase.auth().currentUser;
-        // Popup.Create();
-        firebase.database().ref('/users/'+(user.uid)).set(null);
-        firebase.database().ref('/queriable/'+(user.uid)).set(null);
-        if (user) {
-          user.delete().then(function() {
-            // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 7)');
-            // User deleted.
-          }).catch(function(error) {
-            // An error happened.
-            // this.props.popup('Sorry, your account could not be created at this time! Please try again in a bit. (Code 8) => ' +error);
-          });
-        }
-
-      }
-
-    } else {
-
-      Popup.alert('It seems your information is incorrect. If this issue persists, please reload the page and try again!');
-    }
-
-
+      }.bind(this))
   }
 
-  render () {
+}
 
-    var name_component = () => {
-      return (
-        <MyInput
-          id={1}
-          label="Name"
-          locked={false}
-          active={false}
-          minLength={4}
-          handleSubmit={this.nameSubmitted}
-        />
-      );
-    };
+handleValChange = (id, val) => {
+  if (id == 1) { // name
+    this.setState({name: val});
+  } else if (id == 2) { // email
+    this.setState({email: val});
+    this.emailSubmitted(val);
+  }else if (id == 3) { // pass
+    this.setState({password: val});
+    this.passSubmitted(val);
+  }else if (id == 4) { // phone
+    this.setState({phone: val});
+    this.phoneSubmitted(val);
+  }
+}
 
-    var email_component = () => {
-      return (
-        <MyInput
-          id={2}
-          label="Email"
-          locked={!this.state.name_good}
-          active={false}
-          regex={email_regex}
-          handleSubmit={this.emailSubmitted}
-        />
-      );
-    };
+render () {
 
-    var pass_component = () => {
-      return (
-        <MyInput
-          id={3}
-          label="Password"
-          locked={!this.state.name_good || !this.state.email_good}
-          active={false}
-          minLength={7}
-          handleSubmit={this.passSubmitted}
-        />
-      );
-    };
-
-    var phone_component = () => {
-      return (
-        <MyInput
-          id={4}
-          label="Phone Number"
-          locked={!this.state.name_good || !this.state.email_good || !this.state.pass_good}
-          active={false}
-          regex={phone_regex}
-          handleSubmit={this.passSubmitted}
-        />
-      );
-    };
-
-    var a = this.state.selected_option == "Premium X";
-    var b = this.state.selected_option == "Premium Y";
-    var c = this.state.selected_option == "Premium Z";
-
-    var isMobile = this.state.width <= 800;
-
+  var name_component = () => {
     return (
-      <div style={{ fontSize: '12px', paddingLeft: '12%', paddingRight: '12%'}} className='myGradientBackground'>
-      <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
+      <MyInput
+        id={1}
+        label="Name"
+        locked={false}
+        active={false}
+        minLength={4}
+        name="name"
+        handleSubmit={this.nameSubmitted}
+        handleVal={this.handleValChange}
+      />
+    );
+  };
 
-        <Popup />
-          <div style={{textAlign: 'center'}}>
-            <Link to={urls.home} style={{fontSize: '22px', fontWeight: 'bold', height: '40px'}}>
-              <button style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: '100px', backgroundColor: 'transparent'}} > HOME </button>
-            </Link><br></br>
-        </div>
+  var email_component = () => {
+    return (
+      <MyInput
+        id={2}
+        label="Email"
+        locked={!this.state.name_good}
+        active={false}
+        name="email"
+        regex={email_regex}
+        handleSubmit={this.emailSubmitted}
+        type="email"
+        handleVal={this.handleValChange}
+      />
+    );
+  };
 
-      <h1 style={{fontSize: '40px'}}>Join</h1><br/>
+  var pass_component = () => {
+    return (
+      <MyInput
+        id={3}
+        label="Password"
+        locked={!this.state.name_good || !this.state.email_good}
+        active={false}
+        minLength={7}
+        name='organization'
+        handleSubmit={this.passSubmitted}
+        handleVal={this.handleValChange}
+      />
+    );
+  };
 
-        {/* INSERT FIELD COMPONENTS */}
+  var phone_component = () => {
+    return (
+      <MyInput
+        id={4}
+        label="Phone Number"
+        locked={!this.state.name_good || !this.state.email_good || !this.state.pass_good}
+        active={false}
+        regex={phone_regex}
+        handleSubmit={this.passSubmitted}
+        name='tel'
+        type="tel"
+        handleVal={this.handleValChange}
 
-        {name_component()}
-        <br />
-        {email_component()}
-        <br />
-        {pass_component()}
-        <br />
-        {phone_component()}
-        <br/>
+      />
+    );
+  };
 
-        <h1 style={{}}>Select your plan.</h1><br/>
+  var num_regex = /[0-9]*/;
 
-        {/* INSERT PLAN COMPONENTS */}
 
-        <PayPlanOption
-          title="Premium X"
-          cost={3.99}
-          description="Our premier plan. This is an elite tier for benefactors looking to make the most change."
-          callback={this.option_selected}
-          isSelected={a}
-        />
-        <PayPlanOption
-          title="Premium Y"
-          cost={1.99}
-          description="Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results."
-          callback={this.option_selected}
-          isSelected={b}
-        />
 
-       <br/>
+  var a = this.state.selected_option == "Premium X";
+  var b = this.state.selected_option == "Premium Y";
+  var c = this.state.selected_option == "Premium Z";
 
-       <StripeProvider apiKey="pk_test_eDgW1qWOGdRdCnIQocPje0Gg">
-         <div className="example" >
-           <h1>Payment Information</h1>
-         <div style={{ marginLeft: '1%', marginRight: '1%', width: '98%'}} >
-           <Elements >
-             <CheckoutForm onSignUp={this.signUpUser} style={{width: '100%'}}/>
-           </Elements>
-         </div>
+  var custom_component = () => {
+    return (
 
-         </div>
-     </StripeProvider>
+        <div style={{marginLeft: '5%', width: '100%'}}>
+            <MyInput
+              id={5}
+              label="Custom Amount"
+              locked={false}
+              active={false}
+              regex={num_regex}
+              type="number"
+              name='organization'
+              handleSubmit={this.customPlanSubmitted}
+              handleVal={this.customPlanSubmitted}
+              minLength={1}
+              maxWidth="90%"
+              fontSize='25px'
 
-     <br />
-       <div style={{textAlign: 'center'}}>
-         <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
-           <br/>
-             <br/>
-               <br/>
+            />
+          </div>
+
+    );
+  };
+
+  var isMobile = this.state.width <= 1000;
+
+  var options = (isMobile ?
+
+  <div>
+    <PayPlanOption
+    title="Premium X"
+    cost={4.99}
+    description="Hello!!"
+    callback={this.option_selected}
+    isSelected={a}
+  />
+    <PayPlanOption
+    title="Premium Y"
+    cost={2.99}
+    description="Hello!!"
+    callback={this.option_selected}
+    isSelected={b}
+  />
+    <PayPlanOption
+    title="Premium Z"
+    description="Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results."
+    callback={this.option_selected}
+    isSelected={c}
+    customIn={custom_component()} />
+  </div>  :
+
+    <table>
+            <tr>
+              <td style={{width: '33%'}}>
+              <PayPlanOption
+              title="Premium X"
+              cost={4.99}
+              description="Hello!!"
+              callback={this.option_selected}
+              isSelected={a}
+            />
+              </td>
+              <td style={{width: '33%'}}>
+              <PayPlanOption
+              title="Premium Y"
+              cost={2.99}
+              description="Hello!!"
+              callback={this.option_selected}
+              isSelected={b}
+              />
+              </td>
+              <td  style={{width: '33%'}}>
+              <PayPlanOption
+                title="Premium Z"
+                description="Combining effectiveness and affordability this is is an exceptional, change-making selection for that yields definitive results."
+                callback={this.option_selected}
+                isSelected={c}
+                customIn={custom_component()}
+                />
+              </td>
+            </tr>
+          </table>
+  )
+
+
+
+  return (
+    <div style={{ fontSize: '12px', paddingLeft: '5%', paddingRight: '5%'}} className='myGradientBackground'>
+    <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
+
+      <Popup />
+        <div style={{textAlign: 'center'}}>
+          <Link to={urls.home} style={{fontSize: '22px', fontWeight: 'bold', height: '40px'}}>
+            <img src={imgs.home} height="100px" style={{height: '100px', width: '100px', marginTop: '16px', marginBottom: '20px', marginTop: '20px', borderRadius: '5px'}}></img>
+          </Link><br></br>
+      </div>
+
+    <h1 style={{fontSize: '40px'}}>Join</h1><br/>
+
+      {/* INSERT FIELD COMPONENTS */}
+
+      {name_component()}
+      <br />
+      {email_component()}
+      <br />
+      {pass_component()}
+      <br />
+      {phone_component()}
+      <br/>
+
+      <h1 style={{}}>Select your plan.</h1><br/>
+
+      {/* INSERT PLAN COMPONENTS */}
+
+      {options}
+
+     <br/>
+
+     <StripeProvider apiKey="pk_test_eDgW1qWOGdRdCnIQocPje0Gg">
+       <div className="example" >
+         <h1>Payment Information</h1>
+       <div style={{ marginLeft: '1%', marginRight: '1%', width: '98%'}} >
+         <Elements >
+           <CheckoutForm onSignUp={this.signUpUser} style={{width: '100%'}}/>
+         </Elements>
+       </div>
 
        </div>
-        <br />
-      <br />
+   </StripeProvider>
 
-      </div>
-    );
-  }
+   <br />
+     <div style={{textAlign: 'center'}}>
+       <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
+         <br/>
+           <br/>
+             <br/>
+
+     </div>
+      <br />
+    <br />
+
+    </div>
+  );
+}
 
 
 }

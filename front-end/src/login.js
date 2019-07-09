@@ -14,6 +14,8 @@ import * as util from 'util' // has no default export
 import { inspect } from 'util' // or directly
 import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo} from './Database.js';
 import MyInput from './MyInput.js';
+import imgs from './ImgFactory.js';
+
 let urls = variables.local_urls;
 
 const email_regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -40,6 +42,9 @@ class Login extends React.Component {
   }
 
     componentDidMount() {
+
+
+
       window.addEventListener("resize", function(event) {
         console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
         this.setState({width: document.body.clientWidth});
@@ -129,7 +134,7 @@ class Login extends React.Component {
             <Popup />
               <div style={{textAlign: 'center'}}>
                 <Link to={urls.home} style={{fontSize: '22px', fontWeight: 'bold', height: '40px'}}>
-                  <button style={{fontSize: '22px', fontWeight: 'bold', height: '40px', marginLeft: '0%', width: '100px', backgroundColor: 'transparent'}} > HOME </button>
+                  <img src={imgs.home} height="100px" style={{height: '100px', width: '100px', marginTop: '16px', marginBottom: '20px', marginTop: '20px', borderRadius: '5px'}}></img>
                 </Link><br></br>
             </div>
 

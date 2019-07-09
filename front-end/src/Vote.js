@@ -384,15 +384,24 @@ class Vote extends React.Component {
       }
     }
 
+    function roundToTwo(num) {
+        return +(Math.round(num + "e+2")  + "e-2");
+    }
+
     var size = this.state.eventComponentWidth;
     var total_votes = this.state.total_votes;
 
     var percentageCalc = (count) => {
+      // alert('Received: ' + count);
       if (total_votes != 0) {
         var p = (count *1.0 / total_votes);
-        p = Math.round(Math.round(p * 100) / 100);
+        p = roundToTwo(p);
+        p = Math.round(p * 100);
+        p = Math.round(p) /Math.round(100);
+        p = Math.round(p * 100);
+        // alert(p);
         if (p == 1) return '100%';
-        else return (100*p + '%');
+        else return (p + '%');
       } else {
         return '';
       }

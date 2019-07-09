@@ -16,6 +16,41 @@
   transition: 0.3s background-color ease-in-out, 0.3s box-shadow ease-in-out;
 }
 
+
+.gradientButton {
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#249cb5+0,b3ea8f+100 */
+  background-image: #78acb7; /* Old browsers */
+  background-image: -moz-linear-gradient(
+    top left,
+    #78acb7 0%,
+    #1e7e92 100%
+  ); /* FF3.6-15 */
+  background-image: -webkit-linear-gradient(
+    top left,
+    #78acb7 0%,
+    #1e7e92 100%
+  ); /* Chrome10-25,Safari5.1-6 */
+  background-image: linear-gradient(
+    to bottom right,
+    #78acb7 0%,
+    #1e7e92 100%
+  ); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+
+
+}
+
+.gradientButton2 {
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#249cb5+0,b3ea8f+100 */
+  background-image: #78acb7; /* Old browsers */
+  background-image:radial-gradient(#44b7d0 2%, #82c2d0 50%, #bbdee6 70%, #d1f1f7 95%);
+
+}
+
+#grad1 {
+  height: 200px;
+  background-color: red; /* For browsers that do not support gradients */
+  background-image: linear-gradient(to bottom right, red, yellow); /* Standard syntax (must be last) */
+}
 .field:hover {
   background-color: rgba(255, 255, 255, 0.45);
   box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.05);

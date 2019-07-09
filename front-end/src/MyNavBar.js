@@ -128,14 +128,14 @@ class MyNavBar extends Component {
     // Check for new user (state change)
     firebase.auth().onAuthStateChanged(function(user) {
         this.setState({user: user});
-        if (user) {
-          this.getProfilePicture(user.uid);
-        }
+        // if (user) {
+        //   this.getProfilePicture(user.uid);
+        // }
     }.bind(this));
-
-    if (this.state.user) {
-      this.getProfilePicture(this.state.user.uid);
-    }
+    //
+    // if (this.state.user) {
+    //   this.getProfilePicture(this.state.user.uid);
+    // }
 
     window.addEventListener("resize", function(event) {
       this.setState({width: document.body.clientWidth});
@@ -237,7 +237,7 @@ class MyNavBar extends Component {
           <img src={imgs.logo_lg} height="50px" className='fixedAdjacentChild' alt="Picture" style={{marginTop: '16px', marginBottom: '20px', marginTop: '20px', borderRadius: '5px'}}></img>
 
             <Navbar.Toggle className='blackOnHover' style={{height: '50px'}}>
-              <h4 style={{marginTop: '7px',height: '50px'}}>JUMP</h4>
+              <h4 style={{marginTop: '7px',height: '50px'}}>MENU</h4>
             </Navbar.Toggle>
         </Navbar.Header>
         <Navbar.Collapse >

@@ -15,6 +15,7 @@ import { get_users, get_n_events, get_reciepts_count, getUploadedReceiptsRefs} f
 import numeral from 'numeral';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table-next';
+import {trimSelectedOption,untrimSelectedOption} from './User.js';
 
 
 var moneyFormat = (number) => {
@@ -221,7 +222,7 @@ class Vaults extends Component {
         return <div>
                 <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700'}}>
                   <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}} >{user.value.dn}</h3><br/>
-                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{user.value.p}</h3><br/>
+                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{untrimSelectedOption(user.value.p)}</h3><br/>
                   <br />
                 </div>
               </div>

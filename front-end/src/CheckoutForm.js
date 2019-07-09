@@ -7,6 +7,9 @@ class CheckoutForm extends Component {
   constructor(props) {
     super(props);
     this.submit = this.submit.bind(this);
+    this.state = {
+      width: props.clientWidth || document.body.clientWidth
+    };
   }
 
   async submit(ev) {
@@ -20,7 +23,39 @@ class CheckoutForm extends Component {
       Popup.alert('Your payment information is invalid!')
 }
 
+componentDidMount() {
+
+  window.addEventListener("resize", function(event) {
+    // console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
+    this.setState({width: document.body.clientWidth});
+  }.bind(this))
+
+}
+
   render() {
+    var isMobile = this.state.width <= 1000;
+
+    let button_style={
+      width: (isMobile ? '100%' : '500px'),
+       height: '45px',
+       fontSize: '20px',
+        fontWeight: '2000',
+        margin: "0 auto",
+        display: "table"
+      };
+
+    let button_wrapper_style = isMobile ?
+    {
+      width:  '100%',
+      margin: "0 auto",
+      display: "table"
+    } :
+    {
+      width:  '100%',
+      margin: "0 auto",
+      display: "table"
+    } ;
+
     return (
       <div className="checkout" style={{alignContent: 'center', width: '100%'}}>
       <Popup />
@@ -28,7 +63,11 @@ class CheckoutForm extends Component {
       <br/>
       <CardElement style={{base: {fontSize: '18px'}, margin: 'auto', width: '100%'}} />
       <br/>
-    <button style={{marginLeft: '0%',width: '100%',marginRight: '0%', height: '45px', fontSize: '20px', fontWeight: '2000'}} onClick={this.submit}><strong>JOIN</strong></button>
+    <br /><br />
+  {!isMobile ? <div><br /><br /><br /></div> : ''}
+  <div style={button_wrapper_style}>
+      <button style={button_style} onClick={this.submit}><strong>{this.props.submitText || 'JOIN'}</strong></button>
+    </div>
       <br /><br /><br /><br /><br /><br /></div>
     );
   }
