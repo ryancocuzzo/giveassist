@@ -16,7 +16,9 @@ var multer  = require('multer')
 var Storage = require('@google-cloud/storage')
 var fileType = require('file-type');
 var Module = require('module');
-var util = require('util');
+// var util = require('util');
+var utils = require('./util.js');
+
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
 // Module._extensions['.png'] = function(module, fn) {
@@ -58,10 +60,6 @@ app.use(bodyParser.urlencoded({
 
 process.env.NODE_ENV = 'production';
 
-let PRICE_PREM_X = 4.99;
-let PRICE_PREM_Y = 2.99;
-let PRICE_PREM_Z = 1.00;
-
 
 //export GOOGLE_APPLICATION_CREDENTIALS="./serviceAccountKeyJSON";
 
@@ -95,15 +93,6 @@ const projectId = 'donate-rcocuzzo-17387568';
 var port = process.env.PORT || 1234;
 
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",
-  storageBucket: "donate-rcocuzzo-17387568.appspot.com"
-});
-
-
-
-
 function log(output) {
     console.log(output)
 }
@@ -113,7 +102,7 @@ function logn(output) {
 }
 
 // Get a reference to the root of the Database
-var root = admin.database();
+var root = utils.root; //admin.database();
 var storage_root = admin.storage();
 
 /**
@@ -438,92 +427,37 @@ var getStripeCustomerId = async (uid) => {
     })
 }
 
-makeid = () => {
-  var length = 5;
-  var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-validateEmail = (email) => {
-  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email).toLowerCase());
-}
-
-validatePhone = (phone) => {
-   var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-   return re.test(String(phone));
-}
-
-extractPhoneNumber = (uncleaned) => {
-  var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
-  return cleaned;
-}
 
 
-
-var user_info_problems = (userJson) => {
-
-  // Validate each property
-  let nameIsOk = userJson.n != null && userJson.n != '' && userJson.n.length > 4;
-  let emailIsOk = userJson.e != null && validateEmail(userJson.e);
-  let planIsOk = userJson.p != null && planIDForNameAndAmt(userJson.p) != null;
-  let phoneIsOk = userJson.z != null && validatePhone(userJson.z);
-  if (!nameIsOk)  {
-    return ('Please check your name, it doesn\'t\n appear to be valid!')
-  }  else if (!emailIsOk) {
-    return ('Please check your email, it doesn\'t\n appear to be valid!');s
-  } else if (!phoneIsOk) {
-    return ('Please check your phone number ('+ userJson.z+ '), it doesn\'t\n appear to be valid!')
-  } else if (!planIsOk) {
-    return ('Please check your plan, it doesn\'t\n appear to be selected!')
-  }
-  return null;
-}
 
 app.post('/postUserInfo', async (req, res) => {
   try {
 
-
     var idToken = req.body.params.idToken;
-    
-      // All fields cleared
-      var userJson = {
-        n: req.body.params.n,                           // name
-        e: req.body.params.e,                           // email
-        p: req.body.params.p,                           // plan
-        dn: req.body.params.dn,                         // display name
-        j: getToday(),                       // timestamp
-        z: req.body.params.z                            // phone number
-      };
 
     // Get decoded token
     let decodedToken = await admin.auth().verifyIdToken(idToken);
 
     var uid = decodedToken.uid;
 
-    let problems = user_info_problems(userJson);
+      // All fields cleared
+    var usr = {
+      n: req.body.params.n,                           // name
+      e: req.body.params.e,                           // email
+      p: req.body.params.p,                           // plan
+      dn: req.body.params.dn,                         // display name
+      j: getToday(),                                  // timestamp
+      z: req.body.params.z                            // phone number
+    };
 
+    let posted_info = utils.postUserInfo(usr.n, usr.e, usr.p, usr.dn, usr.z, uid);
 
-    if (problems == null) {
-      log('Info post passed requirements..');
-      userJson['dn'] =  makeid();
-      // Set user info
-      root.ref('/users/'+(uid)+'/i/').set(userJson);
-      // set db stuff
-      root.ref('/queriable/'+uid+'/dn').set(userJson.dn);
-      root.ref('/users/' + uid + '/d/t').set(0);
-      log('User info posted.');
+    if (posted_info  == true) {
       res.writeHead(200, {'Content-Type': 'text/xml'});
       res.end('Successful post!');
     } else {
-      console.log('got post user info problems: ' +problems);
       res.writeHead(500, {'Content-Type': 'text/xml'});
-      res.end(new Error(problems));
+      res.end('Could not successfully post!');
     }
 
   } catch (e) {
@@ -532,21 +466,6 @@ app.post('/postUserInfo', async (req, res) => {
     res.end('HANDLED ERR: ' +  e);
   }
 });
-
-
-// app.post('/postUserInfoo', async (req, res) => {
-//   try {
-
-//     var idToken = req.body.params.idToken;
-//     res.send('got id token!!!!');
-//     log('got it!!!!');
-
-//   } catch (e) {
-//     console.log('Post user info failed with error: ' + e);
-//     res.writeHead(500, {'Content-Type': 'text/xml'});
-//     res.end('HANDLED ERR: ' +  e);
-//   }
-// });
 
 // Get the priveledges of a user
 app.post('/createEvent', (req, res)  => {
@@ -579,6 +498,7 @@ app.post('/createEvent', (req, res)  => {
     
 })
 
+
 app.get('/createStripeUser', async (req,res) => {
   try {
     console.log('\n\nCreating stripe user...')
@@ -589,146 +509,54 @@ app.get('/createStripeUser', async (req,res) => {
     let decodedToken = await admin.auth().verifyIdToken(idToken);
     
     if (decodedToken) {
-      var uid = decodedToken.uid;
+      // var uid = decodedToken.uid;
       var email = decodedToken.email;
 
-      // Create a Customer:
-      const customer = await stripe.customers.create({
-        source: paymentToken,
-        email: email,
+      utils.createStripeUser(paymentToken, email, decodedToken.uid).then(function(create_response) {
+        log('OK Sending back successful create stripe user response.');
+        res.send(create_response);
+        return;
+      }).catch(function(err) {
+        log('BAD Sending back errored create stripe user response. : ' + err);
+        res.send(err);
+        return;
       })
-      
-        if (customer) {
-            let customer_id = customer.id;
-            if (uid && customer_id) {
-                console.log('sUID: ' + uid)
-                console.log('sCustomer ID: ' + customer_id)
-                root.ref('/users/' + uid + '/st/id/').set(customer_id)
-                root.ref('/stripe_ids/' + customer_id + '/uid/').set(uid);
-                res.send(customer_id);
-            } else {
-                log('Could not create stripe user!')
-                res.send(new Error('Could not create payment-backed user!'))
-            }
-            
-        }
-        else
-            res.send(new Error('Could not create customer!'));
 
     } else {
         log('No decoded token!')
         res.send(new Error('No decoded token! (Code 1)'));
+        return;
     }
   } catch  (e) {
     log('No decoded token!')
     res.send(new Error('No decoded token! (Code 2)'));
+    return;
   }
     
 
 })
 
-// trim the 'remium ' out of each option (for space)
-var untrimSelectedOptionName = (opt) =>  {
-  opt = opt + '';
-  return opt.split(',')[0];
-}
-
-// trim the 'remium ' out of each option (for space)
-var untrimSelectedOptionAmount = (opt) =>  {
-  opt = opt + '';
-  let spl = opt.split(',');
-  log(spl);
-  return opt.split(',')[1];
-}
-
-var planIDForNameAndAmt = (untrimmed_nameAndAmt) => {
-  let name = untrimSelectedOptionName(untrimmed_nameAndAmt);
-  if (name != 'PX' && name != 'PY' && name != 'PZ' ) {
-    console.log('Inavlid plan param (' +name+'): not one of options!')
-    return new Error('Invalid planIDForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
-  }
-  if (name == 'PX') {
-      return 'plan_FOXcPq3uHNqx4X';
-  }
-  else if (name == 'PY') {
-      return 'plan_FOXdWHDyLP44tO';
-  }
-  else if (name == 'PZ') {
-    return 'plan_FNDp8ntFqUpWgO';
-  }
-  else return null;
-}
-
-
-var quantityForNameAndAmt = (untrimmed_nameAndAmt) => {
-    log('Quantity for name and amt.. IN: ' + untrimmed_nameAndAmt)
-  let name = untrimSelectedOptionName(untrimmed_nameAndAmt);
-  log('name is ' + name);
-
-  let amt = Number(parseFloat(untrimSelectedOptionAmount(untrimmed_nameAndAmt)));
-  log('amt is ' + amt);
-  if (amt == null || name == null || isNaN(amt)) {
-    return new Error('Invalid quantityForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
-  }
-  // amt = Number(amt);
-  if (name == 'PX') {
-      let q = Math.round(amt.toFixed(2) / PRICE_PREM_X.toFixed(2));
-      log('User buying '  + q + ' units of ' + name + '..');
-      return q;
-  }
-  else if (name == 'PY') {
-    let q = Math.round(amt.toFixed(2) / PRICE_PREM_Y.toFixed(2));
-    log('User buying '  + q + ' units of ' + name + '..');
-    return q;
-    }
-  else if (name == 'PZ') {
-    let q = Math.round(amt.toFixed(2) / PRICE_PREM_Z.toFixed(2));
-    log('User buying '  + q + ' units of ' + name + '..');
-    return q;
-    }
-  else return null;
-}
-
-
 var createSubscription = async (firebase_user_token, planNameAndAmount) => {
     return new Promise( async function(resolve, reject) {
         log('creating sub of: ' + planNameAndAmount);
-        var plan = planIDForNameAndAmt(planNameAndAmount);
-        var amt = quantityForNameAndAmt(planNameAndAmount)
-
         try {
 
             // Get decoded token
             let decodedToken = await admin.auth().verifyIdToken(firebase_user_token);
 
             var uid = decodedToken.uid;
-            let customer_id = await getStripeCustomerId(uid);
+            
+            utils.executeCreateSubscription(uid, planNameAndAmount).then(function(response) {
+              log('OK create sub was successful!');
+              resolve(response);
+            }).catch(function(e) {
+              log('BAD create sub was NOT successful! -> ' + e);
+              reject(e);
+            })
 
-              // Create the user subscription
-              stripe.subscriptions.create({
-                  customer: customer_id,
-                  items: [
-                    {
-                      plan: plan,
-                      quantity: amt,
-                    },
-                  ],
-                }, {
-                  stripe_account: "[REDACTED]",
-                }, function(err, subscription) {
-                  if (subscription) {
-
-                    log('Generated subscription!')
-                    root.ref('/users/' + uid + '/sub/').set(subscription.id);
-                    root.ref('/queriable/'+uid+'/p').set(planNameAndAmount);
-                    resolve(subscription.id)
-                  } else {
-                    reject(err);
-                  }
-                }); 
         } catch (err) {
-        logn('ERR: ' + err)
-        reject(new Error('Payment could not process! Failed with error: ' + err));
+          logn('FUNCTION createSubscription Error: ' + err)
+          reject(new Error('Payment could not process! Failed with error: ' + err));
         }
     })
 
@@ -1164,8 +992,6 @@ app.get('/change_plan', async (req,res) => {
 
     
 })
-    
-        
         
 app.get('/deleteUser', async (req,res) => {
 
@@ -1183,54 +1009,11 @@ app.get('/deleteUser', async (req,res) => {
           log('DELETE authenticated..');
             
           var uid = decodedToken.uid;
-          getStripeCustomerId(uid).then(function(cust_id){
-
-            log('OK Got stripe info..');
-
-            stripe.customers.del(cust_id,
-              function(err, confirmation) {
-                if (confirmation) {
-                    
-                    // Clear firebase references
-                    root.ref('/users/' + uid + '/').set(null);
-                    root.ref('/queriable/' + uid + '/').set(null);
-                    root.ref('/stripe_ids/' + cust_id + '/').set(null);
-                    // Delete user from auth
-                    admin.auth().deleteUser(uid)
-                      .then(function() {
-                        console.log("Successfully deleted user");
-                        res.send("Successfully deleted user");
-                        return;
-                      })
-                      .catch(function(error) {
-                        console.log("Error deleting user:", error);
-                        res.send(error);
-                        return;
-                      });
-                } else {
-
-                    res.send(new Error('Could not delete! (Stripe endpoint)'))
-                    return;
-                }
-              }
-            );
-
-          }).catch(function(e) {
-            // Clear firebase references
-            root.ref('/users/' + uid + '/').set(null);
-            root.ref('/queriable/' + uid + '/').set(null);
-            // Delete user from auth
-            admin.auth().deleteUser(uid)
-              .then(function() {
-                console.log("Successfully deleted user");
-                res.send("Successfully deleted user");
-                return;
-              })
-              .catch(function(error) {
-                console.log("Error deleting user:", error);
-                res.send(error);
-                return;
-              });
+          
+          utils.deleteUser(uid).then(async function(result) {
+            res.send(result);
+          }).catch(async function(err)  {
+            res.send(err);
           });
           
         } else {
