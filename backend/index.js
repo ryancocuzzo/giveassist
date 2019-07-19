@@ -13,8 +13,8 @@ TEST: [REDACTED]
 LIVE: [REDACTED]
 
 */
-// var stripe = require("stripe")("[REDACTED]"); // test
-var stripe = require("stripe")("[REDACTED]"); // live
+var stripe = require("stripe")("[REDACTED]"); // test
+// var stripe = require("stripe")("[REDACTED]"); // live
 var app = Express();
 var serviceAccount = require("./serviceAccountKeyJSON");
 var multiparty = require('multiparty');

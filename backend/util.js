@@ -12,8 +12,8 @@ TEST: [REDACTED]
 LIVE: [REDACTED]
 
 */
-// var stripe = require("stripe")("[REDACTED]"); // test
-var stripe = require("stripe")("[REDACTED]"); // live
+var stripe = require("stripe")("[REDACTED]"); // test
+// var stripe = require("stripe")("[REDACTED]"); // live
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",
@@ -224,7 +224,7 @@ module.exports = {
             root.ref('/users/'+(uid)+'/i/').set(userJson);
             // set db stuff
             root.ref('/queriable/'+uid+'/dn').set(userJson.dn);
-            root.ref('/users/' + uid + '/d/t').set(untrimSelectedOptionAmount(p));
+            root.ref('/users/' + uid + '/d/t').set(0);
             // log('User info posted.');
             return true;
         } else {
