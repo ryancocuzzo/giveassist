@@ -12,8 +12,8 @@ TEST: [REDACTED]
 LIVE: [REDACTED]
 
 */
-var stripe = require("stripe")("[REDACTED]"); // test
-// var stripe = require("stripe")("[REDACTED]"); // live
+// var stripe = require("stripe")("[REDACTED]"); // test
+var stripe = require("stripe")("[REDACTED]"); // live
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",

@@ -12,8 +12,8 @@ TEST: [REDACTED]
 LIVE: [REDACTED]
 
 */
-var stripe = require("stripe")("[REDACTED]"); // test
-// var stripe = require("stripe")("[REDACTED]"); // livelet chai = require('chai');
+// var stripe = require("stripe")("[REDACTED]"); // test
+var stripe = require("stripe")("[REDACTED]"); // livelet chai = require('chai');
 var assert = chai.assert;
 var expect = chai.expect;
 
