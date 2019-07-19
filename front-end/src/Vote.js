@@ -245,12 +245,12 @@ class Vote extends React.Component {
    */
   eventComponent = (name, summary, id, i) => {
     var s = (size) => {
-      if (size < 600) return '400px'
-      else if (size < 770) return '300px'
-      else if (size < 850) return '580px'
-      else if (size < 1000) return '500px'
-      else if (size < 1300) return '450px'
-      else return '350px'
+      if (size < 600) return '500px'
+      else if (size < 770) return '400px'
+      else if (size < 850) return '680px'
+      else if (size < 1000) return '600px'
+      else if (size < 1300) return '550px'
+      else return '450px'
     }
     var h = s(this.state.width)
     if (name != null && summary != null) {

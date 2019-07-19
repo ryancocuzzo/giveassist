@@ -24,6 +24,7 @@ TEST: pk_test_eDgW1qWOGdRdCnIQocPje0Gg
 LIVE: pk_live_GulO410dLXS1uDIODH1e8Nz5
 
 */
+// let stripe_api_key = 'pk_test_eDgW1qWOGdRdCnIQocPje0Gg';
 let stripe_api_key = 'pk_live_GulO410dLXS1uDIODH1e8Nz5';
 
 String.prototype.replaceAll = function(search, replacement) {

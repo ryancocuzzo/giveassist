@@ -6,8 +6,14 @@ TEST: [REDACTED]
 LIVE: [REDACTED]
 
 */
-var stripe = require("stripe")("[REDACTED]"); // livevar utils = require('./util.js');
-let chai = require('chai');
+var serviceAccount = require("./serviceAccountKeyJSON");
+/*
+TEST: [REDACTED]
+LIVE: [REDACTED]
+
+*/
+// var stripe = require("stripe")("[REDACTED]"); // test
+var stripe = require("stripe")("[REDACTED]"); // livelet chai = require('chai');
 var assert = chai.assert;
 var expect = chai.expect;
 

@@ -567,7 +567,7 @@ class Stats extends React.Component {
 
         <div className='adjacentItemsParent' style={{marginLeft: isMobile ? '25px' : '30px'}}>
             <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize+5)+'px', width: (col_width_wide+40)+'px', marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>TOTAL DONATED</h1><br/>
-          <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{moneyFormat(this.state.total_donated*0.01)}</h1>
+          <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{moneyFormat(this.state.total_donated)}</h1>
             <br />
         </div>
 

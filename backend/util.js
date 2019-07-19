@@ -5,7 +5,15 @@ TEST: [REDACTED]
 LIVE: [REDACTED]
 
 */
-var stripe = require("stripe")("[REDACTED]"); // livevar serviceAccount = require("./serviceAccountKeyJSON");
+var serviceAccount = require("./serviceAccountKeyJSON");
+
+/*
+TEST: [REDACTED]
+LIVE: [REDACTED]
+
+*/
+// var stripe = require("stripe")("[REDACTED]"); // test
+var stripe = require("stripe")("[REDACTED]"); // live
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",
@@ -129,11 +137,11 @@ var quantityForNameAndAmt = (untrimmed_nameAndAmt) => {
   // log('name is ' + name);
 
   let amt = Number(parseFloat(untrimSelectedOptionAmount(untrimmed_nameAndAmt)));
-  // log('amt is ' + amt);
+  log('amt is ' + amt);
   if (amt == null || name == null || isNaN(amt)) {
     return new Error('Invalid quantityForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
   }
-  // amt = Number(amt);
+  amt = Number(amt);
   if (name == 'PX') {
       let q = Math.round(amt.toFixed(2) / PRICE_PREM_X.toFixed(2));
       // log('User buying '  + q + ' units of ' + name + '..');
@@ -216,7 +224,7 @@ module.exports = {
             root.ref('/users/'+(uid)+'/i/').set(userJson);
             // set db stuff
             root.ref('/queriable/'+uid+'/dn').set(userJson.dn);
-            root.ref('/users/' + uid + '/d/t').set(0);
+            root.ref('/users/' + uid + '/d/t').set(untrimSelectedOptionAmount(p));
             // log('User info posted.');
             return true;
         } else {
