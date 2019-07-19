@@ -92,9 +92,19 @@ class Login extends React.Component {
    sendPasswordReset = (email) => {
      if (this.validateEmail(email))  {
        firebase.auth().sendPasswordResetEmail(email);
-       Popup.alert('Sent!');
+       Popup.alert('Sent an email to '  +  email +  '!');
      } else {
        Popup.alert('Please enter a valid email!');
+     }
+   }
+
+   handleValChange = (id, val) => {
+     if (id == 1) { // email
+       this.setState({email: val});
+       this.emailSubmitted(val);
+     }else if (id == 2) { // pass
+       this.setState({password: val});
+       this.passSubmitted(val);
      }
    }
 
@@ -107,8 +117,11 @@ class Login extends React.Component {
           label="Email"
           locked={false}
           active={false}
+          name="email"
           regex={email_regex}
           handleSubmit={this.emailSubmitted}
+          type="email"
+          handleVal={this.handleValChange}
         />
       );
     };
@@ -121,8 +134,10 @@ class Login extends React.Component {
           locked={!this.state.email_good}
           active={false}
           minLength={7}
+          name='organization'
+          type='password'
           handleSubmit={this.passSubmitted}
-          type={'password'}
+          handleVal={this.handleValChange}
         />
       );
     };
@@ -159,7 +174,7 @@ class Login extends React.Component {
                 <br/><br/><br/>
 
             </div>
-        <div style={{width: '100%', height: '300px'}}></div>
+        <div style={{width: '100%', height: '400px'}}></div>
           </div>
 
     );

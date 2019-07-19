@@ -120,10 +120,10 @@ class IntroPage extends Component {
 
      }
 
-     Popup.create({
-         title: 'BETA TESTING',
-         content: 'We are currently in a live BETA mode. Nothing changes except we don\'t charge your payments. Your account will be deleted prior to us releasing the live platform. Live payments turn on July 12th. Enjoy!',
-     });
+     // Popup.create({
+     //     title: 'BETA TESTING',
+     //     content: 'We are currently in a live BETA mode. Nothing changes except we don\'t charge your payments. Your account will be deleted prior to us releasing the live platform. Live payments turn on July 12th. Enjoy!',
+     // });
 
      // this.scrollToMyRef();
 

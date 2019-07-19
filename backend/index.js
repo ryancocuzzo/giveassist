@@ -8,7 +8,12 @@ var admin = require("firebase-admin");
 var renderToString = require("react-dom/server");
 var React = require('react');
 var renderToString = require('react-dom/server');
-var stripe = require("stripe")("[REDACTED]");
+/*
+TEST: [REDACTED]
+LIVE: [REDACTED]
+
+*/
+var stripe = require("stripe")("[REDACTED]"); // live
 var app = Express();
 var serviceAccount = require("./serviceAccountKeyJSON");
 var multiparty = require('multiparty');

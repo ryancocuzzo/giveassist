@@ -1,8 +1,12 @@
 
 var assert = require('assert');
 var admin = require("firebase-admin");
-var stripe = require("stripe")("[REDACTED]");
-var utils = require('./util.js');
+/*
+TEST: [REDACTED]
+LIVE: [REDACTED]
+
+*/
+var stripe = require("stripe")("[REDACTED]"); // livevar utils = require('./util.js');
 let chai = require('chai');
 var assert = chai.assert;
 var expect = chai.expect;

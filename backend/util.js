@@ -1,7 +1,11 @@
 var assert = require('assert');
 var admin = require("firebase-admin");
-var stripe = require("stripe")("[REDACTED]");
-var serviceAccount = require("./serviceAccountKeyJSON");
+/*
+TEST: [REDACTED]
+LIVE: [REDACTED]
+
+*/
+var stripe = require("stripe")("[REDACTED]"); // livevar serviceAccount = require("./serviceAccountKeyJSON");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",

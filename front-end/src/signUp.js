@@ -18,6 +18,14 @@ import { _signUpUser } from './User.js';
 let urls = variables.local_urls;
 let server_urls = variables.server_urls;
 
+/*
+
+TEST: pk_test_eDgW1qWOGdRdCnIQocPje0Gg
+LIVE: pk_live_GulO410dLXS1uDIODH1e8Nz5
+
+*/
+let stripe_api_key = 'pk_live_GulO410dLXS1uDIODH1e8Nz5';
+
 String.prototype.replaceAll = function(search, replacement) {
   var target = this;
   return target.split(search).join(replacement);
@@ -275,6 +283,7 @@ render () {
         active={false}
         minLength={7}
         name='organization'
+        type='password'
         handleSubmit={this.passSubmitted}
         handleVal={this.handleValChange}
       />
@@ -424,7 +433,7 @@ render () {
 
      <br/>
 
-     <StripeProvider apiKey="pk_test_eDgW1qWOGdRdCnIQocPje0Gg">
+   <StripeProvider apiKey={stripe_api_key}>
        <div className="example" >
          <h1>Payment Information</h1>
        <div style={{ marginLeft: '1%', marginRight: '1%', width: '98%'}} >
