@@ -15,7 +15,7 @@ var dev_sandbox_app = {
     databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
 };
 
-let TEST_MODE = true;
+let TEST_MODE = false;
 
 var stripe;
 
@@ -123,7 +123,7 @@ extractPhoneNumber = (uncleaned) => {
 }
 
 makeid = () => {
-  var length = 5;
+  var length = 6;
   var result           = '';
   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   var charactersLength = characters.length;
@@ -323,7 +323,7 @@ async function createStripeUser (paymentToken, email, uid) {
                 // console.log('sCustomer ID: ' + customer_id)
                 root.ref('/users/' + uid + '/st/id/').set(customer_id)
                 root.ref('/stripe_ids/' + customer_id + '/uid/').set(uid);
-                ok_log('we have a stripe customer id -> ' + customer_id);
+                // ok_log('we have a stripe customer id -> ' + customer_id);
                 resolve(customer_id);
                 return;
             } else {
@@ -453,6 +453,10 @@ module.exports = {
       if (unclean_user_info) { reject(unclean_user_info); return; }
   
       let new_user = new User(usr.n,email, password, usr.p, usr.dn, usr.j, usr.z);
+
+      if (new_user.PhoneNumber.charAt(0) != '+' || new_user.PhoneNumber.length == 10)
+        new_user.PhoneNumber = '+1' + new_user.PhoneNumber;
+
       table_log([new_user]);
   
       // create user

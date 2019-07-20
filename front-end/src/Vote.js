@@ -9,6 +9,74 @@ import { Col, Row, Grid, DropdownButton, Button} from 'react-bootstrap';
 import firebase, { auth, provider } from './firebase.js';
 import {eventSnapshot, userVotes, getActiveEventId, votersFor, totalVotesFor, createEvent, getOptions, genKey, castVote} from './Database.js';
 import vars from './variables.js';
+import { SizeMe } from 'react-sizeme';
+import ReadMoreReact from 'read-more-react';
+
+
+/**
+ * Draws an event component (dynamically generated)
+ * @param  {[String]} name    [name of the event]
+ * @param  {[String]} summary [summary of event]
+ * @return {[Object]}         [react element of an event]
+ */
+class EventComponent extends React.Component {// (name, summary, id, i, _size) => {
+
+  render() {
+    let h = this.props.height;
+    return (
+      <SizeMe>
+        {({ size }) => <Col style={{height: '100%'}}  sm={12} md={this.props._size} lg={this.props._size}>
+          <div style={{ height: '100%'}} >
+
+                        <div className="eventComponent" style={{padding: '10px', height: '100%', backgroundColor: '#D4F5F5', boxShadow: '0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08)', marginBottom: '20px', textAlign: 'center', borderRadius: '7px', fontSize: '12px', }}>
+                          {size.width > 1000 ? <h1 style={{display: 'inline-block', fontWeight: '700'}}>{this.props.name}</h1>
+                            : <h2 style={{display: 'inline-block', fontWeight: '700'}}>{this.props.name}</h2>
+                        }
+                          <br></br>
+                        <div style={{fontSize: '15px', 'letter-spacing': '1px', fontWeight: '550',overflow: 'hidden',
+                       display: '-webkit-box',
+                       // '-webkit-line-clamp': '3',
+                       '-webkit-box-orient': 'vertical' }}>
+                          <ReadMoreReact
+                           style={{fontSize: '15px', 'letter-spacing': '1px', fontWeight: '550',
+                             overflow: 'hidden',
+                            display: '-webkit-box',
+                            // '-webkit-line-clamp': '3',
+                            '-webkit-box-orient': 'vertical'  }}
+                            min={220}
+                    				ideal={230}
+                    				max={240}
+                            readMoreText={'Read more'}
+
+                            text={this.props.summary} />
+                        </div>
+                        <p ></p>
+                          <div style={{position: 'absolute',
+                                      bottom: '0',
+                                      marginTop: '-30px',
+                                      marginLeft: '-25px',
+                                      marginBottom: '40px',
+                                      width: '100%',
+                                      height: '-140px',}}>
+                          </div>
+                          <Row>
+                            <Col sm={12} md={7}>
+                              <div style={{marginTop: '20px'}}>
+                                <h4><strong>{this.props.org}</strong></h4>
+                              </div>
+                          </Col>
+                            <Col sm={12} md={5}>
+                              <button style={{marginBottom: '20px'}} onClick={() => this.props.click(this.props.id, this.props.i)}>VOTE</button>
+                          </Col>
+                          </Row>
+                          </div>
+          </div>
+
+          </Col>}
+      </SizeMe>
+    );
+  }
+}
 
 var server_urls = vars.server_urls;
 /**
@@ -39,11 +107,12 @@ class Vote extends React.Component {
       eventComponentWidth: 12,
       dispersion: [],
       total_votes: 0,
+      max_vote_height: 0,
       width: document.body.clientWidth
     }
 
     // Bind components
-    this.eventComponent = this.eventComponent.bind(this);
+    // this.eventComponent = this.eventComponent.bind(this);
     this.click = this.click.bind(this);
 
     window.history.pushState(null, '', '/vote')
@@ -59,6 +128,11 @@ class Vote extends React.Component {
     );
   }
 
+  onSize = size => {
+      console.log('MyComponent has a width of', size.width)
+      if (size.height > this.state.max_vote_height)
+        this.setState({max_vote_height: size.height});
+  }
 
   /**
    * When the component mounts..
@@ -107,6 +181,7 @@ class Vote extends React.Component {
               var e = {
                 title: event["t"],
                 summary: event["s"],
+                org: event['org'],
                 options: event["o"],
                 id: event['id']
               }
@@ -237,51 +312,6 @@ class Vote extends React.Component {
     }
   }
 
-  /**
-   * Draws an event component (dynamically generated)
-   * @param  {[String]} name    [name of the event]
-   * @param  {[String]} summary [summary of event]
-   * @return {[Object]}         [react element of an event]
-   */
-  eventComponent = (name, summary, id, i) => {
-    var s = (size) => {
-      if (size < 600) return '700px'
-      else if (size < 770) return '580px'
-      else if (size < 850) return '680px'
-      else if (size < 1000) return '600px'
-      else if (size < 1300) return '550px'
-      else return '450px'
-    }
-    var h = s(this.state.width)
-    if (name != null && summary != null) {
-      var size = this.state.eventComponentWidth;
-      return (<Col sm={size} md={size} lg={size}>
-        <div className="eventComponent" style={{padding: '10px', height: h, backgroundColor: '#D4F5F5', boxShadow: '0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08)', marginBottom: '20px', textAlign: 'center', borderRadius: '7px', fontSize: '12px', }}>
-          <h1 style={{display: 'inline-block', fontWeight: '700'}}>{name}</h1>
-          <br></br>
-          <p style={{fontSize: '15px', 'letter-spacing': '1px', fontWeight: '550'}}>{summary}</p>
-      <div style={{position: 'absolute',
-                  bottom: '0',
-                  marginTop: '-30px',
-                  marginLeft: '-25px',
-                  marginBottom: '40px',
-                  width: '100%',
-                  height: '-140px',}}>
-                  <button onClick={() => this.click(id, i)}>VOTE</button>
-      </div>
-        </div>
-      </Col>);
-    } else {
-      return (
-        <div>
-          <br></br>
-          <h3 style={{fontColor: 'darkGrey'}}> Attempting to draw component with invalid stuff.</h3>
-          <br></br>
-        </div>);
-    }
-
-  }
-
   createEvent = () => {
     var token = this.state.token;
     var titles = ['peace', 'love', 'dev'];
@@ -309,6 +339,9 @@ class Vote extends React.Component {
       col_width_wide = '100px';
       bottomMargin = '200px';
     }
+
+
+    var size = this.state.eventComponentWidth;
     var event = this.state.event
 
     var objArray = [];
@@ -336,8 +369,9 @@ class Vote extends React.Component {
                 k = key;
                 break;
             }
-        }
-        return this.eventComponent(firstProp.t, firstProp.s, k, i);
+        }// (name, summary, id, i, _size) => {
+
+        return (<EventComponent name={firstProp.t} height={this.state.max_vote_height} summary={firstProp.s} org={firstProp.org} id={k} i={i} _size={size} click={this.click} onSize={this.onSize}/>);
       }.bind(this))
     } else {
       eventMap = <p></p>;
@@ -352,13 +386,12 @@ class Vote extends React.Component {
       if (this.state.hasVoted) {
         dynamic_vote_component = hasVotedComponent;
       } else {
-        dynamic_vote_component = eventMap;
+        dynamic_vote_component = <Grid><Row>{eventMap}</Row></Grid>;
       }
     } else {
       dynamic_vote_component = <div></div>
     }
 
-    var size = this.state.eventComponentWidth;
     var total_votes = this.state.total_votes;
 
     var colorForVoteCount = (count) => {
@@ -387,6 +420,8 @@ class Vote extends React.Component {
     function roundToTwo(num) {
         return +(Math.round(num + "e+2")  + "e-2");
     }
+
+
 
     var size = this.state.eventComponentWidth;
     var total_votes = this.state.total_votes;
@@ -426,15 +461,17 @@ class Vote extends React.Component {
 
 
     // Generaet a default HTML object that we are gonna append to
-    var eventComponent = (
+    var voteComponent = (
       <div className='myGradientBackground'>
         <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
-        <span>
-          <h1 style={{marginLeft: '20px', fontWeight: '900'}}>{event ? (event.title) : ""}
+      <span>
+        <div style={{marginLeft: '10%', width: '80%'}}>
+          <h1 style={{fontWeight: '1000'}}>{event ? (event.title) : ""}
           </h1>
-          <p style={{marginLeft: '20px', fontSize: '18px', 'letter-spacing': '1px', fontWeight: '500px'}}>
+          <p style={{fontSize: '18px', 'letter-spacing': '1px', fontWeight: '800px', color: '#282828'}}>
             {event ? (event.summary) : ""}
           </p>
+        </div>
           {createEventComponent_local}
           <br /><br />
         {dynamic_vote_component}
@@ -456,7 +493,7 @@ class Vote extends React.Component {
       </div>
     );
 
-    return eventComponent;
+    return voteComponent;
   }
 
 }

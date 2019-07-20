@@ -21,6 +21,8 @@
     "multer": "^1.4.1",
     "multiparty": "^4.2.1",
     "node-inspect": "^1.11.5",
+    "nyc": "^14.1.1",
+    "preact": "^8.4.2",
     "preact-render-to-string": "^4.1.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
@@ -29,7 +31,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "mocha",
+    "test": "nyc mocha --exit",
     "start": "node index.js"
   },
   "author": "",

@@ -24,6 +24,10 @@ var moneyFormat = (number) => {
 let urls = variables.local_urls;
 let server_urls = variables.server_urls;
 
+function ensure_trimmed (str, THRESHOLD) {
+  if (str.length > THRESHOLD) { return str.substring(0,THRESHOLD-3) + '...'}
+}
+
 class Vaults extends Component {
 
   constructor(props) {
@@ -218,13 +222,14 @@ class Vaults extends Component {
       var c = (count) => {return (count % 2 ? '#474747' : '#333232')};
       var objArray = this.convert_to_iterable_object(this.state.users);
       userComponent = objArray.map(function(user) {
+        let user_plan = untrimSelectedOption(user.value.p);
         count++;
         return <div>
-                <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700'}}>
+                <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700', paddingBottom: '5px',  paddingTop: '0px'}}>
                   <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}} >{user.value.dn}</h3><br/>
-                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{untrimSelectedOption(user.value.p)}</h3><br/>
+                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{user_plan != 'Premium Z' ?  user_plan : 'Custom'}</h3><br/>
                   <br />
-                </div>
+              </div>
               </div>
       }.bind(this))
     } else {
@@ -239,9 +244,9 @@ class Vaults extends Component {
         var topBorder = (count == 1 ? '1px solid black' : '')
         count++;
         return <div >
-                <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700'}}>
-                  <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}}>{event.value.id}</h3><br/>
-                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.ttl*0.01)}</h3><br/>
+                <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700', paddingBottom: '5px',  paddingTop: '0px'}}>
+                  <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}}>{this.state.width < 700 ? ensure_trimmed(event.value.id, 11) : event.value.id}</h3><br/>
+                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.ttl)}</h3><br/>
                   <br />
                 </div>
               </div>

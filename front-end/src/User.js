@@ -39,10 +39,8 @@ function nbc(prev_breadcrumb) {
   console.log('.. breadcrumb ' + (prev_breadcrumb + 1));
   return prev_breadcrumb + 1;
 }
+
 export const _signUpUser = async (paymentToken, name, email, password, phone, displayName,  selected_option, amountPaid) => {
-  console.log('Beginning sign up process..');
-  // init breadcrumbs
-  var bc = nbc(-1);
   return new Promise(async function(resolve, reject) {
     try {
 
@@ -55,106 +53,150 @@ export const _signUpUser = async (paymentToken, name, email, password, phone, di
       var userJson = {
         n: name,                             // name
         e: email,                            // email
-        p: selected_option_with_amt,                             // plan
+        p: selected_option_with_amt,         // plan
         dn: displayName,                     // display name
-        j: moment().format('LL'),                       // timestamp
-        z: extractPhoneNumber(phone)    // phone number
+        j: moment().format('LL'),            // timestamp
+        z: extractPhoneNumber(phone)         // phone number
       };
 
-      var userQueriableJSON = {
-        dn: displayName,
-        p: selected_option_with_amt
-      };
-
-      bc = nbc(bc);
-      let createdUser = await firebase.auth().createUserWithEmailAndPassword(email, password);
-      var user = await firebase.auth().signInWithEmailAndPassword(email, password);
-
-      var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
-
-      // handle
-      user = user.user;
-
-      bc = nbc(bc);
-
-
-      let postUserInfo = await axios.post(server_urls.postUserInfo, {params: {
-        idToken: idToken,
+      let resolve_json = await axios.post(server_urls.initiate_new_user, {params: {
         n: userJson.n,
         e: userJson.e,
         p: userJson.p,
         dn: userJson.dn,
         z: userJson.z,
+        pw: password,
+        paymentToken: paymentToken
       }});
 
-      
+      var user = await firebase.auth().signInWithEmailAndPassword(email, password);
 
-      bc = nbc(bc);
-
-      let uid = user.uid;
-
-      console.log('We now have USER:\n'  + uid);
-
-      // bc = nbc(bc);
-      //
-      // let stripe_user = await axios.get(server_urls.createStripeUser, {params: { uid: user.uid }});
-
-
-
-      // alert('got id token: ' + idToken.substring(0,10) + '.. and pay token: ' + paymentToken.substring(0,10) + '.. and untrimmed plan: ' + selected_option_with_amt  );
-
-      let customer_id = await axios.get(server_urls.createStripeUser, {params: {
-        idToken: idToken,
-        paymentToken: paymentToken,
-        plan: selected_option_with_amt,
-      }});
-
-
-      // alert('created stripe user..: ' + idToken);
-
-      bc = nbc(bc);
-
-      let subscription = await axios.get(server_urls.initPayments, {params: {
-        idToken: idToken,
-        plan: selected_option_with_amt
-      }});
-
-      bc = nbc(bc);
-
-      let resolve_json = {
-        user: user,
-        subscription: subscription
-      }
-
-      // alert('Resolving!!');
       resolve(resolve_json);
 
     } catch (e) {
-      // alert('Rejecting!!');
-      // reject(e);
-      // return e;
-      console.log('\nError in sign up flow: ' + e);
-      try {
-        if (firebase.auth().currentUser != null) {
-          var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
-          console.log('got id token: ' + idToken);
-
-          let delete_user_response = await axios.get(server_urls.deleteUser, {params: {
-            idToken: idToken,
-          }});
-          reject(e);
-        } else {
-          reject(e);
-        }
-      } catch (e2) {
-        console.log('\nError in sign up user deletion flow: ' + e2);
-        // still reject e though
-        reject(e);
-      }
+      reject(e);
     }
   });
 
 }
+
+
+// export const _signUpUser = async (paymentToken, name, email, password, phone, displayName,  selected_option, amountPaid) => {
+//   console.log('Beginning sign up process..');
+//   // init breadcrumbs
+//   var bc = nbc(-1);
+//   return new Promise(async function(resolve, reject) {
+//     try {
+//
+//       let selected_option_with_amt = trimSelectedOption(selected_option);
+//
+//       selected_option_with_amt += ',';
+//       selected_option_with_amt += amountPaid;
+//
+//       // All fields cleared
+//       var userJson = {
+//         n: name,                             // name
+//         e: email,                            // email
+//         p: selected_option_with_amt,                             // plan
+//         dn: displayName,                     // display name
+//         j: moment().format('LL'),                       // timestamp
+//         z: extractPhoneNumber(phone)    // phone number
+//       };
+//
+//       var userQueriableJSON = {
+//         dn: displayName,
+//         p: selected_option_with_amt
+//       };
+//
+//       bc = nbc(bc);
+//       let createdUser = await firebase.auth().createUserWithEmailAndPassword(email, password);
+//       var user = await firebase.auth().signInWithEmailAndPassword(email, password);
+//
+//       var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
+//
+//       // handle
+//       user = user.user;
+//
+//       bc = nbc(bc);
+//
+//
+//       let postUserInfo = await axios.post(server_urls.postUserInfo, {params: {
+//         idToken: idToken,
+//         n: userJson.n,
+//         e: userJson.e,
+//         p: userJson.p,
+//         dn: userJson.dn,
+//         z: userJson.z,
+//       }});
+//
+//
+//
+//       bc = nbc(bc);
+//
+//       let uid = user.uid;
+//
+//       console.log('We now have USER:\n'  + uid);
+//
+//       // bc = nbc(bc);
+//       //
+//       // let stripe_user = await axios.get(server_urls.createStripeUser, {params: { uid: user.uid }});
+//
+//
+//
+//       // alert('got id token: ' + idToken.substring(0,10) + '.. and pay token: ' + paymentToken.substring(0,10) + '.. and untrimmed plan: ' + selected_option_with_amt  );
+//
+//       let customer_id = await axios.get(server_urls.createStripeUser, {params: {
+//         idToken: idToken,
+//         paymentToken: paymentToken,
+//         plan: selected_option_with_amt,
+//       }});
+//
+//
+//       // alert('created stripe user..: ' + idToken);
+//
+//       bc = nbc(bc);
+//
+//       let subscription = await axios.get(server_urls.initPayments, {params: {
+//         idToken: idToken,
+//         plan: selected_option_with_amt
+//       }});
+//
+//       bc = nbc(bc);
+//
+//       let resolve_json = {
+//         user: user,
+//         subscription: subscription
+//       }
+//
+//       // alert('Resolving!!');
+//       resolve(resolve_json);
+//
+//     } catch (e) {
+//       // alert('Rejecting!!');
+//       // reject(e);
+//       // return e;
+//       console.log('\nError in sign up flow: ' + e);
+//       try {
+//         if (firebase.auth().currentUser != null) {
+//           var idToken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ true);
+//           console.log('got id token: ' + idToken);
+//
+//           let delete_user_response = await axios.get(server_urls.deleteUser, {params: {
+//             idToken: idToken,
+//           }});
+//           reject(e);
+//         } else {
+//           reject(e);
+//         }
+//       } catch (e2) {
+//         console.log('\nError in sign up user deletion flow: ' + e2);
+//         // still reject e though
+//         reject(e);
+//       }
+//     }
+//   });
+//
+// }
 
 // let User = {
 //     async signUp(paymentToken, name, email, password, phone, displayName,  selected_option, amountPaid) {

@@ -405,7 +405,6 @@ var getStripeCustomerId = async (uid) => {
 app.post('/initiate_new_user', async (req, res) => {
   if (req.body == null || req.body.params == null) { res.send('Error');return; }
     
-  var email = req.body.params.email;
   var password = req.body.params.pw; // note pw, not password
   var paymentToken = req.body.params.paymentToken; 
 
@@ -418,7 +417,7 @@ app.post('/initiate_new_user', async (req, res) => {
     z: req.body.params.z                            // phone number
   };
   try {
-    let result = await utils.initiate_new_user(email, password, usr, paymentToken);
+    let result = await utils.initiate_new_user(usr.e, password, usr, paymentToken);
     res.send(result);
   } catch (e) {
     res.send(e);

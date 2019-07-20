@@ -42,6 +42,10 @@ div {
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#249cb5', endColorstr='#b3ea8f',GradientType=0 ); /* IE6-9 */
 }
 
+.read-more-button {
+  color: blue;
+}
+
 .NavPhoto {
     display: block;
     width: 50px;
