@@ -3,35 +3,13 @@ var axios = require('axios');
 var https = require('https');
 var bodyParser = require('body-parser');
 var fs = require('fs');
-// var firebase = require('firebase');
 var admin = require("firebase-admin");
-var renderToString = require("react-dom/server");
-var React = require('react');
-var renderToString = require('react-dom/server');
-/*
-TEST: [REDACTED]
-LIVE: [REDACTED]
-
-*/
-// var stripe = require("stripe")("[REDACTED]"); // test
-var stripe = require("stripe")("[REDACTED]"); // live
 var app = Express();
-var serviceAccount = require("./serviceAccountKeyJSON");
-var multiparty = require('multiparty');
-var multer  = require('multer')
-var Storage = require('@google-cloud/storage')
-var fileType = require('file-type');
-var Module = require('module');
-// var util = require('util');
 var utils = require('./util.js');
+var clc = require("cli-color");
+var stripe = utils.stripe;
 
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-
-// Module._extensions['.png'] = function(module, fn) {
-//   var base64 = fs.readFileSync(fn).toString('base64');
-//   module._compile('module.exports="data:image/jpg;base64,' + base64 + '"', fn);
-// };
-// var something = require('./something');
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -48,56 +26,18 @@ var jsonParser = bodyParser.json()
 
 app.use(jsonParser);
 
- 
 app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-
-// // parse various different custom JSON types as JSON
-// app.use(bodyParser.json({ type: 'application/*+json' }))
- 
-// // parse some custom thing into a Buffer
-// // app.use(bodyParser.raw({ type: 'application/vnd.custom-type' }))
- 
-// // parse an HTML body into a string
-// app.use(bodyParser.text({ type: 'text/html' }))
-
-
 process.env.NODE_ENV = 'production';
-
-
-//export GOOGLE_APPLICATION_CREDENTIALS="./serviceAccountKeyJSON";
-
-// Your Google Cloud Platform project ID
-const projectId = 'donate-rcocuzzo-17387568';
-//// Creates a client
-//const storage = new Storage({
-//  projectId: projectId,
-//});
-//
-//
-//// Creates the new bucket
-//async function createBucket(uid) {
-////  var name = '' + uid + '/profilePicture/';
-//  await storage.createBucket(uid);
-//  console.log(`Bucket ${uid} created.`);
-//}
-
-
-// var allowCrossDomain = function(req, res, next) {
-//    res.header('Access-Control-Allow-Origin', "*");
-//    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-//    res.header('Access-Control-Allow-Headers', 'Content-Type');
-//    next();
-// }
-
-// app.use(allowCrossDomain);
-//some other code
 
 // This is the port we are using. It will default to our System default but, in test mode, it is set to port 1234. This was done so that it doesn't conflict with the default blockchain ports.
 var port = process.env.PORT || 1234;
 
+function table_log(output)  {
+  console.table(output);
+}
 
 function log(output) {
     console.log(output)
@@ -106,6 +46,35 @@ function log(output) {
 function logn(output) {
     console.log('\n' + output)
 }
+
+function err_log(output) {
+  logn(clc.red.bold('Error ') + output);
+}
+
+function ok_log(output) {
+  logn(clc.green.bold('OK ') + output);
+}
+
+function warning_log(output) {
+  logn(clc.cyan.bold('OK ') + output);
+}
+
+function log_group_begin(text) {
+  console.group('\n-- -- ' + text + ' -- --\n');
+}
+
+function log_group_end() {
+  console.groupEnd();
+  console.log('\n-- -- \n');
+
+}
+
+function Customer(cid, amt_contributed) {
+  this.CustomerId = cid;
+  this.AmountContributed = '$' + amt_contributed;
+}
+
+
 
 // Get a reference to the root of the Database
 var root = utils.root; //admin.database();
@@ -433,45 +402,65 @@ var getStripeCustomerId = async (uid) => {
     })
 }
 
+app.post('/initiate_new_user', async (req, res) => {
+  if (req.body == null || req.body.params == null) { res.send('Error');return; }
+    
+  var email = req.body.params.email;
+  var password = req.body.params.pw; // note pw, not password
+  var paymentToken = req.body.params.paymentToken; 
 
-
-
-app.post('/postUserInfo', async (req, res) => {
+  var usr = {
+    n: req.body.params.n,                           // name
+    e: req.body.params.e,                           // email
+    p: req.body.params.p,                           // plan
+    dn: req.body.params.dn,                         // display name
+    j: getToday(),                                  // timestamp
+    z: req.body.params.z                            // phone number
+  };
   try {
-
-    var idToken = req.body.params.idToken;
-
-    // Get decoded token
-    let decodedToken = await admin.auth().verifyIdToken(idToken);
-
-    var uid = decodedToken.uid;
-
-      // All fields cleared
-    var usr = {
-      n: req.body.params.n,                           // name
-      e: req.body.params.e,                           // email
-      p: req.body.params.p,                           // plan
-      dn: req.body.params.dn,                         // display name
-      j: getToday(),                                  // timestamp
-      z: req.body.params.z                            // phone number
-    };
-
-    let posted_info = utils.postUserInfo(usr.n, usr.e, usr.p, usr.dn, usr.z, uid);
-
-    if (posted_info  == true) {
-      res.writeHead(200, {'Content-Type': 'text/xml'});
-      res.end('Successful post!');
-    } else {
-      res.writeHead(500, {'Content-Type': 'text/xml'});
-      res.end('Could not successfully post!');
-    }
-
+    let result = await utils.initiate_new_user(email, password, usr, paymentToken);
+    res.send(result);
   } catch (e) {
-    console.log('Post user info failed with error: ' + e);
-    res.writeHead(500, {'Content-Type': 'text/xml'});
-    res.end('HANDLED ERR: ' +  e);
+    res.send(e);
   }
 });
+
+// app.post('/postUserInfo', async (req, res) => {
+//   try {
+
+//     var idToken = req.body.params.idToken;
+
+//     // Get decoded token
+//     let decodedToken = await admin.auth().verifyIdToken(idToken);
+
+//     var uid = decodedToken.uid;
+
+//       // All fields cleared
+//     var usr = {
+//       n: req.body.params.n,                           // name
+//       e: req.body.params.e,                           // email
+//       p: req.body.params.p,                           // plan
+//       dn: req.body.params.dn,                         // display name
+//       j: getToday(),                                  // timestamp
+//       z: req.body.params.z                            // phone number
+//     };
+
+//     let posted_info = utils.postUserInfo(usr.n, usr.e, usr.p, usr.dn, usr.z, uid);
+
+//     if (posted_info  == true) {
+//       res.writeHead(200, {'Content-Type': 'text/xml'});
+//       res.end('Successful post!');
+//     } else {
+//       res.writeHead(500, {'Content-Type': 'text/xml'});
+//       res.end('Could not successfully post!');
+//     }
+
+//   } catch (e) {
+//     console.log('Post user info failed with error: ' + e);
+//     res.writeHead(500, {'Content-Type': 'text/xml'});
+//     res.end('HANDLED ERR: ' +  e);
+//   }
+// });
 
 // Get the priveledges of a user
 app.post('/createEvent', (req, res)  => {
@@ -505,81 +494,88 @@ app.post('/createEvent', (req, res)  => {
 })
 
 
-app.get('/createStripeUser', async (req,res) => {
-  try {
-    console.log('\n\nCreating stripe user...')
-    var idToken = req.query.idToken;
-    var paymentToken = req.query.paymentToken;
-    
-        // Get decoded token
-    let decodedToken = await admin.auth().verifyIdToken(idToken);
-    
-    if (decodedToken) {
-      // var uid = decodedToken.uid;
-      var email = decodedToken.email;
-
-      utils.createStripeUser(paymentToken, email, decodedToken.uid).then(function(create_response) {
-        log('OK Sending back successful create stripe user response.');
-        res.send(create_response);
-        return;
-      }).catch(function(err) {
-        log('BAD Sending back errored create stripe user response. : ' + err);
-        res.send(err);
-        return;
-      })
-
-    } else {
-        log('No decoded token!')
-        res.send(new Error('No decoded token! (Code 1)'));
-        return;
-    }
-  } catch  (e) {
-    log('No decoded token!')
-    res.send(new Error('No decoded token! (Code 2)'));
-    return;
-  }
-    
-
-})
-
-var createSubscription = async (firebase_user_token, planNameAndAmount) => {
-    return new Promise( async function(resolve, reject) {
-        log('creating sub of: ' + planNameAndAmount);
-        try {
-
-            // Get decoded token
-            let decodedToken = await admin.auth().verifyIdToken(firebase_user_token);
-
-            var uid = decodedToken.uid;
-            
-            utils.executeCreateSubscription(uid, planNameAndAmount).then(function(response) {
-              log('OK create sub was successful!');
-              resolve(response);
-            }).catch(function(e) {
-              log('BAD create sub was NOT successful! -> ' + e);
-              reject(e);
-            })
-
-        } catch (err) {
-          logn('FUNCTION createSubscription Error: ' + err)
-          reject(new Error('Payment could not process! Failed with error: ' + err));
-        }
+async function get_decoded_token(idToken)  {
+  return new Promise(async function(resolve, reject) {
+    admin.auth().verifyIdToken(idToken).then(function(tkn) {
+      ok_log('Found token');
+      if (tkn != null) {resolve(tkn); } else { reject(tkn); }
+    }).catch(function(err) {
+      err_log('Finding token -> ' + err);
+      reject(err);
     })
-
+  })
 }
 
-app.get('/initPayments', async (req,res) => {
+
+// app.get('/createStripeUser', async (req,res) => {
+//   try {
+//     console.log('\n\nCreating stripe user...')
+//     var idToken = req.query.idToken;
+//     var paymentToken = req.query.paymentToken;
     
-    var idToken = req.query.idToken;
-    var planNameAndAmount = req.query.plan;
-    try {
-        let subscription = await createSubscription(idToken, planNameAndAmount);
-        res.send(subscription);
-    } catch (e) {
-      res.writeHead(500, {'Content-Type': 'text/xml'});
-        res.send(e);
-    }
-});
+//         // Get decoded token
+//     let decodedToken = await get_decoded_token(idToken);
+    
+//       // var uid = decodedToken.uid;
+//       var email = decodedToken.email;
+
+//       utils.createStripeUser(paymentToken, email, decodedToken.uid).then(function(create_response) {
+//         ok_log('Sending back successful create stripe user response.');
+//         res.send(create_response);
+//         return;
+//       }).catch(function(err) {
+//         err_log('Sending back errored create stripe user response. : ' + err);
+//         res.send(err);
+//         return;
+//       })
+
+//   } catch  (e) {
+//     err_log('No decoded token!')
+//     res.send(new Error('No decoded token! (Code 2)'));
+//     return;
+//   }
+    
+
+// })
+
+// var createSubscription = async (firebase_user_token, planNameAndAmount) => {
+//     return new Promise( async function(resolve, reject) {
+//         log('creating sub of: ' + planNameAndAmount);
+//         try {
+
+//             // Get decoded token
+//             let decodedToken = await get_decoded_token(firebase_user_token);
+
+//             var uid = decodedToken.uid;
+            
+//             utils.executeCreateSubscription(uid, planNameAndAmount).then(function(response) {
+//               ok_log('create sub was successful!');
+//               resolve(response);
+//             }).catch(function(e) {
+//               err_log('create sub was NOT successful! -> ' + e);
+//               reject(e);
+//             })
+
+//         } catch (err) {
+//           err_log('FUNCTION createSubscription Error: ' + err)
+//           reject(new Error('Payment could not process! Failed with error: ' + err));
+//         }
+//     })
+
+// }
+
+// app.get('/initPayments', async (req,res) => {
+    
+//     var idToken = req.query.idToken;
+//     var planNameAndAmount = req.query.plan;
+//     try {
+//         let subscription = await createSubscription(idToken, planNameAndAmount);
+//         res.send(subscription);
+//     } catch (e) {
+//       res.writeHead(500, {'Content-Type': 'text/xml'});
+//         res.send(e);
+//     }
+// });
 
 function getToday() {
     var today = new Date();
@@ -596,24 +592,6 @@ function getToday() {
     var td = mm + '/' + dd + '/' + yyyy;
     return td;
 }
-app.get('/updateJoinedDate', (req, res) => {
-    
-        var uid = req.query.uid;
-        let ref = root.ref('/users/' + uid + '/j');
-    
-    ref.once('value').then(function(snapshot) {
-      if (!(snapshot instanceof String)) {
-           ref.set(getToday());
-          res.send('Done!');
-      } else {
-          res.send(snapshot != null);
-      }
-    }).catch(function(err) {
-      res.send(err.message);
-    });
-
-    
-});
 
 
 var getFirebaseUserFromCustomerId = async (cust_id) => {
@@ -782,12 +760,9 @@ var getWinningOptionForEvent = async (eventId) => {
 }
 
 var haveProcessedUserPaymentForEvent = async (uid, eventId) => {
-    // ref
   let event_ref = root.ref('/users/' + uid + '/v/' + eventId + '/don');
-
-  return new Promise( function (resolve, reject) {
-
-    event_ref.once('value').then(function(snapshot, err) {
+  return new Promise( async function (resolve, reject) {
+    event_ref.once('value').then(async function(snapshot, err) {
       if (err || !snapshot.val()) {
         resolve(false);
         } else {
@@ -797,91 +772,111 @@ var haveProcessedUserPaymentForEvent = async (uid, eventId) => {
   })
 }
 
+var performMonthlyRollover = () => {
+  return new Promise ( async function () {
+    log_group_begin('Monthly Rollover');
+    try {
+      
+      log('Payout created');
+      let active_event = await getActiveEventId();
+      let winningOption = await getWinningOptionForEvent(active_event);
+      
+      root.ref('/db/events/' + active_event + '/w').set(winningOption);
+
+      // ------- UPATE WINNING OPTION AS WINNING OPTION ------- // 
+      
+      let nextEvent = await mostRecentlyAddedEvent();
+      
+      root.ref('/db/active_event/').set(nextEvent.id);
+
+      notifyPeople();
+      
+      response.send('Good!');
+  } catch (e) {
+
+    err_log(e);
+    reject(e);
+  }
+  log_group_end();
+  });
+}
+
+
+async function customer_charged_successfully (cust_id, amountContributed) {
+  return new Promise(async function(resolve, reject) {
+    log_group_begin('Processing Customer');
+    let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated;
+    
+    try {   uid = await getFirebaseUserFromCustomerId(cust_id);              } catch (e) { err_log(e); reject(e); log_group_end(); return; }
+
+    ok_log('Found uid -> ' + uid);
+
+    try {   active_event = await getActiveEventId();              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+
+    ok_log('Found active event -> ' + active_event);
+    
+    try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(e); reject(e); log_group_end(); return; }
+
+    alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);
+    
+    let ap_string = 'We have already processed this user!';
+
+    if (alreadyProcessed == true) { err_log(ap_string); reject(ap_string);  log_group_end(); return; }
+    
+    try {   incomeForEvent = await getTotalIncomeForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end();return; }
+
+    incomeForEvent = Number(incomeForEvent);
+    incomeForEvent += amountContributed;
+
+    try {   totalDonated = await getTotalDonated(uid);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    
+    totalDonated = Number(totalDonated);
+    totalDonated += amountContributed;
+    
+    ok_log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
+
+    // Set amount that user donated
+    root.ref('/users/' + uid + '/v/' + active_event + '/don/').set(amountContributed)
+    
+    root.ref('/users/' + uid + '/d/t').set(totalDonated)
+
+    root.ref('/db/events/' + active_event + '/ttl/').set(incomeForEvent);
+
+    ok_log('Finished processing charge!');
+
+    resolve('Finished processing charge!');
+    log_group_end();
+  })
+}
+
 app.post('/event_log', async function(request, response) {
   // Retrieve the request's body and parse it as JSON:
     const event_json = request.body;
     if (event_json.type == 'charge.succeeded') {
         try {
             
-            log('charge succeeded!');
+            ok_log('charge succeeded');
+            let object = event_json.data.object;
 
-            let cust_id = event_json.data.object.customer;
-            let amountContributed = Number(event_json.data.object.amount);
-            
-            log('found customer id and the amount they contributed!');
+            let cust_id = object.customer;
+            let amountContributed = Number(object.amount);
 
-            
-            let uid = await getFirebaseUserFromCustomerId(cust_id);
-            let active_event = await getActiveEventId();
-            
-            log('found uid and active event!');
+            amountContributed = amountContributed / 100;
 
-            let alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);
+            ok_log('found customer id and the amount they contributed!');
+            table_log([new Customer(cust_id, amountContributed)]);
             
-            log('finished checking for already processed!');
-            
-            if (!alreadyProcessed) {
-                let incomeForEvent = await getTotalIncomeForEvent(active_event);
-            incomeForEvent = Number(incomeForEvent);
-            incomeForEvent += amountContributed;
-            
-            let totalDonated = await getTotalDonated(uid);
-            totalDonated = Number(totalDonated);
-            totalDonated += amountContributed;
-            
-            log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
-
-            // Set amount that user donated
-            root.ref('/users/' + uid + '/v/' + active_event + '/don/').set(amountContributed)
-            
-            root.ref('/users/' + uid + '/d/t').set(totalDonated)
-
-            root.ref('/db/events/' + active_event + '/ttl/').set(incomeForEvent);
-
-            log('Finished processing charge!');
+            let successful_charge = await customer_charged_successfully(cust_id, amountContributed);
                 
-            response.send("Done processing!");
-                
-            } else {
-                log('Caught duplicate for user ' + uid + ' on event ' + active_event);
-                response.send("Not sure it worked!!!");
-            }
-
+            response.send(successful_charge);
             
-        } catch (e) {
-            
-             response.send(e)
-            
-        }
+        } catch (e) { err_log(e); response.send(e); return; }
     } else if (event_json.type == 'payout.created') {
-            
-        try {
-            console.log('Payout created')
-            let active_event = await getActiveEventId();
-            let winningOption = await getWinningOptionForEvent(active_event);
-            
-            root.ref('/db/events/' + active_event + '/w').set(winningOption);
 
-            // ------- UPATE WINNING OPTION AS WINNING OPTION ------- // 
-            
-            let nextEvent = await mostRecentlyAddedEvent();
-            
-            root.ref('/db/active_event/').set(nextEvent.id);
+      performMonthlyRollover().then(function(out) { res.send(out); }).catch(function(e) {res.send(e);});
 
-            notifyPeople();
-            
-            response.send('Good!');
-            
-        } catch (e) {
-            
-             response.send(e)
-            
-        }
-        
-    }else {
-        response.send("You're good! Nothing happened though!");
-    }
-    
+    }  else { response.send("ok");}
+
 });
     
 
@@ -893,37 +888,28 @@ app.get('/changePaymentSource', async (req,res) => {
     try {
        
         // Get decoded token
-        let decodedToken = await admin.auth().verifyIdToken(idToken);
+        let decodedToken = await get_decoded_token(idToken);
 
-        if (decodedToken) {
-
-          var uid = decodedToken.uid;
-          var email = decodedToken.email;
-          var cust_id = await getStripeCustomerId(uid);
-            
-            
-            let x = await stripe.customers.createSource(cust_id, {
-              source: paymentToken
-            });
-            
-            // Perform update
-            stripe.customers.update(cust_id, {
-              default_source: x.id
-            }, function(err, resp) {
-                  if (resp) {
-                      log(resp)
-                      res.send(resp)
-                  } else {
-                      log(err)
-                      res.send(err)
-                  }
-            }); 
-            
-        } else {
-            log('No decoded token!')
-            res.send(new Error('No decoded token!'));
-        }
-
+        var uid = decodedToken.uid;
+        var cust_id = await getStripeCustomerId(uid);
+          
+          
+          let x = await stripe.customers.createSource(cust_id, {
+            source: paymentToken
+          });
+          
+          // Perform update
+          stripe.customers.update(cust_id, {
+            default_source: x.id
+          }, function(err, resp) {
+                if (resp) {
+                    log(resp)
+                    res.send(resp)
+                } else {
+                    log(err)
+                    res.send(err)
+                }
+          }); 
     } catch(e) {
         res.send('Server error: ' + e);
     }
@@ -953,81 +939,67 @@ app.get('/change_plan', async (req,res) => {
     try {
 
         // Get decoded token
-        let decodedToken = await admin.auth().verifyIdToken(idToken);
+        let decodedToken = await get_decoded_token(idToken);
 
-        if (decodedToken) {
-            
-          var uid = decodedToken.uid;
-          var sub_id = await getUserSubscriptionId(uid);
+        var uid = decodedToken.uid;
+        var sub_id = await getUserSubscriptionId(uid);
+        
           
-            
-            const subscription = await stripe.subscriptions.retrieve(sub_id);
-            
-            stripe.subscriptions.update(sub_id, {
-              cancel_at_period_end: false,
-              items: [{
-                id: subscription.items.data[0].id,
-                plan: planId,
-              }]
-            }, function(err, subscription) {
-                  if (subscription) {
+        const subscription = await stripe.subscriptions.retrieve(sub_id);
+        
+        stripe.subscriptions.update(sub_id, {
+          cancel_at_period_end: false,
+          items: [{
+            id: subscription.items.data[0].id,
+            plan: planId,
+          }]
+        }, function(err, subscription) {
+              if (subscription) {
 
-                    log('Got subscription!')
-                    root.ref('/users/' + uid + '/sub').set(subscription.id);
+                log('Got subscription!')
+                root.ref('/users/' + uid + '/sub').set(subscription.id);
 
-                    root.ref('/users/' + uid + '/i/p/').set(planName);
-                    root.ref('/queriable/' + uid + '/p').set(planName);
+                root.ref('/users/' + uid + '/i/p/').set(planName);
+                root.ref('/queriable/' + uid + '/p').set(planName);
 
-                    
-                    res.send(subscription)
-                  } else {
-                      log('ErrorX: ' + err)
-                    res.send(err);
-                  }
-                }); 
-            
-        } else {
-            log('No decoded token!')
-            res.send(new Error('No decoded token!'));
-        }
-
+                
+                res.send(subscription)
+              } else {
+                  err_log(err);
+                  res.send(err);
+              }
+              }); 
+          
     } catch(e) {
         res.send('Server error: ' + e);
     }
-    
-
     
 })
         
 app.get('/deleteUser', async (req,res) => {
 
+  var idToken = req.query.idToken;
+  
   log('POST Delete User..');
+  try {
+    // Get decoded token
+    let decodedToken = await get_decoded_token(idToken);
 
-    var idToken = req.query.idToken;
+    ok_log('DELETE authenticated..');
+      
+    var uid = decodedToken.uid;
+    
+    let deleted_user_response = await utils.deleteUser(uid);
 
-      log('IDT: ' + idToken);
+    ok_log('Successfully deleted user');
 
-        // Get decoded token
-        let decodedToken = await admin.auth().verifyIdToken(idToken);
+    res.send('Done');
 
-        if (decodedToken) {
+  } catch (e) {
+    err_log('Could not delete user -> ' + e);
+    res.send(e);
+  }
 
-          log('DELETE authenticated..');
-            
-          var uid = decodedToken.uid;
-          
-          utils.deleteUser(uid).then(async function(result) {
-            res.send(result);
-          }).catch(async function(err)  {
-            res.send(err);
-          });
-          
-        } else {
-            log('No decoded token!')
-            res.send(new Error('No decoded token!'));
-            return;
-        }             
-         
 })
 
 
@@ -1155,8 +1127,6 @@ var getRandomEmail = () => {
     return randomString + emailTag;
 }
 
-// eventId = '-LUZFB34udESrmnBrQHn'
-// voteId = ''
-// root.ref('/db/events/'+eventId+'/o/'+voteId+'/ttl').set(999);
+
 
 app.listen(port, () => console.log('Server running on port '+ port + '!\n'))

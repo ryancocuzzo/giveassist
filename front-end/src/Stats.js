@@ -76,7 +76,7 @@ class Stats extends React.Component {
               name: info.n,
               email: info.e,
               gender: info.g,
-              currentPlan: untrimSelectedOption(info.p),
+              currentPlan: untrimSelectedOption(info.p)*0.01,
               joined: info.j,
               displayName: info.dn
             });

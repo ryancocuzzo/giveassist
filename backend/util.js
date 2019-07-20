@@ -1,32 +1,44 @@
-var assert = require('assert');
 var admin = require("firebase-admin");
-/*
-TEST: [REDACTED]
-LIVE: [REDACTED]
+var prod_serviceAccountKey = require("./prod_serviceAccountKey");
+var dev_serviceAccountKey = require("./dev_serviceAccountKey");
+var clc = require("cli-color");
 
-*/
-var serviceAccount = require("./serviceAccountKeyJSON");
 
-/*
-TEST: [REDACTED]
-LIVE: [REDACTED]
-
-*/
-// var stripe = require("stripe")("[REDACTED]"); // test
-var stripe = require("stripe")("[REDACTED]"); // live
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+var production_app = {
+  credential: admin.credential.cert(prod_serviceAccountKey),
   databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",
   storageBucket: "donate-rcocuzzo-17387568.appspot.com"
-});
+}
 
+var dev_sandbox_app = {
+    credential: admin.credential.cert(dev_serviceAccountKey),
+    databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
+};
+
+let TEST_MODE = true;
+
+var stripe;
+
+if (TEST_MODE == true) { 
+  stripe = require("stripe")("[REDACTED]");
+  admin.initializeApp(dev_sandbox_app);
+ } else { 
+   require("stripe")("[REDACTED]");
+   admin.initializeApp(production_app);
+}
+
+// /*
+//   TEST: [REDACTED]
+//   LIVE: [REDACTED]
+// */
+// // var stripe = require("stripe")("[REDACTED]"); // test
+// var stripe = require("stripe")("[REDACTED]"); // live                                                                                                                                                                                                                                          
 // Get a reference to the root of the Database
 var root = admin.database();
 
 let PRICE_PREM_X = 4.99;
 let PRICE_PREM_Y = 2.99;
 let PRICE_PREM_Z = 1.00;
-
 
 // ____________________________________________________________________________________________________________________________________________
 // ____________________________________________________________________________________________________________________________________________
@@ -36,6 +48,29 @@ function log(output) {
 }
 function logn(output) {
   console.log('\n' + output)
+}
+
+
+function err_log(output) {
+  logn(clc.red.bold('Error ') + output);
+}
+
+function ok_log(output) {
+  logn(clc.green.bold('OK ') + output);
+}
+
+function table_log(output)  {
+  console.table(output);
+}
+
+function User(name, email, password, plan, displayName, joined,  phoneNumber) {
+  this.Name = name;
+  this.Email = email;
+  this.Password = password;
+  this.Plan = plan;
+  this.DisplayName = displayName;
+  this.Joined = joined;
+  this.PhoneNumber = phoneNumber;
 }
 
 randomSnippet = () => {
@@ -59,6 +94,7 @@ rNumber = () => {
   }
   return result;
   }
+
 
 var getStripeCustomerId = async (uid) => {
   return new Promise( function(resolve, reject) {
@@ -137,7 +173,7 @@ var quantityForNameAndAmt = (untrimmed_nameAndAmt) => {
   // log('name is ' + name);
 
   let amt = Number(parseFloat(untrimSelectedOptionAmount(untrimmed_nameAndAmt)));
-  log('amt is ' + amt);
+  // log('amt is ' + amt);
   if (amt == null || name == null || isNaN(amt)) {
     return new Error('Invalid quantityForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
   }
@@ -176,6 +212,8 @@ function getToday() {
   return td;
 }
 
+
+
 var user_info_problems = (userJson) => {
 
   // Validate each property
@@ -195,204 +233,251 @@ var user_info_problems = (userJson) => {
   return null;
 }
 
+function postUserInfo (n,e,p,dn,z, uid) {
+
+  // All fields cleared
+  var userJson = {
+      n: n,                           // name
+      e: e,                           // email
+      p: p,                           // plan
+      dn: dn,                         // display name
+      j: getToday(),                  // timestamp
+      z: z                            // phone number
+  };
+  
+  let problems = user_info_problems(userJson);
+  
+  if (problems == null) {
+      // log('Info post passed requirements..');
+      userJson['dn'] =  makeid();
+      // Set user info
+      root.ref('/users/'+(uid)+'/i/').set(userJson);
+      // set db stuff
+      root.ref('/queriable/'+uid+'/dn').set(userJson.dn);
+      root.ref('/users/' + uid + '/d/t').set(0);
+      // log('User info posted.');
+      return true;
+  } else {
+      return false;
+  }
+}
+
+async function executeCreateSubscription (uid, planNameAndAmount) {
+  return new Promise( async function(resolve, reject) {
+      // log('Executing create sub of: ' + planNameAndAmount);
+
+      try {
+
+          let customer_id = await getStripeCustomerId(uid);
+
+          var plan = planIDForNameAndAmt(planNameAndAmount);
+          var amt = quantityForNameAndAmt(planNameAndAmount);
+
+            // Create the user subscription
+            stripe.subscriptions.create({
+                customer: customer_id,
+                items: [
+                  {
+                    plan: plan,
+                    quantity: amt,
+                  },
+                ],
+              }, {
+                stripe_account: "[REDACTED]",
+              }, function(err, subscription) {
+                if (subscription) {
+
+                  // log('OK Generated subscription!')
+                  root.ref('/users/' + uid + '/sub/').set(subscription.id);
+                  root.ref('/queriable/'+uid+'/p').set(planNameAndAmount);
+                  resolve(subscription.id);
+                  return;
+                } else {
+                  // log('BAD Did NOT Generate subscription! Error: ' + err);
+                  reject(err);
+                  return;
+                }
+              }); 
+      } catch (err) {
+        // logn('FUNCTION executeCreateSubscription Error: ' + err)
+      reject('Payment could not process! Failed with error: ' + err);
+      }
+  })
+
+}
+
+async function createStripeUser (paymentToken, email, uid) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      // log('Creating stripe user with inputs: \ntkn: ' + JSON.stringify(paymentToken) + '\neml: ' + email);
+        // Create a Customer:
+        const customer = await stripe.customers.create({
+          source: paymentToken,
+          email: email,
+        })
+        
+        if (customer) {
+            let customer_id = customer.id;
+            if (uid && customer_id) {
+                // console.log('sUID: ' + uid)
+                // console.log('sCustomer ID: ' + customer_id)
+                root.ref('/users/' + uid + '/st/id/').set(customer_id)
+                root.ref('/stripe_ids/' + customer_id + '/uid/').set(uid);
+                ok_log('we have a stripe customer id -> ' + customer_id);
+                resolve(customer_id);
+                return;
+            } else {
+                // log('Could not create stripe user!')
+                reject('Could not create payment-backed user!');
+                return;
+            }
+        } else {
+            reject('Could not create customer!');
+            return;
+        }
+    } catch (e) {
+      reject('Could not create customer! -> ' + e);
+      return;
+    }
+  })
+}
+
+async function deleteUser(uid) {
+  return new Promise(async function (resolve, reject) {
+
+    getStripeCustomerId(uid).then(function(cust_id){
+
+      // log('OK Got stripe info..');
+
+      stripe.customers.del(cust_id,
+        function(err, confirmation) {
+          if (confirmation) {
+              
+              // Clear firebase references
+              root.ref('/users/' + uid + '/').set(null);
+              root.ref('/queriable/' + uid + '/').set(null);
+              root.ref('/stripe_ids/' + cust_id + '/').set(null);
+
+              // Delete user from auth
+              admin.auth().deleteUser(uid)
+                .then(function() {
+                  // console.log("Successfully deleted user");
+                  resolve("Successfully deleted user");
+                  return;
+                })
+                .catch(function(error) {
+                  // console.log("Error deleting user: " + error);
+                  reject(error);
+                  return;
+                });
+          } else {
+              if (err) {
+                reject('Delete User confirmation error: ' + err);
+              } else {
+                reject('Unknown error result of delete user!');
+              }
+              return;
+          }
+        }
+      );
+
+    }).catch(function(e) {
+      // Clear firebase references
+      root.ref('/users/' + uid + '/').set(null);
+      root.ref('/queriable/' + uid + '/').set(null);
+
+      // Delete user from auth
+      admin.auth().deleteUser(uid)
+        .then(function() {
+          // console.log("Successfully deleted user");
+          resolve("Successfully deleted user");
+          return;
+        })
+        .catch(function(error) {
+          // console.log("Error deleting user:", error);
+          reject(error);
+          return;
+        });
+    });
+  })
+  
+}
+
 // ____________________________________________________________________________________________________________________________________________
 // ____________________________________________________________________________________________________________________________________________
 
 
 module.exports = {
     root: root,
+    stripe: stripe,
     randomNumber: function() {return rNumber(); },
     user_info_problems: function(json) { return user_info_problems(json); },
     postUserInfo: function (n,e,p,dn,z, uid) {
-
-        // All fields cleared
-        var userJson = {
-            n: n,                           // name
-            e: e,                           // email
-            p: p,                           // plan
-            dn: dn,                         // display name
-            j: getToday(),                  // timestamp
-            z: z                            // phone number
-        };
-        
-        let problems = user_info_problems(userJson);
-        
-        if (problems == null) {
-            // log('Info post passed requirements..');
-            userJson['dn'] =  makeid();
-            // Set user info
-            root.ref('/users/'+(uid)+'/i/').set(userJson);
-            // set db stuff
-            root.ref('/queriable/'+uid+'/dn').set(userJson.dn);
-            root.ref('/users/' + uid + '/d/t').set(0);
-            // log('User info posted.');
-            return true;
-        } else {
-            return false;
-        }
+        return postUserInfo(n,e,p,dn,z,uid);
     },
     deleteUser: async function (uid) {
-      return new Promise(async function (resolve, reject) {
-  
-        getStripeCustomerId(uid).then(function(cust_id){
-  
-          // log('OK Got stripe info..');
-    
-          stripe.customers.del(cust_id,
-            function(err, confirmation) {
-              if (confirmation) {
-                  
-                  // Clear firebase references
-                  root.ref('/users/' + uid + '/').set(null);
-                  root.ref('/queriable/' + uid + '/').set(null);
-                  root.ref('/stripe_ids/' + cust_id + '/').set(null);
-  
-                  // Delete user from auth
-                  admin.auth().deleteUser(uid)
-                    .then(function() {
-                      // console.log("Successfully deleted user");
-                      resolve("Successfully deleted user");
-                      return;
-                    })
-                    .catch(function(error) {
-                      // console.log("Error deleting user: " + error);
-                      reject(error);
-                      return;
-                    });
-              } else {
-                  if (err) {
-                    reject('Delete User confirmation error: ' + err);
-                  } else {
-                    reject('Unknown error result of delete user!');
-                  }
-                  return;
-              }
-            }
-          );
-    
-        }).catch(function(e) {
-          // Clear firebase references
-          root.ref('/users/' + uid + '/').set(null);
-          root.ref('/queriable/' + uid + '/').set(null);
-  
-          // Delete user from auth
-          admin.auth().deleteUser(uid)
-            .then(function() {
-              // console.log("Successfully deleted user");
-              resolve("Successfully deleted user");
-              return;
-            })
-            .catch(function(error) {
-              // console.log("Error deleting user:", error);
-              reject(error);
-              return;
-            });
-        });
+      return new Promise( function(resolve, reject) {
+        deleteUser(uid).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); });
       })
-      
     },
     createStripeUser: async function (paymentToken, email, uid) {
-      return new Promise(async function (resolve, reject) {
-        try {
-          // log('Creating stripe user with inputs: \ntkn: ' + JSON.stringify(paymentToken) + '\neml: ' + email);
-            // Create a Customer:
-            const customer = await stripe.customers.create({
-              source: paymentToken,
-              email: email,
-            })
-            
-            if (customer) {
-                let customer_id = customer.id;
-                if (uid && customer_id) {
-                    // console.log('sUID: ' + uid)
-                    // console.log('sCustomer ID: ' + customer_id)
-                    root.ref('/users/' + uid + '/st/id/').set(customer_id)
-                    root.ref('/stripe_ids/' + customer_id + '/uid/').set(uid);
-                    resolve(customer_id);
-                    return;
-                } else {
-                    // log('Could not create stripe user!')
-                    reject('Could not create payment-backed user!');
-                    return;
-                }
-            } else {
-                reject('Could not create customer!');
-                return;
-            }
-        } catch (e) {
-          reject('Could not create customer! -> ' + e);
-          return;
-        }
+      return new Promise( function(resolve, reject) {
+        createStripeUser(paymentToken,email,uid).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); })
       })
     },
     executeCreateSubscription: async function (uid, planNameAndAmount) {
-      return new Promise( async function(resolve, reject) {
-          // log('Executing create sub of: ' + planNameAndAmount);
-  
-          try {
-  
-              let customer_id = await getStripeCustomerId(uid);
-
-              var plan = planIDForNameAndAmt(planNameAndAmount);
-              var amt = quantityForNameAndAmt(planNameAndAmount);
-
-                // Create the user subscription
-                stripe.subscriptions.create({
-                    customer: customer_id,
-                    items: [
-                      {
-                        plan: plan,
-                        quantity: amt,
-                      },
-                    ],
-                  }, {
-                    stripe_account: "[REDACTED]",
-                  }, function(err, subscription) {
-                    if (subscription) {
-  
-                      // log('OK Generated subscription!')
-                      root.ref('/users/' + uid + '/sub/').set(subscription.id);
-                      root.ref('/queriable/'+uid+'/p').set(planNameAndAmount);
-                      resolve(subscription.id);
-                      return;
-                    } else {
-                      // log('BAD Did NOT Generate subscription! Error: ' + err);
-                      reject(err);
-                      return;
-                    }
-                  }); 
-          } catch (err) {
-            // logn('FUNCTION executeCreateSubscription Error: ' + err)
-          reject(new Error('Payment could not process! Failed with error: ' + err));
-          }
+      return new Promise( function(resolve, reject) {
+        executeCreateSubscription(uid, planNameAndAmount).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); })
       })
-  
-  },
+    },
     getUserInfo:  async function (uid) {
-    return new Promise( function(resolve, reject) {
-      let ref = root.ref('/users/' + uid + '/i/');
-  
-        ref.once('value').then (function(snap) {
-            if (snap && snap.val())
-                resolve(snap.val())
-            else
-                resolve(null)
-        })
-    })
+      return new Promise( function(resolve, reject) {
+        let ref = root.ref('/users/' + uid + '/i/');
+          ref.once('value').then (function(snap) {
+              if (snap && snap.val())
+                  resolve(snap.val())
+              else
+                  resolve(null)
+          })
+      })
   },
   userExists: async function (uid) {
     return new Promise( function(resolve, reject) {
-        admin.auth().getUser(uid)
-      .then(function(userRecord) {
-        // See the UserRecord reference doc for the contents of userRecord.
-        // console.log('Successfully fetched user data:', userRecord.toJSON());
-        resolve(userRecord);
-      })
-      .catch(function(error) {
-        // console.log('No user data to fetch, user does not exist');
-        resolve(null);
-      });
+        admin.auth().getUser(uid).then(function(userRecord) { resolve(userRecord);}).catch(function(error) {resolve(null);});
     })
+  },
+  initiate_new_user: async function (email, password, usr, paymentToken) {
+    return new Promise(async function(resolve,  reject)  {
+      
+      let unclean_user_info = user_info_problems(usr);
+      if (unclean_user_info) { reject(unclean_user_info); return; }
+  
+      let new_user = new User(usr.n,email, password, usr.p, usr.dn, usr.j, usr.z);
+      table_log([new_user]);
+  
+      // create user
+      let user_record = await admin.auth().createUser({
+        email: new_user.Email,
+        emailVerified: false,
+        phoneNumber: new_user.PhoneNumber,
+        password: new_user.Password,
+        displayName: new_user.DisplayName
+      });
+  
+      let uid = user_record.uid;
+    
+      // post user info & handle fail
+      if (!postUserInfo(new_user.Name, new_user.Email, new_user.Plan, new_user.DisplayName, new_user.PhoneNumber, uid)) { deleteUser(uid);err_log('Weirdly rejected while posting user info');reject('Invalid info'); return; }
+      
+      var stripe_user;
+      try { stripe_user = await createStripeUser(paymentToken, email, uid); } catch (e) { deleteUser(uid);err_log('while creating stripe user -> ' + e); reject('Could not create stripe user'); return; }
+      
+      var init_payments;
+      try { init_payments = await executeCreateSubscription(uid, new_user.Plan) } catch (e) { deleteUser(uid);err_log('while initializing payments (creating subscription) -> ' + e); reject('Could not initialize stripe payments'); return; }
+      
+      resolve(uid);
+  
+    });
   }
     
 };

@@ -241,7 +241,7 @@ class Vaults extends Component {
         return <div >
                 <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700'}}>
                   <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}}>{event.value.id}</h3><br/>
-                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.ttl)}</h3><br/>
+                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.ttl*0.01)}</h3><br/>
                   <br />
                 </div>
               </div>
