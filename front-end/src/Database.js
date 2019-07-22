@@ -179,6 +179,59 @@ export const userVotes = async (userId) => {
     })
 }
 
+
+export const userDonations = async (userId) => {
+    let ref = firebase.database().ref('/users/' + userId + '/v/')
+    return new Promise( function (resolve, reject) {
+      ref.once('value').then(function(snapshot, err) {
+        if (err) { console.log(err); reject(err.message); } else {
+          var events_donated_on = [];
+          snapshot.forEach(function(child) {
+            let val = child.val();
+            if (val != null && val['don'] != null && val['don'] != '') {
+              let event = child.key;
+              let option = val;
+
+              let donation = {
+                event_id: event,
+                don:  val['don']
+              }
+
+              events_donated_on.push(donation);
+            }
+          })
+          resolve(events_donated_on);
+        }
+      });
+    })
+}
+
+export const get_all_EventIdAndName_sets = async () => {
+    let ref = firebase.database().ref('/db/events')
+    return new Promise( function (resolve, reject) {
+      ref.once('value').then(function(snapshot, err) {
+        if (err) { console.log(err); reject(err.message); } else {
+          var events = [];
+          snapshot.forEach(function(child) {
+            let val = child.val();
+            if (val != null && val['t'] != null && val['t'] != '') {
+              let event = child.key;
+              let option = val;
+
+              let ev = {
+                event_id: event,
+                title:  val['t']
+              }
+
+              events.push(ev);
+            }
+          })
+          resolve(events);
+        }
+      });
+    })
+}
+
 export const getKey = () => {
   return firebase.database().ref().push().key;
 }

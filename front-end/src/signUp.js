@@ -208,11 +208,11 @@ signUpUser = async (paymentTokenId) => {
 
         Popup.alert('It seems we couldn\'t process your request! Here\'s why: ' + error.message);
 
-        setTimeout(function () {
-              // Oops, error!
-              document.location.reload(true);
-        }, 3000);
-
+        // setTimeout(function () {
+        //       // Oops, error!
+        //       document.location.reload(true);
+        // }, 3000);
+        //
 
 
 
@@ -398,7 +398,7 @@ render () {
 
   return (
     <div style={{ fontSize: '12px', paddingLeft: '5%', paddingRight: '5%'}} className='myGradientBackground'>
-    <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
+    {/* <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div> */}
 
       <Popup />
         <div style={{textAlign: 'center'}}>

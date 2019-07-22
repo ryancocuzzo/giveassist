@@ -104,7 +104,7 @@ class App extends React.Component {
     var page = this.state.user ?
     ( <div>
         <MyNavBar/>
-      <div style={{ backgroundColor: '#249cb5', width: '100%', height: '80px'}}></div>
+      <div style={{ backgroundColor: 'white', width: '100%', height: '80px'}}></div>
         <Switch>
           <Route exact path='/' component={Vote}/>
           <Route path='/vote' component={Vote}/>

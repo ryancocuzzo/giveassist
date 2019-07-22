@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Row, Col, InputGroup, FormControl, MenuItem, ButtonToolbar,  Dropdown, ToggleButtonGroup, ToggleButton, DropdownButton } from 'react-bootstrap';
+import { Button, Row, Col, Grid } from 'react-bootstrap';
 import { Link, withRouter} from 'react-router-dom';
 import variables from './variables.js';
 import Datetime from 'react-datetime';
@@ -12,14 +12,103 @@ import moment from 'moment';
 import firebase, { auth, provider } from './firebase.js';
 import * as util from 'util' // has no default export
 import { inspect } from 'util' // or directly
-import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo, getTotalDonated} from './Database.js';
+import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo, getTotalDonated, get_all_EventIdAndName_sets, userDonations} from './Database.js';
 import numeral from 'numeral';
 import PayPlanOption from "./PayPlanOption";
 import MyInput from './MyInput.js';
 import { _signUpUser, untrimSelectedOption, trimSelectedOption } from './User.js';
-
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 var moneyFormat = (number) => {
   return numeral(number).format('$0,0.00');
+}
+
+
+var generate_point = (month_title, amt)  => {
+// console.log('GP got inputs => ' + month_title + ' : ' + amt);
+  let pt = { month_title: month_title, Amount: amt };
+  return pt;
+}
+
+/* { event_id: ..., val:  ... }  */
+var make_accumulated_list = (donation_list)  => {
+  var accumulated_list = [];
+  var total = 0;
+  donation_list.forEach(function(don) {
+    don['amt'] = don['amt'] + total;
+    total = don['amt'];
+    accumulated_list.push(don);
+  });
+  return accumulated_list;
+}
+
+var generate_projection_data = (donation_list, amount_donating) => {
+  var projected_list = make_accumulated_list(donation_list);
+  let THRESHOLD = 4; // 6 projected points
+  for (var i = 1; i < THRESHOLD+1; i++) {
+
+    let next_month  = moment(new Date()).add(i,'months').format('LL');
+    let split_next_month = next_month.split(' ');
+    let usable_next_month_value = split_next_month[0] + ' ' + split_next_month[2];
+
+    let last_val = projected_list[projected_list.length-1]['Amount'];
+    projected_list.push(generate_point(usable_next_month_value, last_val+amount_donating));
+  }
+  return projected_list;
+}
+
+var convert_eventIdAndAmt_to_NameAndAmtPoints = (id_title_sets, donation_list) => {
+    var points = [];
+    donation_list.forEach(function(don) {
+      let title = get_title(id_title_sets, don['event_id']);
+      let amt = don['don'];
+      let new_point = generate_point(title, amt);
+      // console.log('Generated point: ');
+      // console.table(new_point);
+      points.push(new_point);
+    })
+    return points;
+}
+
+var get_title = (id_title_sets, eventId) => {
+  var ret = null;
+  id_title_sets.forEach(function(id_title_set) {
+    // console.log('EVENT CHECK:');
+    // console.table(id_title_set);
+    let eid = id_title_set['event_id'];
+    let t = id_title_set['title'];
+    // console.table({eventId: eid, title: t})
+    if (eid == eventId) {
+      // console.log('FOUND');
+       ret = t;
+       return;
+    }
+  });
+
+  return ret;
+}
+
+var get_projection_data = async (uid) => {
+  // get mapping from event id to names
+  let id_title_sets = await get_all_EventIdAndName_sets(); /* { event_id: ..., title:  ... }  */
+  // console.table(id_title_sets);
+  // get user donations  (event id & don)
+  let user_donations = await userDonations(uid);
+  console.table(user_donations);
+
+  // convert list to points
+  let titled_user_donations = convert_eventIdAndAmt_to_NameAndAmtPoints(id_title_sets, user_donations);
+  console.log('Properly formatted donations: ');
+  console.table(titled_user_donations);
+
+  // amount user donating as of late
+  let amount_donating = titled_user_donations[titled_user_donations.length-1]['Amount'];
+
+  // generate projections
+  let donations_with_projections = generate_projection_data(titled_user_donations,  amount_donating);
+  console.log('After adding projections: ');
+  console.table(donations_with_projections);
+  // return
+  return donations_with_projections;
 }
 
 var num_regex = /[0-9]*/;
@@ -52,11 +141,11 @@ class Stats extends React.Component {
       isEditingInfo: false,
       displayName: '',
       joined: '',
+      projection_data: [],
       width: document.body.clientWidth
     };
 
-    window.history.pushState(null, '', '/stats')
-
+    window.history.pushState(null, '', '/stats');
 
   }
 
@@ -92,6 +181,8 @@ class Stats extends React.Component {
           // Handle error
         });
 
+
+        this.retrieveProjectionData(user.uid);
         this.retrieveTotalDonated(user.uid);
 
         }
@@ -101,8 +192,14 @@ class Stats extends React.Component {
     }.bind(this));
 
 
-
   }
+
+
+    retrieveProjectionData = async (uid) => {
+      let data = await get_projection_data(uid);
+      // alert(total)
+      this.setState({projection_data: data})
+    }
 
   retrieveTotalDonated = async (uid) => {
     let total = await getTotalDonated(uid);
@@ -143,7 +240,29 @@ class Stats extends React.Component {
       });
   }
 
-
+  myChart = (isMobile) => {
+    let projection_data = this.state.projection_data;
+    console.log('CHART')
+    console.log(projection_data);
+    return (
+      <div style={{ width: '100%', height: (isMobile  ? '300px' : '500px') }}>
+        <ResponsiveContainer>
+          <AreaChart
+            data={projection_data}
+            margin={{
+              top: 10, right: 30, left: 0, bottom: 0,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month_title" stroke='white'/>
+            <YAxis style={{color:  'white'}} stroke='white'/>
+            <Tooltip />
+          <Area type="monotone" dataKey="Amount" stroke="#8884d8" fill="#E5FCFC" />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
 
    validateEmail = (email) => {
       var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -165,33 +284,33 @@ class Stats extends React.Component {
 
     }
 
-    uploadPicture = () => {
-      if (this.state.picture && this.state.picture != '') {
-        const body = this.state.picture;
-        console.log(body);
-        // Get current username
-        var user = firebase.auth().currentUser.uid;
-
-        let str = '' + user + '/profilePicture/' + body.name;
-
-
-          // Create a Storage Ref w/ username
-          var storageRef = firebase.storage().ref().child(str);
-          console.log('Attempting to put image into ref ' + storageRef);
-          // Upload file
-          var task = storageRef.put(body);
-          storageRef.put(body).then(function(snapshot) {
-            console.log('Uploaded a blob or file!');
-          }).catch(function(e) {
-            console.log(e);
-          });
-
-              // Post profile picture to database
-             firebase.database().ref('/users/' + user + '/img/p').update(body.name);
-
-      }
-
-    }
+    // uploadPicture = () => {
+    //   if (this.state.picture && this.state.picture != '') {
+    //     const body = this.state.picture;
+    //     console.log(body);
+    //     // Get current username
+    //     var user = firebase.auth().currentUser.uid;
+    //
+    //     let str = '' + user + '/profilePicture/' + body.name;
+    //
+    //
+    //       // Create a Storage Ref w/ username
+    //       var storageRef = firebase.storage().ref().child(str);
+    //       console.log('Attempting to put image into ref ' + storageRef);
+    //       // Upload file
+    //       var task = storageRef.put(body);
+    //       storageRef.put(body).then(function(snapshot) {
+    //         console.log('Uploaded a blob or file!');
+    //       }).catch(function(e) {
+    //         console.log(e);
+    //       });
+    //
+    //           // Post profile picture to database
+    //          firebase.database().ref('/users/' + user + '/img/p').update(body.name);
+    //
+    //   }
+    //
+    // }
 
 
     changeEditing = () => {
@@ -384,7 +503,7 @@ class Stats extends React.Component {
 
     var isReadOnly = !this.state.isEditingInfo;
 
-    console.log('READONLY: ' + isReadOnly);
+    // console.log('READONLY: ' + isReadOnly);
 
     var applyButtonStyle = {
       marginLeft: '10px',
@@ -400,7 +519,7 @@ class Stats extends React.Component {
 
     let buttonStyle = (!isReadOnly ? applyButtonStyle : disabledButtonStyle );
     let def = this.state.name;
-    console.log('NAME: ' + def);
+    // console.log('NAME: ' + def);
     var getSuffix = (this.state.width <= 1200) ? '' : <span style={{paddingLeft: '230px'}}> - Click EDIT to access.</span>;
     var getSuffixPlan = (this.state.width <= 1200) ? '' : <span style={{paddingLeft: '304px'}}> - Click EDIT to access.</span>;
 
@@ -433,6 +552,7 @@ class Stats extends React.Component {
           minLength={4}
           handleSubmit={this.nameSubmitted}
           handleVal={this.nameSubmitted}
+          value={this.state.name}
         />
       );
     };
@@ -447,6 +567,7 @@ class Stats extends React.Component {
           minLength={7}
           handleSubmit={this.displayNameSubmitted}
           handleVal={this.displayNameSubmitted}
+          value={this.state.displayName}
         />
       );
     };
@@ -546,33 +667,38 @@ class Stats extends React.Component {
       <Row>
         <Col>
           <div style={{ borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
-            <div style={{marginLeft: '5%', width: '90%'}}>
+            <div style={{ backgroundColor: 'white', width: '100%', height: '20px'}}></div>
 
-            <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
+            <div style={{marginLeft: '10%', width: '80%'}}>
+
             <Popup />
 
-          <h1 style={{marginLeft: '30px', fontSize: '40px'}}>STATISTICS</h1><br/>
-
-        <div className='adjacentItemsParent' style={{marginLeft: isMobile ? '25px' : '30px'}}>
-            <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize+5)+'px', width: (col_width_wide+40)+'px', marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>CURRENT PLAN</h1><br/>
-          <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{this.state.currentPlan != 'Premium Z' ? this.state.currentPlan : 'Custom'}</h1>
-              <br />
-          </div>
-
-        <div className='adjacentItemsParent' style={{marginLeft: isMobile ? '25px' : '30px'}}>
-            <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize+5)+'px', width: (col_width_wide+40)+'px', marginTop: (topMargin)+'px'}}className='fixedAdjacentChild'>JOINED</h1><br/>
-          <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{this.state.joined}</h1>
-            <br />
+          <h1 style={{fontSize: '40px'}}>STATISTICS</h1><br/>
+        {/* <Grid>
+          <Row>
+            <Col>
+              <div>
+                <h1 style={{fontSize: (fontSize+5)+'px', marginTop: (topMargin)+'px'}} >CURRENT PLAN: <span style={{marginLeft: '10px'}}><strong>{this.state.currentPlan != 'Premium Z' ? this.state.currentPlan : 'Custom'}</strong></span></h1><br/>
+                  <br />
+              </div>
+          </Col>
+        </Row>
+        </Grid> */}
+        <Grid>
+          <Row>
+            <Col>
+              <div>
+                  <h1 style={{fontSize: (fontSize+5)+'px'}}>TOTAL DONATED: <span style={{marginLeft: '10px'}}><strong>{moneyFormat(this.state.total_donated)}</strong></span> </h1>
+                  <h1 style={{fontSize: (fontSize+5)+'px'}}>JOINED: <span style={{marginLeft: '10px'}}><strong>{this.state.joined}</strong></span> </h1><br/>
+              </div>
+            </Col>
+          </Row>
+        </Grid>
+        <div>
+          {this.myChart(isMobile)}
         </div>
 
-        <div className='adjacentItemsParent' style={{marginLeft: isMobile ? '25px' : '30px'}}>
-            <h1 style={{marginLeft: (leftMargin)+'px',fontSize: (fontSize+5)+'px', width: (col_width_wide+40)+'px', marginTop: (topMargin)+'px'}} className='fixedAdjacentChild'>TOTAL DONATED</h1><br/>
-          <h1 className='flexibleAdjacentChild' style={{marginLeft: leftMargin,fontSize: fontSize+5, width: col_width_wide, marginTop: (topMargin)+'px'}} >{moneyFormat(this.state.total_donated)}</h1>
-            <br />
-        </div>
-
-
-          <h1 style={{marginLeft: '30px', fontSize: '40px'}}>ACCOUNT DETAILS</h1><br/>
+          <h1 style={{fontSize: '40px'}}>ACCOUNT DETAILS</h1><br/>
           <div style={{marginLeft: '50px'}}>
               <h1>Change your information</h1>
 
@@ -657,8 +783,8 @@ class Stats extends React.Component {
                       <br/>
 
               </div>
-            <div style={{width: '100%', height: bottomMargin}}></div>
           </div>
+          <div  style={{height: '100px'}}><div></div></div>
         </div>
         </Col>
       </Row>

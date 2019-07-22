@@ -35,39 +35,18 @@ process.env.NODE_ENV = 'production';
 // This is the port we are using. It will default to our System default but, in test mode, it is set to port 1234. This was done so that it doesn't conflict with the default blockchain ports.
 var port = process.env.PORT || 1234;
 
-function table_log(output)  {
-  console.table(output);
-}
+function table_log(output)  {console.table(output);}
+function log(output) {console.log(output)}
+function logn(output) {console.log('\n' + output)}
+function err_log(output) {logn(clc.red.bold('Error ') + output);}
+function ok_log(output) { logn(clc.green.bold('OK ') + output);}
+function warning_log(output) {logn(clc.cyan.bold('OK ') + output);}
+function log_group_begin(text) {console.group('\n-- -- ' + text + ' -- --\n');}
 
-function log(output) {
-    console.log(output)
-}
+function log_group_end() { console.groupEnd(); console.log('\n-- -- \n'); }
 
-function logn(output) {
-    console.log('\n' + output)
-}
-
-function err_log(output) {
-  logn(clc.red.bold('Error ') + output);
-}
-
-function ok_log(output) {
-  logn(clc.green.bold('OK ') + output);
-}
-
-function warning_log(output) {
-  logn(clc.cyan.bold('OK ') + output);
-}
-
-function log_group_begin(text) {
-  console.group('\n-- -- ' + text + ' -- --\n');
-}
-
-function log_group_end() {
-  console.groupEnd();
-  console.log('\n-- -- \n');
-
-}
+let DBLinks = utils.DBLinks;
+let PLAN = utils.PLAN;
 
 function Customer(cid, amt_contributed) {
   this.CustomerId = cid;
@@ -218,18 +197,6 @@ app.post('/sms', async (req, res) =>  {
       res.end(twiml.toString());
     }
 })
-
-let nl = '%0a';  // NEWLINE ?????
-
-var unlocked = false;
-
-/**
- * 
- * NEED TO  DO DISPLAYNAME ON  FRONT  END
- * 
- * 
- */
-
  
 // listen for new event change
  async function notifyPeople() {
@@ -420,46 +387,10 @@ app.post('/initiate_new_user', async (req, res) => {
     let result = await utils.initiate_new_user(usr.e, password, usr, paymentToken);
     res.send(result);
   } catch (e) {
+    err_log(e);
     res.send(e);
   }
 });
-
-// app.post('/postUserInfo', async (req, res) => {
-//   try {
-
-//     var idToken = req.body.params.idToken;
-
-//     // Get decoded token
-//     let decodedToken = await admin.auth().verifyIdToken(idToken);
-
-//     var uid = decodedToken.uid;
-
-//       // All fields cleared
-//     var usr = {
-//       n: req.body.params.n,                           // name
-//       e: req.body.params.e,                           // email
-//       p: req.body.params.p,                           // plan
-//       dn: req.body.params.dn,                         // display name
-//       j: getToday(),                                  // timestamp
-//       z: req.body.params.z                            // phone number
-//     };
-
-//     let posted_info = utils.postUserInfo(usr.n, usr.e, usr.p, usr.dn, usr.z, uid);
-
-//     if (posted_info  == true) {
-//       res.writeHead(200, {'Content-Type': 'text/xml'});
-//       res.end('Successful post!');
-//     } else {
-//       res.writeHead(500, {'Content-Type': 'text/xml'});
-//       res.end('Could not successfully post!');
-//     }
-
-//   } catch (e) {
-//     console.log('Post user info failed with error: ' + e);
-//     res.writeHead(500, {'Content-Type': 'text/xml'});
-//     res.end('HANDLED ERR: ' +  e);
-//   }
-// });
 
 // Get the priveledges of a user
 app.post('/createEvent', (req, res)  => {
@@ -504,77 +435,6 @@ async function get_decoded_token(idToken)  {
     })
   })
 }
-
-
-// app.get('/createStripeUser', async (req,res) => {
-//   try {
-//     console.log('\n\nCreating stripe user...')
-//     var idToken = req.query.idToken;
-//     var paymentToken = req.query.paymentToken;
-    
-//         // Get decoded token
-//     let decodedToken = await get_decoded_token(idToken);
-    
-//       // var uid = decodedToken.uid;
-//       var email = decodedToken.email;
-
-//       utils.createStripeUser(paymentToken, email, decodedToken.uid).then(function(create_response) {
-//         ok_log('Sending back successful create stripe user response.');
-//         res.send(create_response);
-//         return;
-//       }).catch(function(err) {
-//         err_log('Sending back errored create stripe user response. : ' + err);
-//         res.send(err);
-//         return;
-//       })
-
-//   } catch  (e) {
-//     err_log('No decoded token!')
-//     res.send(new Error('No decoded token! (Code 2)'));
-//     return;
-//   }
-    
-
-// })
-
-// var createSubscription = async (firebase_user_token, planNameAndAmount) => {
-//     return new Promise( async function(resolve, reject) {
-//         log('creating sub of: ' + planNameAndAmount);
-//         try {
-
-//             // Get decoded token
-//             let decodedToken = await get_decoded_token(firebase_user_token);
-
-//             var uid = decodedToken.uid;
-            
-//             utils.executeCreateSubscription(uid, planNameAndAmount).then(function(response) {
-//               ok_log('create sub was successful!');
-//               resolve(response);
-//             }).catch(function(e) {
-//               err_log('create sub was NOT successful! -> ' + e);
-//               reject(e);
-//             })
-
-//         } catch (err) {
-//           err_log('FUNCTION createSubscription Error: ' + err)
-//           reject(new Error('Payment could not process! Failed with error: ' + err));
-//         }
-//     })
-
-// }
-
-// app.get('/initPayments', async (req,res) => {
-    
-//     var idToken = req.query.idToken;
-//     var planNameAndAmount = req.query.plan;
-//     try {
-//         let subscription = await createSubscription(idToken, planNameAndAmount);
-//         res.send(subscription);
-//     } catch (e) {
-//       res.writeHead(500, {'Content-Type': 'text/xml'});
-//         res.send(e);
-//     }
-// });
 
 function getToday() {
     var today = new Date();
@@ -624,6 +484,8 @@ var getActiveEventId = async () => {
 
 }
 
+
+
 /**
  * Gets the active event id
  * @return {[String]} the active event id
@@ -644,22 +506,39 @@ var getTotalIncomeForEvent = async (eventId) => {
 }
 
 /**
- * Gets the active event id
+ * Gets the total users for an event
  * @return {[String]} the active event id
  */
+var getTotalUsersForEvent = async (eventId) => {
+  return new Promise ( function(resolve, reject) { utils.DBLinks.eventTotalUsers(eventId).fetch().then((res) => resolve(res)).catch((err) => reject(err)); });
+}
+
+app.get('/totalUsersForEvent', async function(req, res) {
+  if (req == null || req.query == null) { res.send(new Error('invalid request')); return;}
+  getTotalUsersForEvent(req.query.eventId).then((total) => res.send(total)).catch((e) => res.send(e));
+});
+
+
+/**
+ * Gets the total amt donated
+ * @return {[String]} the user id
+ */
 var getTotalDonated = async (uid) => {
+  return new Promise ( function(resolve, reject) { utils.DBLinks.totalDonated(uid).fetch().then((res) => resolve(res)).catch((err) => reject(err)); });
+}
 
-  let event_ref = root.ref('/users/' + uid + '/d/t');
+var getPrevChargeStatus = async (uid) => {
+  return new Promise ( function(resolve, reject) { utils.DBLinks.prevChargeStatus(uid).fetch().then((res) => {(res != 'FAILED') ? resolve(res) :  reject('Please update your payment info, then hop back to submit that vote!')}).catch((err) => reject('Please update your payment info, then hop back to submit that vote!')); });
+}
 
-  return new Promise( function (resolve, reject) {
+app.get('/get_plan_stats', async (req,res) => {
+  
+  if (req == null || req.query == null) { res.send(new Error('invalid request')); return;}
+  utils.get_plan_stats().then((obj) => res.send(obj)).catch((e) => res.send(e));
+});
 
-    event_ref.once('value').then(function(snapshot) {
-      resolve(snapshot.val());
-    }).catch(function(err) {
-      reject(err.message);
-    });
-  })
-
+var getUserInfo = async (uid) => {
+  return new Promise ( function(resolve, reject) { utils.DBLinks.userInfo(uid).fetch().then((res) => resolve(res)).catch((err) => reject(err)); });
 }
 
 var mostRecentlyAddedEvent = async () => {
@@ -674,6 +553,7 @@ var mostRecentlyAddedEvent = async () => {
     })
   })
 }
+
 
 
 
@@ -804,7 +684,7 @@ var performMonthlyRollover = () => {
 async function customer_charged_successfully (cust_id, amountContributed) {
   return new Promise(async function(resolve, reject) {
     log_group_begin('Processing Customer');
-    let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated;
+    let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated, totalEventUsers;
     
     try {   uid = await getFirebaseUserFromCustomerId(cust_id);              } catch (e) { err_log(e); reject(e); log_group_end(); return; }
 
@@ -813,6 +693,7 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     try {   active_event = await getActiveEventId();              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
 
     ok_log('Found active event -> ' + active_event);
+    
     
     try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(e); reject(e); log_group_end(); return; }
 
@@ -824,15 +705,26 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     
     try {   incomeForEvent = await getTotalIncomeForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end();return; }
 
-    incomeForEvent = Number(incomeForEvent);
-    incomeForEvent += amountContributed;
+    incomeForEvent = Number(incomeForEvent) + amountContributed;
 
     try {   totalDonated = await getTotalDonated(uid);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
     
-    totalDonated = Number(totalDonated);
-    totalDonated += amountContributed;
+    totalDonated = Number(totalDonated)  + amountContributed;
+
+    try {  totalEventUsers = await getTotalUsersForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+
+    totalEventUsers = Number(totalEventUsers)++;
     
     ok_log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
+
+    try {  user_plan = await getUserInfo(uid)['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    try {  planTotalCount = await utils.getPremiumPlanTotalCount(user_plan);                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+
+    planTotalCount++;
+
+
+    
+    
 
     // Set amount that user donated
     root.ref('/users/' + uid + '/v/' + active_event + '/don/').set(amountContributed)
@@ -840,6 +732,12 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     root.ref('/users/' + uid + '/d/t').set(totalDonated)
 
     root.ref('/db/events/' + active_event + '/ttl/').set(incomeForEvent);
+
+    DBLinks.eventTotalUsers(active_event).setValue(totalEventUsers);
+    DBLinks.premiumPlanTotalCount(user_plan).setValue(planTotalCount);
+    DBLinks.premiumPlanMostRecent(user_plan).setValue(moment().format('LL'));
+
+    DBLinks.prevChargeStatus(uid).setValue('OK');
 
     ok_log('Finished processing charge!');
 
@@ -856,6 +754,8 @@ app.post('/event_log', async function(request, response) {
             
             ok_log('charge succeeded');
             let object = event_json.data.object;
+
+            JSON.stringify(object);
 
             let cust_id = object.customer;
             let amountContributed = Number(object.amount);
@@ -874,7 +774,15 @@ app.post('/event_log', async function(request, response) {
 
       performMonthlyRollover().then(function(out) { res.send(out); }).catch(function(e) {res.send(e);});
 
-    }  else { response.send("ok");}
+    } else if (event_json.type == 'charge.failed') {
+
+        // Need to invalidate user voting & enure that user's vote is not processed.
+
+        DBLinks.prevChargeStatus(uid).setValue('FAILED');
+
+    }
+    
+    else { response.send("ok");}
 
 });
     
@@ -979,7 +887,7 @@ app.get('/deleteUser', async (req,res) => {
 
   var idToken = req.query.idToken;
   
-  log('POST Delete User..');
+  log_group_begin('POST Delete User..');
   try {
     // Get decoded token
     let decodedToken = await get_decoded_token(idToken);
@@ -998,6 +906,8 @@ app.get('/deleteUser', async (req,res) => {
     err_log('Could not delete user -> ' + e);
     res.send(e);
   }
+
+  log_group_end();
 
 })
 
@@ -1023,70 +933,45 @@ var userHasAlreadyVoted = async (eventId, userId) => {
     })
 }
 
-
 var castVote = async (eventId, voteId, userId) => {
-    return new Promise( async function(resolve, reject) {
-        try {
-            
-            let hasVoted = await userHasAlreadyVoted(eventId, userId);
-            log('hv: ' + hasVoted)
-            if (!hasVoted) {
-                root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/').push(userId)
-                root.ref('/users/' + userId + '/v/' + eventId + '/c').set(voteId);
+  return new Promise( async function(resolve, reject) {
 
-                logn("Attempting to cast vote on { " + eventId + ", " + voteId + " }...");
+      try {
+          
+          let hasVoted = await userHasAlreadyVoted(eventId, userId);
+          if (hasVoted == true) { err_log('User has already voted!'); reject('It seens you have already voted!'); return; }
+          ok_log('User hasn\'t voted yet')
+          let user_payment_succeeded = await getPrevChargeStatus(userId);
+          ok_log('User payment clean')
 
-                /*
-                    Cast vote to the place
-                */
+          DBLinks.eventVoters(eventId, voteId).setValue(userId)
+          DBLinks.userVoteChoice(userId, eventId).setValue(voteId);
 
-                let vote_ref = root.ref('/db/events/'+eventId+'/o/'+voteId+'/ttl');
-                let votes = 0;
-                vote_ref.once('value').then(function(snapshot, err) {
-                    if (err) { 
-                        logn("Error on ttl lookup: " + err);
-                        reject(err)
-                     }
-                    if (snapshot) {
-                      votes = Number(snapshot.val())
-                    }
-                    votes++;
-                    vote_ref.set(votes);
-                    logn("Set votes to " + votes);
+          ok_log('User payment clean')
 
-                    /*
-                        Update event's total as well
-                    */
+          // logn("Attempting to cast vote on { " + eventId + ", " + voteId + " }...");
 
-                    let event_ref = root.ref('/db/events/'+eventId+'/o/ttl');
-                    votes = 0;
-                    event_ref.once('value').then(function(snapshot, err) {
-                        if (err) { 
-                            logn("Error on ttl lookup: " + err);
-                            reject(err)
-                        }
-                        if (snapshot) {
-                        votes = Number(snapshot.val())
-                        }
-                        votes++;
-                        event_ref.set(votes);
-                        resolve(true)   
-                    });
+          /*  Cast vote to the place  */
 
-                });
+          let event_option_votes = await utils.DBLinks.eventOptionTotalVotes(eventId, voteId).fetch();
+          event_option_votes = Number(event_option_votes) + 1;
+          DBLinks.eventOptionTotalVotes(eventId, voteId).setValue(event_option_votes);
 
-                
-            } else {
-                logn("\nUser has already voted.")
-                reject(new Error('It seems you have already voted'));
-            }
+          /*  Update event's total as well  */
 
-        } catch (e) {
-            console.log(e);
-            reject(e);
-        }
-        
-    })
+          let event_total_votes = await utils.DBLinks.eventOverallTotalVotes(eventId).fetch();
+          event_total_votes = Number(event_total_votes);
+          event_total_votes++;
+          DBLinks.eventOverallTotalVotes(eventId).setValue(event_total_votes);
+
+          ok_log('Casted vote for user -> ' + userId);
+
+      } catch (e) {
+          err_log(e);
+          reject(e);
+      }
+      
+  })
 }
 
 app.get('/castVote', async (req,res) => {
@@ -1097,35 +982,15 @@ app.get('/castVote', async (req,res) => {
     
     try {
 
-        // Get decoded token
-        let decodedToken = await admin.auth().verifyIdToken(idToken);
+      let decodedToken = await get_decoded_token(idToken);
+      let castedVote = await castVote(eventId, voteId, decodedToken.uid);
+      res.send(castedVote);
 
-        if (decodedToken) {
-            
-          var uid = decodedToken.uid;
-          
-          let castedVote = await castVote(eventId, voteId, uid);
-            
-          res.send(castedVote);
-          
-        } else {
-            log('No decoded token!')
-            res.send(new Error('No decoded token!'));
-        }
     } catch(e) {
-        console.log(e.message);
+        err_log(e.message);
         res.send('Could not cast your vote!');
     }
-             
-         
 })
-
-var getRandomEmail = () => {
-    var randomString = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
-    var emailTag = '@gmail.com';
-    return randomString + emailTag;
-}
-
 
 
 app.listen(port, () => console.log('Server running on port '+ port + '!\n'))

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Row, Col, InputGroup, FormControl, MenuItem, ButtonToolbar,  Dropdown, ToggleButtonGroup, ToggleButton, DropdownButton } from 'react-bootstrap';
+import { Button, Grid, Row, Col, InputGroup, Table } from 'react-bootstrap';
 import { Link, withRouter} from 'react-router-dom';
 import firebase, { auth, provider } from './firebase.js';
 import './App.css';
@@ -40,7 +40,17 @@ class Vaults extends Component {
         canCreateEvents: false,
         width: document.body.clientWidth,
         uploadedReceipts: null,
-        downloadURLs: []
+        downloadURLs: [],
+        counts: {
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+        recents: {
+          x: '',
+          y:  '',
+          z: ``
+        }
       };
 
       window.history.pushState(null, '', '/vaults')
@@ -154,29 +164,34 @@ class Vaults extends Component {
 
     }.bind(this));
 
-    get_users().then( function(users) {
-      this.setState({users: users});
-    }.bind(this)).catch(function(err) {
-      log(err)
-    })
+    // get_users().then( function(users) {
+    //   this.setState({users: users});
+    // }.bind(this)).catch(function(err) {
+    //   log(err)
+    // })
 
-    get_n_events(5).then(function(events) {
+    get_n_events(25).then(function(events) {
       this.setState({events: events});
     }.bind(this));
 
-    getUploadedReceiptsRefs().then(function(URLs) {
+    axios.get(server_urls.get_plan_stats).then( function(response) {
+      let data = response.data;
+      this.setState({recents:data.recents, counts: data.counts});
+    }.bind(this)).catch((err) => console.log(err));
 
-      this.setState({uploadedReceipts: URLs});
-      // alert('SET REC TO: ' + URLs)
-      URLs.map( function(str) {
-        var storageRef = firebase.storage().ref().child(str);
-        storageRef.getDownloadURL().then(function(url) {
-          var urls = this.state.downloadURLs;
-          urls.push(url);
-          this.setState({downloadURLs: urls});
-        }.bind(this))
-      }.bind(this))
-    }.bind(this))
+    // getUploadedReceiptsRefs().then(function(URLs) {
+    //
+    //   this.setState({uploadedReceipts: URLs});
+    //   // alert('SET REC TO: ' + URLs)
+    //   URLs.map( function(str) {
+    //     var storageRef = firebase.storage().ref().child(str);
+    //     storageRef.getDownloadURL().then(function(url) {
+    //       var urls = this.state.downloadURLs;
+    //       urls.push(url);
+    //       this.setState({downloadURLs: urls});
+    //     }.bind(this))
+    //   }.bind(this))
+    // }.bind(this))
 
   }
 
@@ -204,6 +219,24 @@ class Vaults extends Component {
 
   formattedTextH3 = (text) => {
     return <h3>{text}</h3>
+  }
+
+  event_history_component = (event, backgroundColor, fontSize)  => {
+    return (
+      <tr>
+          <td>{event.t}</td>
+          <td>{event.tu}</td>
+        <td>{event.ttl  * 0.91}</td>
+        <td>{event.receipt ? (<button onclick={() => window.open(event.receipt)}>Receipt</button>) : 'Not available'}</td>
+      </tr>
+      // <Row style={{backgroundColor: backgroundColor, margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700', paddingBottom: '5px',  paddingTop: '0px'}}>
+      //     <Col>
+      //     </Col>
+      //     <Col>
+      //       <h3 style={{fontSize: fontSize}}>{moneyFormat(event.ttl)}</h3>
+      //     </Col>
+      //   </Row>
+    );
   }
 
   render () {
@@ -243,13 +276,7 @@ class Vaults extends Component {
       eventsComponent = objArray.map(function(event) {
         var topBorder = (count == 1 ? '1px solid black' : '')
         count++;
-        return <div >
-                <div className='adjacentItemsParent' style={{backgroundColor: c(count), margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700', paddingBottom: '5px',  paddingTop: '0px'}}>
-                  <h3 style={{marginLeft: '50px', fontSize: fontSize, width: col_width_wide}}>{this.state.width < 700 ? ensure_trimmed(event.value.id, 11) : event.value.id}</h3><br/>
-                <h3 style={{marginLeft: '50px', fontSize: fontSize}} className='fixedAdjacentChild'>{moneyFormat(event.value.ttl)}</h3><br/>
-                  <br />
-                </div>
-              </div>
+        return this.event_history_component(event.value, c(count), fontSize);
       }.bind(this))
     } else {
       eventsComponent = <div></div>;
@@ -286,40 +313,69 @@ class Vaults extends Component {
 
     return (
       <div style={{ borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
-        <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
-        {uploadReceiptComponent}
+        <div style={{ backgroundColor: 'white', height: '20px'}}></div>
+      <div style={{width: this.state.width < 700 ? '94%' : '80%', marginLeft: this.state.width > 700 ? '10%' : '3%'}}>
+
+        {/* {uploadReceiptComponent} */}
         <br/>
         <br/>
 
         <div >
-          <h1 className='adjacentItemsParent'  style={{marginLeft: '10px'}}>USERS</h1>
-        <div className='adjacentItemsParent'>
-            <h3 style={{marginLeft: '50px', fontSize: '22px', fontWeight: 'bold', width: col_width_wide}} >Display Name</h3><br/>
-          <h3 style={{marginLeft: '50px', fontSize: '22px', fontWeight: 'bold'}} className='fixedAdjacentChild'>Plan</h3><br/>
-            <br />
-          </div>
-        {userComponent}
-        </div>
+          <h1 className='adjacentItemsParent'  style={{ fontSize: this.state.width > 700? '40px': '29px'}}>USERS</h1>
+          <Table bsClass="darkTable" responsive>
+            <thead>
+              <tr>
+                <th>Plan</th>
+                <th>Count</th>
+                <th>Newest</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Premium X</td>
+              <td>{this.state.counts? this.state.counts.x: ''}</td>
+                <td>{this.state.counts? this.state.recents.x: ''}</td>
+              </tr>
+              <tr>
+                <td>Premium Y</td>
+                <td>{this.state.counts? this.state.counts.y: ''}</td>
+                <td>{this.state.counts? this.state.recents.y: ''}</td>
+              </tr>
+              <tr>
+                <td>Premium Z</td>
+                <td>{this.state.counts? this.state.counts.z: ''}</td>
+                <td>{this.state.counts? this.state.recents.z: ''}</td>
+              </tr>
+            </tbody>
+          </Table>
+              </div>
         <br />
         <br/>
         <br/>
 
         <div>
-          <h1 style={{marginLeft: '10px'}}>EVENTS</h1>
-          <div className='adjacentItemsParent'>
-            <h3 style={{marginLeft: '50px', fontSize: '22px', fontWeight: 'bold', width: col_width_wide}}>Event ID</h3><br/>
-          <h3 style={{marginLeft: '50px', fontSize: '22px', fontWeight: 'bold'}} className='fixedAdjacentChild'>Total</h3><br/>
-            <br />
-          </div>
-        {eventsComponent}
+          <h1 style={{ fontSize: this.state.width > 700? '40px': '29px'}}>EVENT HISTORY</h1>
+        <Table bsClass="darkTable" responsive>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Users</th>
+              <th>Total</th>
+              <th>Receipt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {eventsComponent}
+          </tbody>
+        </Table>
         </div>
         <br />
         <br/>
         <br/>
-      <h1 style={{marginLeft: '10px'}}>RECEIPT INVENTORY</h1>
+      {/* <h1 style={{marginLeft: '10px', fontSize: this.state.width > 700? '40px': '29px'}}>RECEIPT INVENTORY</h1>
     <div style={{marginLeft: '50px'}}>
       {receiptsComponent}
-    </div>
+    </div> */}
         <br/>
         <br/>
         <br/>
@@ -330,7 +386,10 @@ class Vaults extends Component {
                   <br/>
 
           </div>
-      <div style={{height: '210px'}}></div>
+          <div style={{height: '300px'}}></div>
+
+      </div>
+
       </div>
     )
   }

@@ -142,11 +142,12 @@ class MyNavBar extends Component {
     }.bind(this))
 
     window.onscroll =() => {
-        let THRESHHOLD = 300;
-        let currentY = (window.scrollY > THRESHHOLD) ? THRESHHOLD : window.scrollY;
-        let opacity = (window.scrollY / THRESHHOLD)
-        let formattedOpacity = 'rgba(255, 255, 255, ' + opacity + ')';
-        this.setState({navOpacity: formattedOpacity})
+        // let THRESHHOLD = 300;
+        // let currentY = (window.scrollY > THRESHHOLD) ? THRESHHOLD : window.scrollY;
+        // let opacity = (window.scrollY / THRESHHOLD)
+        // let formattedOpacity = 'rgba(255, 255, 255, ' + opacity + ')';
+        // this.setState({navOpacity: formattedOpacity})
+        this.setState({navOpacity: 'white'})
 
    }
 

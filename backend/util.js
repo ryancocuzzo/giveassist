@@ -15,7 +15,7 @@ var dev_sandbox_app = {
     databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
 };
 
-let TEST_MODE = false;
+let TEST_MODE = true;
 
 var stripe;
 
@@ -212,7 +212,103 @@ function getToday() {
   return td;
 }
 
+let PLAN = {
+  premiumX: 'PX',
+  premiumY: 'PY',
+  premiumZ: 'PZ',
+}
 
+class Link {  
+  constructor(base_ref, single_val) {
+    this.base_ref = base_ref;
+    this.single_val = single_val;
+    }
+
+  shortRef() { return this.base_ref;  }
+  longRef() { return this.base_ref.child(this.single_val);  }
+  async fetch (){
+    let b = this.base_ref;
+    let self = this;
+    return new Promise ( function(resolve, reject) {
+    b.once('value').then (function(snap) {
+          if (snap && snap.val()) {
+            if (self.single_val)
+              resolve(snap.val()[self.single_val])
+            else
+            resolve(snap.val())
+          }
+          else
+              reject('No snapshot value found')
+      }).catch(function(err) { reject(err) })
+    })
+  }
+  async setValue(to) { this.longRef().set(to); }
+  async pushValue(val) { this.longRef().push(val); }
+}
+
+let DBLinks = {
+  totalDonated: function (uid) { return new Link( root.ref('/users/' + uid + '/d/t',), null); },
+  eventTotalUsers:  function (eventId) { return new Link( root.ref('/db/events/' + eventId + '/tu'), null); },
+  prevChargeStatus: function (uid){ return new Link( root.ref('/users/' + uid + '/st/pcs')); },
+  eventVoters: function(eventId, voteId) { return new Link( root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/', null)); },
+  userVoteChoice: function(userid, eventId) { return new Link( root.ref('/users/' + userid + '/v/' + eventId + '/c'), null); },
+  eventOptionTotalVotes: function(eventId, voteId) { return new Link(root.ref('/db/events/' + eventId + '/o/' + voteId), 'ttl'); },// remove ttl
+  eventOverallTotalVotes: function(eventId) { return  new Link(root.ref('/db/events/'+eventId+'/o/ttl'), 'ttl'); },  //  remove ttl
+  premiumPlanTotalCount: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'ttl') },  
+  premiumPlanMostRecent: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'mr') }, // remove mr
+  userInfo: function (uid){ return new Link( root.ref('/users/' + uid + '/i')) }
+} 
+
+// var db_fetch = async (ref) => {
+//   log('fetching ' + ref)
+//   return new Promise ( function(resolve, reject) {
+//     var events_ref = root.ref(ref);
+//     events_ref.once('value').then (function(snap) {
+//         if (snap && snap.val())
+//             resolve(snap.val())
+//         else
+//             reject('No snapshot value found')
+//     }).catch(function(err) { reject(err) })
+//   })
+// }
+
+var getPremiumPlanTotalCount = async (plan) => {
+  return new Promise ( function(resolve, reject) { DBLinks.premiumPlanTotalCount(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
+}
+var getPremiumPlanMostRecent = async (plan) => {
+  return new Promise ( function(resolve, reject) { DBLinks.premiumPlanMostRecent(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
+}
+
+var get_plan_total_counts = async () => {
+  return new Promise(async function(resolve, reject){
+    try {
+      let premx = await getPremiumPlanTotalCount(PLAN.premiumX); ok_log('got premx count  ->  '  + JSON.stringify(premx)); 
+      let premy = await getPremiumPlanTotalCount(PLAN.premiumY); ok_log('got premy count  ->  '  + premy); 
+      let premz = await getPremiumPlanTotalCount(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz); 
+      resolve( { x: premx, y: premy, z: premz } );
+    } catch (e) { err_log(e); reject(e); }
+  })
+}
+var get_plan_most_recents = async () => {
+  return new Promise(async function(resolve, reject){
+    try {
+      let premx = await getPremiumPlanMostRecent(PLAN.premiumX); ok_log('got premx count  ->  '  + premx); 
+      let premy = await getPremiumPlanMostRecent(PLAN.premiumY); ok_log('got premy count  ->  '  + premy); 
+      let premz = await getPremiumPlanMostRecent(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz); 
+      resolve( { x: premx, y: premy, z: premz } );
+    } catch (e) { err_log(e); reject(e); }
+  })
+}
+
+var get_plan_stats = async () => {
+  return new Promise(async function(resolve, reject){
+    try {
+      let counts =  await get_plan_total_counts();
+      let recents = await get_plan_most_recents();
+      resolve( {  counts: counts, recents: recents } )
+    } catch (e) { reject(e); };
+  })
+};
 
 var user_info_problems = (userJson) => {
 
@@ -410,11 +506,15 @@ async function deleteUser(uid) {
 module.exports = {
     root: root,
     stripe: stripe,
+    PLAN: PLAN,
+    DBLinks: DBLinks,
+    Link: Link,
     randomNumber: function() {return rNumber(); },
     user_info_problems: function(json) { return user_info_problems(json); },
     postUserInfo: function (n,e,p,dn,z, uid) {
         return postUserInfo(n,e,p,dn,z,uid);
     },
+    get_plan_stats: async () => { return new Promise(function(resolve, reject) { get_plan_stats().then((res) => resolve(res)).catch((err) => reject(err)) })},
     deleteUser: async function (uid) {
       return new Promise( function(resolve, reject) {
         deleteUser(uid).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); });
@@ -458,15 +558,20 @@ module.exports = {
         new_user.PhoneNumber = '+1' + new_user.PhoneNumber;
 
       table_log([new_user]);
-  
+      var user_record;
+      try {
       // create user
-      let user_record = await admin.auth().createUser({
+      user_record = await admin.auth().createUser({
         email: new_user.Email,
         emailVerified: false,
         phoneNumber: new_user.PhoneNumber,
         password: new_user.Password,
         displayName: new_user.DisplayName
       });
+      } catch (e) {
+        reject(e);
+      }
+
   
       let uid = user_record.uid;
     

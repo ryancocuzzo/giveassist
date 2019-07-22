@@ -463,7 +463,7 @@ class Vote extends React.Component {
     // Generaet a default HTML object that we are gonna append to
     var voteComponent = (
       <div className='myGradientBackground'>
-        <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
+        <div style={{ backgroundColor: 'white', width: '100%', height: '20px'}}></div>
       <span>
         <div style={{marginLeft: '10%', width: '80%'}}>
           <h1 style={{fontWeight: '1000'}}>{event ? (event.title) : ""}
@@ -481,15 +481,12 @@ class Vote extends React.Component {
           <div style={{textAlign: 'center'}}>
 
             <button onClick={() => window.open('https://goo.gl/forms/y8JTxQyvn8LI9NWN2', "_blank")} >REPORT BUG</button>
-              <br/>
-                <br/>
-                  <br/>
-
           </div>
         <br/>
         <br/>
         <br/>
-      <div style={{width: '100%', height: bottomMargin}}></div>
+        <div style={{height: '300px'}}></div>
+
       </div>
     );
 

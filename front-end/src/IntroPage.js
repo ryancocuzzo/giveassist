@@ -428,6 +428,8 @@ dynamicHComponent = (txt, size) => {
       buttonsMT = '-5px'
     }
 
+    var isMobile = this.state.width < 800;
+
 
 
     let dedection_per_user = dec_numberFormat(this.calcTakeFromEachUser(this.state.someVal));
@@ -450,7 +452,7 @@ dynamicHComponent = (txt, size) => {
 
 
     var welcomeAndButtonsComponent = (
-      <div style={{fontSize: '12px', width: '100%'}} className='myGradientBackground'>
+      <div style={{fontSize: '12px', width: '100%'}} className='myGradientBackground_real'>
           {this.navigationBar(navMarginLeft, textSizeH)}
           <div >
             <div style={{width: '100%', height: gap}}></div>
@@ -480,18 +482,16 @@ dynamicHComponent = (txt, size) => {
             bgImageAlt="Fox"
             strength={800}
             >
-              <div style={{ height: '120px' }} />
+              <div style={{ height: isMobile ? '40px' : '120px' }} />
             <div style={{color: 'white', textAlign: 'center'}}>
               <h1 style={{color: 'white', display: 'inline-block', width: '100%', 'letter-spacing': '2px'}} >Who we are</h1>
-            <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}><strong>Sparknotes version:</strong> An easy, inexpensive, subscription-based donation platform.
+            <h4 style={{ lineHeight: isMobile ? '25px' : '37px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%', fontWeight: '700',fontSize: isMobile ? '16px' : '24px'}}><strong>Sparknotes version:</strong> An easy, inexpensive, subscription-based donation platform.
                 <strong> Long version:</strong> We are a dynamic link between you and those who need your help. We are a nonprofit donation distribution service that believes
-                that large buildings are built using many small bricks, that everyone collaborating drives the most change. For only a dollar or two a month, depending on your selected plan,
-                you are immediately a donor contributing to the user-voted most pressing cause of the month (from our handpicked options - more info below).
-                We believe everyone can make a difference in the donation space, and now we are looking to prove it.
+                 that widespread fragments of collaboration drives the most change. Everyone can make a difference in the donation space, and it's our mission to prove it.
               </h4>
             </div>
 
-          <div style={{ height: '120px' }} />
+          <div style={{ height: isMobile ? '40px' : '120px' }} />
 
         </Parallax>
 
@@ -503,41 +503,39 @@ dynamicHComponent = (txt, size) => {
         <div style={{color: 'white', textAlign: 'center'}}>
             <br/>
             <h1 style={{color: 'white', display: 'inline-block', width: '100%', 'letter-spacing': '2px',  fontWeight: '600'}} >The Problem.</h1>
-              <h3 style={{ lineHeight: '40px', 'letter-spacing': '2px'}}>3 words.</h3><br/>
-            <h2 style={{ lineHeight: '40px', 'letter-spacing': '2px', fontWeight: '400'}}>People. Don't. Donate.</h2><br/>
-              <h3 style={{ lineHeight: '40px', 'letter-spacing': '2px'}}>Why?</h3><br/>
-            <h3 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>It's effort-intensive! The research, the physical donating, the tax return documents, etc. can be time-consuming, expensive, and so on. <strong>This is not how the story has to go.</strong> </h3><br/><br/>
+          <h3 style={{ lineHeight: isMobile ? '25px' : '40px', 'letter-spacing': '2px'}}>3 words.</h3>{isMobile ? <div style={{height: '3px'}}></div>: <br/> }
+            <h2 style={{ lineHeight: isMobile ? '40px' : '40px', 'letter-spacing': '2px', fontWeight: '400'}}>People. Don't. Donate.</h2>{isMobile ? <div style={{height: '3px'}}></div>: <br/> }
+              <h3 style={{ lineHeight: isMobile ? '25px' : '40px', 'letter-spacing': '2px'}}>Why?</h3>{isMobile ? <div style={{height: '3px'}}></div>: <br/> }
+            <h3 style={{ lineHeight: isMobile ? '23px' : '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%',fontSize: isMobile ? '16px' : '24px'}}><strong>It's effort-intensive!</strong> The research, preparation, documentation for tax returns, etc. can be time-consuming, expensive, and frustrating. <strong>This is not how the story has to go.</strong> </h3><br/><br/>
           <Row>
             <Col sm={12} md={4}>
               <h1 style={{color: '#6babc4', fontWeight: '600'}}>Time</h1>
-            <img src={imgs.clockW} width='35%' height='35%' />
+            <img src={imgs.clockW} width={isMobile ? '25%': '35%'} height={isMobile ? '25%': '35%'} />
             <br/>
             <br/>
 
-            <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
-              Getting people the help they need means, firstly, finding them. Next, finding how to get them what they need. Lastly, getting them it.
+            <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
+              Getting people the help they need means, first, finding them. The research phase filters out the majority of prospective donors.
             </h4>
             </Col>
             <Col sm={12} md={4}>
               <h1 style={{color: '#6babc4', fontWeight: '600'}}>Money</h1>
-            <img src={imgs.dollarW} width='35%' height='35%' />
+            <img src={imgs.dollarW} width={isMobile ? '25%': '35%'} height={isMobile ? '25%': '35%'} />
               <br/>
               <br/>
 
-            <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
-              People often think that contributing a little makes little difference. This is just not true, but becomes true when everyone adopts
-              this mentality and nobody steps forward.
+            <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
+              People often think that contributing a little makes little difference. This is just not true, difference-making comes from collaboration.
             </h4>
             </Col>
             <Col sm={12} md={4}>
               <h1 style={{color: '#6babc4', fontWeight: '600'}}>Effectiveness</h1>
-            <img src={imgs.earthW} width='35%' height='35%' />
+            <img src={imgs.earthW} width={isMobile ? '25%': '35%'} height={isMobile ? '25%': '35%'} />
               <br/>
               <br/>
 
-            <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
-              People want their money going somewhere that matters. Often times the places that do the best advertising
-              are not necessarily the ones that need help the most.
+            <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
+              People want their money going somewhere that matters. Well-advertised does not well-run or well-intentioned.
             </h4>
             </Col>
           </Row>
@@ -555,19 +553,19 @@ dynamicHComponent = (txt, size) => {
             <div style={{color: 'black', textAlign: 'center'}}>
               <br/>
             <h1 style={{color: 'black', display: 'inline-block', width: '100%', 'letter-spacing': '2px', fontWeight: '600'}} ref={this.theSolution}>The Solution.</h1><br/>
-          <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> Our platform lets all users be at the forefront of giving aid to those who need it while letting you decide how active a role you want
-                to play in where the money goes each month. Every month our staff handpicks the most pressing issues at the time, which the users then
+          <h4 style={{ lineHeight: isMobile ? '25px' : '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> With us, you're at the forefront of supplying aid while letting you decide how active a role you want
+                to play. Every month our staff handpicks the most pressing issues at the time, which you then
                 can vote on at any point throughout the month. At the end of the month, money collected from the users goes to the cause with the most votes.
               </h4>
               <br/>
           <Row>
               <Col sm={12} md={4}>
                 <h1 style={{color: '#6babc4', fontWeight: '600'}}>Time</h1>
-              <img src={imgs.clockB} width='35%' height='35%' style={{color: 'black'}}/>
+              <img src={imgs.clockB} width={isMobile ? '25%': '35%'} height={isMobile ? '25%': '35%'} style={{color: 'black'}}/>
                 <br/>
                 <br/>
 
-              <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
+              <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
                 After signing up in our quick, minimalistic sign up flow, there is no more commitment! Forever! You, from that point forward, will be a perpetual
                 donor to the places that need the most urgent help. You are, however, highly encouraged to stay active in voting so we get the donation to the right place!
 
@@ -576,21 +574,21 @@ dynamicHComponent = (txt, size) => {
               </Col>
               <Col sm={12} md={4}>
                 <h1 style={{color: '#6babc4', fontWeight: '600'}}>Money</h1>
-              <img src={imgs.dollarB} width='35%' height='35%' />
+              <img src={imgs.dollarB} width={isMobile ? '25%': '35%'} height={isMobile ? '25%': '35%'} />
                 <br/>
                 <br/>
 
-              <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
+              <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
                 We push to keep our solution on the less-expensive side. This is because we believe everyone can be a part of change, not just a few select people.
               </h4>
               </Col>
               <Col sm={12} md={4}>
                 <h1 style={{color: '#6babc4', fontWeight: '600'}}>Effectiveness</h1>
-              <img src={imgs.earthB} width='35%' height='35%' />
+              <img src={imgs.earthB} width={isMobile ? '25%': '35%'} height={isMobile ? '25%': '35%'} />
                 <br/>
                 <br/>
 
-              <h4 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
+              <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
                 Every month the cumulative funds raised go to an important cause at that time in specific. So every donor can rest assured that they are making real, important change.
               </h4>
               </Col>
@@ -612,7 +610,7 @@ dynamicHComponent = (txt, size) => {
     //         <br/>
     //       <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar quesition...</h1><br/>
     //         <h2 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2><br/>
-    //       <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We gaurantee that 90% of your money goes directly to its intended recipient.</strong></h4>
+    //       <h4 style={{ lineHeight: isMobile ? '25px' : '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We gaurantee that 90% of your money goes directly to its intended recipient.</strong></h4>
     //
     //     <br/><br/><br/><br/>
     //
@@ -665,8 +663,8 @@ dynamicHComponent = (txt, size) => {
         <div style={{color: 'black', textAlign: 'center'}}>
             <br/>
           <h1 style={{color: 'black', display: 'inline-block', width: '90%', marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}} ref={this.moneyBreakdown}>Now for the million dollar question...</h1><br/>
-            <h2 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2><br/>
-          <h4 style={{ lineHeight: '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We guarantee that 91% of your money goes directly to its intended recipient.</strong></h4>
+            <h2 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}>Where is your money going?</h2>
+          <h4 style={{ lineHeight: isMobile ? '25px' : '40px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> <strong>We guarantee that 91% of your money goes directly to its intended recipient.</strong></h4>
 
               <br/><br/><br/><br/>
             </div>
@@ -693,7 +691,7 @@ dynamicHComponent = (txt, size) => {
         <div>
           <h3 style={{color: 'black', display: 'inline-block', width: '90%',  marginLeft: '5%',  'letter-spacing': '2px', fontWeight: '600'}}> {question} </h3>
         ` `<br/>
-      <h5 style={{ lineHeight: '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> {answer} </h5>
+      <h5 style={{ lineHeight: isMobile ? '20px' : '30px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}> {answer} </h5>
       <br/>
         </div>
       );
