@@ -15,7 +15,7 @@ var dev_sandbox_app = {
     databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
 };
 
-let TEST_MODE = true;
+let TEST_MODE = false;
 
 var stripe;
 
