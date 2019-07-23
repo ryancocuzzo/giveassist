@@ -310,10 +310,14 @@ render () {
   var b = this.state.selected_option == "Premium Y";
   var c = this.state.selected_option == "Premium Z";
 
+  var isMobile = this.state.width <= 1000;
+  var isSuperMobile = this.state.width <= 550;
+
   var custom_component = () => {
     return (
 
-        <div style={{marginLeft: '5%', width: '100%'}}>
+        <div style={{marginLeft: isMobile ? '2%' : '5%', width: isSuperMobile ? '80%' : '90%'}}>
+
             <MyInput
               id={5}
               label="Custom Amount"
@@ -325,7 +329,7 @@ render () {
               handleSubmit={this.customPlanSubmitted}
               handleVal={this.customPlanSubmitted}
               minLength={1}
-              maxWidth="90%"
+              maxWidth="95%"
               fontSize='25px'
 
             />
@@ -334,7 +338,6 @@ render () {
     );
   };
 
-  var isMobile = this.state.width <= 1000;
 
   var options = (isMobile ?
 

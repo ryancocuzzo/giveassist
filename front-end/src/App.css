@@ -974,9 +974,9 @@ table.darkTable tfoot td {
   font-size: 12px;
 }
 
-/* tr:hover {
+table.darkTable tr:hover {
   background-color: black;
-} */
+}
 
 table.darkTable tr:hover:nth-child(even) {
   background: black;

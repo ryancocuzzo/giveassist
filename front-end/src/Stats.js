@@ -136,6 +136,16 @@ var get_projection_data = async (uid) => {
   return donations_with_projections;
 }
 
+function formatYAxis(tickItem) {
+// If using moment.js
+return '$' + tickItem;
+}
+
+function formatXAxis(tickItem) {
+// If using moment.js
+return <div style={{marginTop:'4px'}}>{tickItem}</div>;
+}
+
 var num_regex = /[0-9]*/;
 
 
@@ -277,7 +287,7 @@ class Stats extends React.Component {
     console.log('CHART')
     console.log(projection_data);
     return (
-      <div style={{ marginLeft: isMobile ? '0%' : '10%', width: isMobile ? '97%' : '80%', height: (isMobile  ? '275px' : '500px') }}>
+      <div style={{ marginTop: isMobile ? '-12px' : '50px', marginLeft: isMobile ? '-5%' : '10%', width: isMobile ? '104%' : '80%', height: (isMobile  ? '275px' : '500px') }}>
         <ResponsiveContainer>
           <AreaChart
             data={projection_data}
@@ -286,8 +296,8 @@ class Stats extends React.Component {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month_title" stroke='white'/>
-            <YAxis style={{color:  'white'}} stroke='white'/>
+          <XAxis dataKey="month_title" stroke='white'  tick={{ marginTop: '5px' }}/>
+            <YAxis style={{color:  'white'}} stroke='white' tickFormatter={formatYAxis}/>
             <Tooltip />
           <Area type="monotone" dataKey="Amount" stroke="#5772a1" fill="#E5FCFC" />
           </AreaChart>
@@ -632,7 +642,7 @@ class Stats extends React.Component {
       );
     };
 
-    var isMobile = this.state.width <= 1000;
+    var isMobile = this.state.width <= 700;
 
     var options = (isMobile ?
 
@@ -700,16 +710,16 @@ class Stats extends React.Component {
     var c = this.state.selected_option == "Premium Z";
 
     return (
-      <Row>
-        <Col>
+      <div>
           <div style={{ borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
             <div style={{ backgroundColor: 'white', width: '100%', height: '20px'}}></div>
             <div style={{marginLeft: '10%', width: '80%'}}>
             <Popup />
-          <h1 style={{fontSize: '40px'}}>STATISTICS</h1><br/>
+          <div style={{width: '100%'}}><h1 style={{fontSize: '40px'}}>STATISTICS</h1></div>
+          <div style={{height: isMobile ? '5px' : '15px'}}></div>
         <div>
-            <h1 style={{fontSize: (fontSize+5)+'px'}}>TOTAL DONATED: <span style={{marginLeft: '10px'}}><strong>{moneyFormat(this.state.total_donated)}</strong></span> </h1>
-            <h1 style={{fontSize: (fontSize+5)+'px'}}>JOINED: <span style={{marginLeft: '10px'}}><strong>{this.state.joined}</strong></span> </h1><br/>
+            <h1 style={{fontSize: (fontSize+5)+'px', marginTop: isMobile ? '-15px' : '-5px'}}>TOTAL DONATED: <span style={{marginLeft: '10px'}}><strong>{moneyFormat(this.state.total_donated)}</strong></span> </h1>
+            <h1 style={{fontSize: (fontSize+5)+'px', marginTop: isMobile ? '-40px' : '-20px'}}>JOINED: <span style={{marginLeft: '10px'}}><strong>{this.state.joined}</strong></span> </h1><br/>
         </div>
       </div>
       <div>
@@ -718,8 +728,8 @@ class Stats extends React.Component {
       <div style={{marginLeft: '10%', width: '80%'}}>
 
 
-          <h1 style={{fontSize: '40px'}}>ACCOUNT DETAILS</h1><br/>
-          <div style={{marginLeft: '50px'}}>
+          <h1 style={{fontSize: '40px', marginTop: '30px'}}>ACCOUNT DETAILS</h1><br/>
+          <div style={{marginLeft: (isMobile ? '5px' : '50px')}}>
               <h1>Change your information</h1>
 
             <div style={{width: '90%'}}>
@@ -739,7 +749,7 @@ class Stats extends React.Component {
           </div>
 
             <StripeProvider apiKey="pk_test_eDgW1qWOGdRdCnIQocPje0Gg">
-              <div className="example" style={{marginLeft: '50px'}} >
+              <div className="example" style={{marginLeft: (isMobile ? '5px' : '50px')}} >
                 <h1>Change your payment. {isReadOnly ? getSuffix : ''}</h1>
               { !isReadOnly ?
                 (
@@ -761,7 +771,7 @@ class Stats extends React.Component {
 
           <hr/>
 
-          <div className="example" style={{marginLeft: '50px'}} >
+          <div className="example" style={{marginLeft: (isMobile ? '5px' : '50px')}} >
             <h1>Change your plan.</h1>
         </div>
 
@@ -780,7 +790,7 @@ class Stats extends React.Component {
           { !isReadOnly ?
             (
                 <div>
-                  <div style={{marginLeft: '50px', marginTop: '20px'}}>
+                  <div style={{marginLeft: (isMobile ? '5px' : '50px'), marginTop: '20px'}}>
                     <h1>Delete your account.</h1>
                   <Button bsStyle='danger' style={{marginLeft: '20px', marginTop: '15px'}} onClick={this.deletePopup}>DELETE ACCOUNT</Button>
 
@@ -806,8 +816,7 @@ class Stats extends React.Component {
           </div>
           <div  style={{height: '250px'}}><div></div></div>
         </div>
-        </Col>
-      </Row>
+      </div>
 
     );
   }

@@ -42,7 +42,8 @@ export default class PayPlanOption extends Component {
   };
 
   render() {
-    var isMobile = this.state.width <= 500;
+    var isMobile = this.state.width <= 600;
+    var isSuperMobile = this.state.width <= 425;
 
     var amt_component = (
       <div
@@ -67,7 +68,8 @@ export default class PayPlanOption extends Component {
                 style={{
                   color: this.state.isSelected ? "black" : "white",
                   width: "30px",
-                  maxWidth: "40px"
+                  maxWidth: "40px",
+                  marginLeft: (isSuperMobile? '-5px' : '0px')
                 }}
               >
                 $
