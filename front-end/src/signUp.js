@@ -205,16 +205,8 @@ signUpUser = async (paymentTokenId) => {
         Popup.alert('Welcome to the future of donation..');
 
       }.bind(this)).catch(function(error)  {
-
-        Popup.alert('It seems we couldn\'t process your request! Here\'s why: ' + error);
-
-        // setTimeout(function () {
-        //       // Oops, error!
-        //       document.location.reload(true);
-        // }, 3000);
-        //
-
-
+        if (error != null && error != 'undefined')
+            Popup.alert('It seems we couldn\'t process your request! Here\'s why: ' + error);
 
       }.bind(this))
   }
