@@ -4,6 +4,7 @@ var https = require('https');
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var admin = require("firebase-admin");
+var moment = require('moment');
 var app = Express();
 var utils = require('./util.js');
 var clc = require("cli-color");
@@ -387,7 +388,7 @@ app.post('/initiate_new_user', async (req, res) => {
     let result = await utils.initiate_new_user(usr.e, password, usr, paymentToken);
     res.send(result);
   } catch (e) {
-    err_log(e);
+    err_log('RESOLVE-> ' + e);
     res.send(e);
   }
 });
@@ -643,9 +644,9 @@ var haveProcessedUserPaymentForEvent = async (uid, eventId) => {
   return new Promise( async function (resolve, reject) {
     event_ref.once('value').then(async function(snapshot, err) {
       if (err || !snapshot.val()) {
-        resolve(false);
+        resolve('ok');
         } else {
-            resolve(true)
+          reject('Already Voted!');
         }
     });
   })
@@ -686,44 +687,50 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     log_group_begin('Processing Customer');
     let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated, totalEventUsers;
     
-    try {   uid = await getFirebaseUserFromCustomerId(cust_id);              } catch (e) { err_log(e); reject(e); log_group_end(); return; }
+    try {   uid = await getFirebaseUserFromCustomerId(cust_id);              } catch (e) { err_log('Could not find firebase user for stripe user!'); reject('Could not find firebase user for stripe user! -> ' + e); log_group_end(); return; }
 
-    ok_log('Found uid -> ' + uid);
+    ok_log(' (1/8) Found uid -> ' + uid);
 
     try {   active_event = await getActiveEventId();              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
 
-    ok_log('Found active event -> ' + active_event);
+    ok_log(' (2/8) Found active event -> ' + active_event);
     
+    let ap_string = 'We have already processed this user! -> ';
     
-    try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(e); reject(e); log_group_end(); return; }
-
-    alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);
-    
-    let ap_string = 'We have already processed this user!';
-
-    if (alreadyProcessed == true) { err_log(ap_string); reject(ap_string);  log_group_end(); return; }
-    
+    try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(ap_string + e); reject(e); log_group_end(); return; }
+        
+    ok_log(' (3/8) we have not yet processed user payment for this month');
     try {   incomeForEvent = await getTotalIncomeForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end();return; }
 
     incomeForEvent = Number(incomeForEvent) + amountContributed;
 
+    ok_log(' (4/8) got and incremented income');
+
     try {   totalDonated = await getTotalDonated(uid);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
     
-    totalDonated = Number(totalDonated)  + amountContributed;
+    totalDonated = Number(totalDonated) + amountContributed;
+
+    ok_log(' (5/8) got amount donated and incremented -> ' + totalDonated + ' (contributed ' + amountContributed + ')');
 
     try {  totalEventUsers = await getTotalUsersForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
 
-    totalEventUsers = Number(totalEventUsers)++;
-    
-    ok_log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
+    totalEventUsers = Number(totalEventUsers)+1;
 
-    try {  user_plan = await getUserInfo(uid)['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    ok_log(' (6/8) got total event users and incremented');
+    
+    // ok_log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
+
+    try {  user_plan = await getUserInfo(uid); ok_log('got userinfo'); log(JSON.stringify(user_plan)); user_plan = user_plan['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    
+    ok_log(' (7/8) got user plan -> ' + user_plan);
+
     try {  planTotalCount = await utils.getPremiumPlanTotalCount(user_plan);                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
 
     planTotalCount++;
 
+    ok_log(' (8/8) got plan total count -> ' + planTotalCount);
 
-    
+    ok_log('completed db requests');
     
 
     // Set amount that user donated
@@ -731,7 +738,7 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     
     root.ref('/users/' + uid + '/d/t').set(totalDonated)
 
-    root.ref('/db/events/' + active_event + '/ttl/').set(incomeForEvent);
+    root.ref('/db/events/' + active_event + '/ttl/').set(Math.round(incomeForEvent, 3));
 
     DBLinks.eventTotalUsers(active_event).setValue(totalEventUsers);
     DBLinks.premiumPlanTotalCount(user_plan).setValue(planTotalCount);
@@ -776,9 +783,19 @@ app.post('/event_log', async function(request, response) {
 
     } else if (event_json.type == 'charge.failed') {
 
-        // Need to invalidate user voting & enure that user's vote is not processed.
+      err_log('charge failed')
 
+      let object = event_json.data.object;
+
+      let cust_id = object.customer;
+      try {
+        let uid = await getFirebaseUserFromCustomerId(cust_id);
         DBLinks.prevChargeStatus(uid).setValue('FAILED');
+        response.send('ok - failed.')
+      } catch (e) {
+        err_log('Could not find customer');
+        response.send('Could not find customer');
+      }
 
     }
     
@@ -940,11 +957,11 @@ var castVote = async (eventId, voteId, userId) => {
           
           let hasVoted = await userHasAlreadyVoted(eventId, userId);
           if (hasVoted == true) { err_log('User has already voted!'); reject('It seens you have already voted!'); return; }
-          ok_log('User hasn\'t voted yet')
+          ok_log('(User hasn\'t voted yet')
           let user_payment_succeeded = await getPrevChargeStatus(userId);
           ok_log('User payment clean')
 
-          DBLinks.eventVoters(eventId, voteId).setValue(userId)
+          DBLinks.eventVoters(eventId, voteId).pushValue(userId)
           DBLinks.userVoteChoice(userId, eventId).setValue(voteId);
 
           ok_log('User payment clean')
@@ -954,17 +971,29 @@ var castVote = async (eventId, voteId, userId) => {
           /*  Cast vote to the place  */
 
           let event_option_votes = await utils.DBLinks.eventOptionTotalVotes(eventId, voteId).fetch();
+
+          ok_log('got total option votes -> ' + event_option_votes)
+
           event_option_votes = Number(event_option_votes) + 1;
           DBLinks.eventOptionTotalVotes(eventId, voteId).setValue(event_option_votes);
+
+          ok_log('updated total option votes -> ' + event_option_votes)
 
           /*  Update event's total as well  */
 
           let event_total_votes = await utils.DBLinks.eventOverallTotalVotes(eventId).fetch();
+
+          ok_log('got total event votes')
+
           event_total_votes = Number(event_total_votes);
           event_total_votes++;
           DBLinks.eventOverallTotalVotes(eventId).setValue(event_total_votes);
 
+          ok_log('updated total event votes')
+
           ok_log('Casted vote for user -> ' + userId);
+
+          resolve('ok');
 
       } catch (e) {
           err_log(e);

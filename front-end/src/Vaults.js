@@ -226,7 +226,7 @@ class Vaults extends Component {
       <tr>
           <td>{event.t}</td>
           <td>{event.tu}</td>
-        <td>{event.ttl  * 0.91}</td>
+        <td>{Math.round((event.ttl  * 0.91),2)}</td>
         <td>{event.receipt ? (<button onclick={() => window.open(event.receipt)}>Receipt</button>) : 'Not available'}</td>
       </tr>
       // <Row style={{backgroundColor: backgroundColor, margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700', paddingBottom: '5px',  paddingTop: '0px'}}>

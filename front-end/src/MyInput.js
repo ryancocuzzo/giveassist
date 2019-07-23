@@ -38,6 +38,11 @@ export default class MyInput extends React.Component {
     return this.state.prefix + val;
   };
 
+  parentPushValue = (val) => {
+    this.setState({value: val});
+    this.setState({ error: null });
+  }
+
   changeValue(event) {
     // alert('c val changed! to ' + event.target.value + 'or ' + this.trimmedPrefix(event.target.value));
     const value = this.trimmedPrefix(event.target.value);

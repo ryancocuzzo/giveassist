@@ -14,6 +14,7 @@ import SignUpPage from './signUp.js';
 import StatsPage from './Stats.js';
 import LoginPage from './login.js';
 import VaultPage from './Vaults.js';
+import Loadinggg from './LoadingScreen.js';
 
 import {
   BrowserRouter,
@@ -30,24 +31,26 @@ class App extends React.Component {
    */
   constructor(props) {
     super(props);
-
-    var user = firebase.auth().currentUser;
-
     this.state = {
-      user: user
+      user: null,
+      doneLooking: false,
     };
-
-
   }
 
   /**
    * When the component mounts..
    */
   componentDidMount() {
+    // 
+    // var user = firebase.auth().currentUser;
+    // // alert(user.uid);
+    // this.setState({user: user, doneLooking: true});
+    //
+
 
     // Check for new user (state change)
     firebase.auth().onAuthStateChanged(function(user) {
-        this.setState({user: user});
+        this.setState({user: user, doneLooking: true});
         console.log("Found user: " + user.displayName);
         firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
         .then(function() {
@@ -101,30 +104,37 @@ class App extends React.Component {
       return <VaultPage popup={(msg) => this.popupMessage(msg)}/>;
     }
 
-    var page = this.state.user ?
-    ( <div>
-        <MyNavBar/>
-      <div style={{ backgroundColor: 'white', width: '100%', height: '80px'}}></div>
-        <Switch>
-          <Route exact path='/' component={Vote}/>
-          <Route path='/vote' component={Vote}/>
-          <Route path='/vaults' component={Vaults}/>
-          <Route path='/stats' component={Stats}/>
-        <Route path="*" component={Vote} />
-        </Switch>
-      </div>
-    ) :
-    (
-      <div >
-        <Switch>
-          <Route exact path='/' component={Intro}/>
-          <Route path='/signup' component={SignUp}/>
-        <Route path='/login' component={Login}/>
-          <Route path="*" component={Intro} />
-        </Switch>
-      </div>
+    var page;
+    if (this.state.doneLooking ==  true) {
+      page = this.state.user ?
+      ( <div>
+          <MyNavBar/>
+        <div style={{ backgroundColor: 'white', width: '100%', height: '80px'}}></div>
+          <Switch>
+            <Route exact path='/' component={Vote}/>
+            <Route path='/vote' component={Vote}/>
+            <Route path='/vaults' component={Vaults}/>
+            <Route path='/stats' component={Stats}/>
+          <Route path="*" component={Vote} />
+          </Switch>
+        </div>
+      ) :
+      (
+        <div >
+          <Switch>
+            <Route exact path='/' component={Intro}/>
+            <Route path='/signup' component={SignUp}/>
+          <Route path='/login' component={Login}/>
+            <Route path="*" component={Intro} />
+          </Switch>
+        </div>
 
-    );
+      );
+    } else {
+
+      page = <Loadinggg/>;
+    }
+
 
     var footer = (
       <div style={{height: '50px', width: '100%'}}><h5 style={{color: 'black', marginLeft: '45%', width:  '15%', height: '20px'}}>Copyright © 2018 Cuzzzo</h5></div>

@@ -49,117 +49,117 @@ let plan = 'PZ,9.03';
 
 var user_record = null;
 
-// describe('New Sign Up Flow Test Suite', async function() {                                                                                                                                      log('\n');
+describe('New Sign Up Flow Test Suite', async function() {                                                                                                                                      log('\n');
 
-//   this.timeout(0);
-
-
-//     /*   1    */ 
-
-//     var card_token;
-
-//       it('creates the stripe payment token', function() {
-//         return new Promise(async function (resolve, reject) {
-//           try {
-//               card_token = await stripe.tokens.create({
-//                 card: {
-//                   number: '4242424242424242',
-//                   exp_month: 12,
-//                   exp_year: 2020,
-//                   cvc: '123'
-//                 }
-//               })
-//                 let test_value = card_token != null;
-//                 expect(test_value).to.be.true; 
-//                 resolve(card_token);
-//           } catch (e) {
-//             assert.fail('ISSUE: ' + e);
-//             reject(e);
-//           }
-//         })
-//       });
-
-//    /*   2    */ 
-
-//    let result_uid;
-
-//   it('initializes a new fully-capable user', async function() {
-//       return new Promise(async function (resolve, reject) {
-//         try {
-
-//           var usr = {
-//             n: name,                                 // name
-//             e: email,                                // email
-//             p: plan,                                 // plan
-//             dn: displayName,                         // display name
-//             z: phoneNumber                           // phone number
-//           };
+  this.timeout(0);
 
 
-//           // create user
-//           result_uid = await utils.initiate_new_user(email,password,usr,card_token.id);
-//           // log(result_uid);
-//           let test_value = result_uid != null;
-//           expect(test_value).to.be.true; 
-//           resolve(user_record);
-//         } catch (e) {
-//           assert.fail('Did not create user -> ' + e);
-//           reject(e);
-//         }
-//     })
-//   });
+    /*   1    */ 
 
-//   it('deletes the test user\'s data', async function() {
-//     this.timeout(0);
-//     return new Promise(async function (resolve, reject) {
+    var card_token;
 
-//       if (result_uid == null) { resolve('Could not delete -> no user info to delete'); return; }
+      it('creates the stripe payment token', function() {
+        return new Promise(async function (resolve, reject) {
+          try {
+              card_token = await stripe.tokens.create({
+                card: {
+                  number: '4242424242424242',
+                  exp_month: 12,
+                  exp_year: 2020,
+                  cvc: '123'
+                }
+              })
+                let test_value = card_token != null;
+                expect(test_value).to.be.true; 
+                resolve(card_token);
+          } catch (e) {
+            assert.fail('ISSUE: ' + e);
+            reject(e);
+          }
+        })
+      });
 
-//       try {
+   /*   2    */ 
 
-//         // delete user
-//         await utils.deleteUser(result_uid);
-//         // log('Delete executed.');
+   let result_uid;
+
+  it('initializes a new fully-capable user', async function() {
+      return new Promise(async function (resolve, reject) {
+        try {
+
+          var usr = {
+            n: name,                                 // name
+            e: email,                                // email
+            p: plan,                                 // plan
+            dn: displayName,                         // display name
+            z: phoneNumber                           // phone number
+          };
+
+
+          // create user
+          result_uid = await utils.initiate_new_user(email,password,usr,card_token.id);
+          // log(result_uid);
+          let test_value = result_uid != null;
+          expect(test_value).to.be.true; 
+          resolve(user_record);
+        } catch (e) {
+          assert.fail('Did not create user -> ' + e);
+          reject(e);
+        }
+    })
+  });
+
+  it('deletes the test user\'s data', async function() {
+    this.timeout(0);
+    return new Promise(async function (resolve, reject) {
+
+      if (result_uid == null) { resolve('Could not delete -> no user info to delete'); return; }
+
+      try {
+
+        // delete user
+        await utils.deleteUser(result_uid);
+        // log('Delete executed.');
         
-//       } catch (e) {
-//         // log('Could not find a user to delete!');
-//         assert.fail('Could not find a user to delete! -> ' + e);
-//         reject(e);
-//       }
+      } catch (e) {
+        // log('Could not find a user to delete!');
+        assert.fail('Could not find a user to delete! -> ' + e);
+        reject(e);
+      }
 
-//       try {
+      try {
 
-//         // verify user's deleted - auth
-//         let user_exists = await utils.userExists(result_uid);
-//         if (user_exists == null)
-//           assert.ok('User auth has been successfully deleted');
-//         else
-//           assert.fail('ISSUE: User auth Still exists.');
-//       } catch (e) {
-//         assert.fail('ISSUE: User auth Still exists. -> ' + e);
-//       }
+        // verify user's deleted - auth
+        let user_exists = await utils.userExists(result_uid);
+        if (user_exists == null)
+          assert.ok('User auth has been successfully deleted');
+        else
+          assert.fail('ISSUE: User auth Still exists.');
+      } catch (e) {
+        assert.fail('ISSUE: User auth Still exists. -> ' + e);
+      }
 
-//       try {
+      try {
 
-//         // verify user's deleted - db
-//         let user_info_fetched = await utils.getUserInfo(result_uid);
-//         if (user_info_fetched == null) {
-//            assert.ok('User info has been successfully deleted');
-//            resolve('User info has been successfully deleted');
-//         }
-//         else {
-//           assert.fail('ISSUE: User info Still exists.');
-//           reject('ISSUE: User info Still exists.');
-//         }
-//       } catch (e) {
-//         assert.fail('ISSUE: User info Still exists.');
-//         reject('ISSUE: User info Still exists. -> ' + e);
-//       }
-//       });
-//   });
+        // verify user's deleted - db
+        let user_info_fetched = await utils.getUserInfo(result_uid);
+        if (user_info_fetched == null) {
+           assert.ok('User info has been successfully deleted');
+           resolve('User info has been successfully deleted');
+        }
+        else {
+          assert.fail('ISSUE: User info Still exists.');
+          reject('ISSUE: User info Still exists.');
+        }
+      } catch (e) {
+        assert.fail('ISSUE: User info Still exists.');
+        reject('ISSUE: User info Still exists. -> ' + e);
+      }
+      });
+  });
   
 
-// });
+});
 
 
 describe('Utility Function tester', async function() {                                                                                                                                      log('\n');

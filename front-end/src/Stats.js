@@ -50,8 +50,10 @@ var generate_projection_data = (donation_list, amount_donating) => {
     let split_next_month = next_month.split(' ');
     let usable_next_month_value = split_next_month[0] + ' ' + split_next_month[2];
 
-    let last_val = projected_list[projected_list.length-1]['Amount'];
-    projected_list.push(generate_point(usable_next_month_value, last_val+amount_donating));
+    if (projected_list[projected_list.length-1] != null) {
+      let last_val = projected_list[projected_list.length-1]['Amount'];
+      projected_list.push(generate_point(usable_next_month_value, last_val+amount_donating));
+    }
   }
   return projected_list;
 }
@@ -100,8 +102,16 @@ var get_projection_data = async (uid) => {
   console.log('Properly formatted donations: ');
   console.table(titled_user_donations);
 
+  if (titled_user_donations == null || titled_user_donations.size == 0) {
+      return [];
+  }
+
+  let lastLink = titled_user_donations[titled_user_donations.length-1];
+
+  if (!lastLink || !lastLink['Amount']) { return []; }
+
   // amount user donating as of late
-  let amount_donating = titled_user_donations[titled_user_donations.length-1]['Amount'];
+  let amount_donating = lastLink['Amount'];
 
   // generate projections
   let donations_with_projections = generate_projection_data(titled_user_donations,  amount_donating);
@@ -145,6 +155,9 @@ class Stats extends React.Component {
       width: document.body.clientWidth
     };
 
+    this.name_ref = React.createRef();
+    this.dn_ref =   React.createRef();
+
     window.history.pushState(null, '', '/stats');
 
   }
@@ -169,6 +182,10 @@ class Stats extends React.Component {
               joined: info.j,
               displayName: info.dn
             });
+            this.name_ref.current.parentPushValue(info.n);
+            this.dn_ref.current.parentPushValue(info.dn);
+
+            // alert(info.n + ' : ' +  info.dn);
           }.bind(this)).catch(function(err) {
             // ...
           }.bind(this))
@@ -542,9 +559,12 @@ class Stats extends React.Component {
       leftMargin = 10;
     }
 
+
+
     var name_component = () => {
       return (
         <MyInput
+          ref={this.name_ref}
           id={1}
           label="Name"
           locked={false}
@@ -560,6 +580,7 @@ class Stats extends React.Component {
     var display_name_component = () => {
       return (
         <MyInput
+          ref={this.dn_ref}
           id={2}
           label="Display Name"
           locked={false}
@@ -784,7 +805,7 @@ class Stats extends React.Component {
 
               </div>
           </div>
-          <div  style={{height: '100px'}}><div></div></div>
+          <div  style={{height: '250px'}}><div></div></div>
         </div>
         </Col>
       </Row>

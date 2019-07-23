@@ -74,6 +74,7 @@ export const _signUpUser = async (paymentToken, name, email, password, phone, di
       resolve(resolve_json);
 
     } catch (e) {
+      console.log('RES: ' + e);
       reject(e);
     }
   });

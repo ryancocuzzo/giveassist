@@ -566,8 +566,8 @@ dynamicHComponent = (txt, size) => {
                 <br/>
 
               <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
-                After signing up in our quick, minimalistic sign up flow, there is no more commitment! Forever! You, from that point forward, will be a perpetual
-                donor to the places that need the most urgent help. You are, however, highly encouraged to stay active in voting so we get the donation to the right place!
+                After our lightning-fast sign up flow, there is no more commitment! Forever! While we highly encourage staying active in voting, your impact will
+                remain,regardless of your activity level on the platform.
 
               </h4>
 
@@ -579,7 +579,8 @@ dynamicHComponent = (txt, size) => {
                 <br/>
 
               <h4 style={{ lineHeight: isMobile ? '25px' : '35px', 'letter-spacing': '2px',  display: 'inline-block', width: '80%'}}>
-                We push to keep our solution on the less-expensive side. This is because we believe everyone can be a part of change, not just a few select people.
+                We balance our services between affordability and actionability. We believe this eliminates entry barriers and creates
+                the participation levels that would leave lasting impacts.
               </h4>
               </Col>
               <Col sm={12} md={4}>

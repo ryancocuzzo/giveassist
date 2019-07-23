@@ -292,14 +292,12 @@ class Vote extends React.Component {
    * Click function for when a user selects their choice
    * @param  {[int]} id [id of the event the user is selecting]
    */
-  click = (optionId, i) => {
-    if (optionId != null && this.state.token != null) {
+  click = async (optionId, i) => {
+    if (optionId == null || this.state.token == null) {return; }
+    let eventId = this.state.event.id;
+    let tkn = this.state.token;
 
-      let eventId = this.state.event.id;
-      let tkn = this.state.token;
-
-      castVote(eventId, optionId, tkn);
-
+    castVote(eventId, optionId, tkn).then((res) => {
       this.state.dispersion[i].votes = this.state.dispersion[i].votes + 1;
       this.state.total_votes = this.state.total_votes + 1;
       this.setState({
@@ -307,9 +305,9 @@ class Vote extends React.Component {
          something: true,
 
         });
-
       Popup.alert('Your vote has been recieved.\nThanks for voting on this event!')
-    }
+    }).catch((e) => Popup.alert(e));
+    
   }
 
   createEvent = () => {
@@ -334,7 +332,10 @@ class Vote extends React.Component {
     var col_width_wide = '150px';
     var bottomMargin = '600px'
 
+    var isMobile = false;
+
     if (this.state.width < 700) {
+      isMobile =  true;
       fontSize = '17px';
       col_width_wide = '100px';
       bottomMargin = '200px';
@@ -485,7 +486,7 @@ class Vote extends React.Component {
         <br/>
         <br/>
         <br/>
-        <div style={{height: '300px'}}></div>
+        <div style={{height: isMobile ? '250px' : '650px'}}></div>
 
       </div>
     );

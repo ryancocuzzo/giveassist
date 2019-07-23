@@ -15,7 +15,7 @@ var dev_sandbox_app = {
     databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
 };
 
-let TEST_MODE = true;
+let TEST_MODE = false;
 
 var stripe;
 
@@ -225,7 +225,7 @@ class Link {
     }
 
   shortRef() { return this.base_ref;  }
-  longRef() { return this.base_ref.child(this.single_val);  }
+  longRef() { return this.single_val ? this.base_ref.child(this.single_val) : this.base_ref;  }
   async fetch (){
     let b = this.base_ref;
     let self = this;
@@ -247,13 +247,13 @@ class Link {
 }
 
 let DBLinks = {
-  totalDonated: function (uid) { return new Link( root.ref('/users/' + uid + '/d/t',), null); },
-  eventTotalUsers:  function (eventId) { return new Link( root.ref('/db/events/' + eventId + '/tu'), null); },
-  prevChargeStatus: function (uid){ return new Link( root.ref('/users/' + uid + '/st/pcs')); },
-  eventVoters: function(eventId, voteId) { return new Link( root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/', null)); },
-  userVoteChoice: function(userid, eventId) { return new Link( root.ref('/users/' + userid + '/v/' + eventId + '/c'), null); },
+  totalDonated: function (uid) { return new Link( root.ref('/users/' + uid + '/d'), 't'); },
+  eventTotalUsers:  function (eventId) { return new Link( root.ref('/db/events/' + eventId), 'tu'); },
+  prevChargeStatus: function (uid){ return new Link( root.ref('/users/' + uid + '/st'), 'pcs'); },
+  eventVoters: function(eventId, voteId) { return new Link( root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/'), null); },
+  userVoteChoice: function(userid, eventId) { return new Link( root.ref('/users/' + userid + '/v/' + eventId), 'c'); },
   eventOptionTotalVotes: function(eventId, voteId) { return new Link(root.ref('/db/events/' + eventId + '/o/' + voteId), 'ttl'); },// remove ttl
-  eventOverallTotalVotes: function(eventId) { return  new Link(root.ref('/db/events/'+eventId+'/o/ttl'), 'ttl'); },  //  remove ttl
+  eventOverallTotalVotes: function(eventId) { return  new Link(root.ref('/db/events/'+eventId+'/o'), 'ttl'); },  //  remove ttl
   premiumPlanTotalCount: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'ttl') },  
   premiumPlanMostRecent: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'mr') }, // remove mr
   userInfo: function (uid){ return new Link( root.ref('/users/' + uid + '/i')) }
@@ -514,7 +514,10 @@ module.exports = {
     postUserInfo: function (n,e,p,dn,z, uid) {
         return postUserInfo(n,e,p,dn,z,uid);
     },
+    
     get_plan_stats: async () => { return new Promise(function(resolve, reject) { get_plan_stats().then((res) => resolve(res)).catch((err) => reject(err)) })},
+    getPremiumPlanTotalCount: async (plan) => { return new Promise(function(resolve, reject) { getPremiumPlanTotalCount(plan).then((res) => resolve(res)).catch((err) => reject(err)) })},
+    getPremiumPlanMostRecent: async (plan) => { return new Promise(function(resolve, reject) { getPremiumPlanMostRecent(plan).then((res) => resolve(res)).catch((err) => reject(err)) })},
     deleteUser: async function (uid) {
       return new Promise( function(resolve, reject) {
         deleteUser(uid).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); });
@@ -570,20 +573,30 @@ module.exports = {
       });
       } catch (e) {
         reject(e);
+        return;
       }
-
   
       let uid = user_record.uid;
     
       // post user info & handle fail
       if (!postUserInfo(new_user.Name, new_user.Email, new_user.Plan, new_user.DisplayName, new_user.PhoneNumber, uid)) { deleteUser(uid);err_log('Weirdly rejected while posting user info');reject('Invalid info'); return; }
       
+      ok_log('posted user info')
+
       var stripe_user;
       try { stripe_user = await createStripeUser(paymentToken, email, uid); } catch (e) { deleteUser(uid);err_log('while creating stripe user -> ' + e); reject('Could not create stripe user'); return; }
       
+      ok_log('created stripe user ');
+
       var init_payments;
       try { init_payments = await executeCreateSubscription(uid, new_user.Plan) } catch (e) { deleteUser(uid);err_log('while initializing payments (creating subscription) -> ' + e); reject('Could not initialize stripe payments'); return; }
       
+      ok_log('init. payments')
+
+      DBLinks.totalDonated(uid).setValue(0);
+
+      ok_log('init. total donated for uid -> ' + uid);
+
       resolve(uid);
   
     });

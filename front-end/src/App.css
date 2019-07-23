@@ -25,6 +25,16 @@ div {
 
 }
 
+.giffy {
+  background-image: url("https://66.media.tumblr.com/ca65a08677fb6813288e9a38c80fbeed/tumblr_ozc6nfnx0h1skcd7fo1_500.gif");
+  background-size: 160%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  height: 110%;
+  width: 100%;
+  margin: 0px;
+}
+
 .myGradientBackground_real {
   /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#249cb5+0,b3ea8f+100 */
   background: #249cb5; /* Old browsers */
