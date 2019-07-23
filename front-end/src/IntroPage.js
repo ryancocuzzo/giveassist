@@ -441,10 +441,10 @@ dynamicHComponent = (txt, size) => {
 
       var comp = (
         <div style={{marginBottom: buttonsMT}}>
-          <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>Welcome</h1>
-        <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight:lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>to the</h1>
-        <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize, fontWeight: '900'}}> FUTURE</h1>
-      <h1 style={{marginLeft: '50px', width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: buttonsMT, fontSize: correct_dim.fontSize}}>of donation.</h1>
+          <h1 style={{marginLeft: (isMobile ? '10px' : '50px'), width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>Welcome</h1>
+        <h1 style={{marginLeft: (isMobile ? '10px' : '50px'), width: '100%', 'letter-spacing': '1px', lineHeight:lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize}}>to the</h1>
+        <h1 style={{marginLeft: (isMobile ? '10px' : '50px'), width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: correct_dim.mb, fontSize: correct_dim.fontSize, fontWeight: '900'}}> FUTURE</h1>
+      <h1 style={{marginLeft: (isMobile ? '10px' : '50px'), width: '100%', 'letter-spacing': '1px', lineHeight: lh, marginBottom: buttonsMT, fontSize: correct_dim.fontSize}}>of donation.</h1>
         </div>
 
     );

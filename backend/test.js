@@ -19,7 +19,6 @@ function logn(output) {
   console.log('\n' + output)
 }
 
-
 function err_log(output) {
 logn(clc.red.bold('Error ') + output);
 }

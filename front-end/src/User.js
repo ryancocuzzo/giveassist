@@ -5,6 +5,9 @@ import firebase, { auth, provider } from './firebase.js';
 import variables from './variables.js';
 let server_urls = variables.server_urls;
 
+function  ok_log(x) { console.log('%cOK%c ' + x, 'background-color: lightGreen; color: green; padding: 5px 3px;  border-radius: 3px; ', '');  }
+function  err_log(x) { console.log('%cError%c ' + x, 'background-color: red; color: white; padding: 5px 3px; border-radius: 3px; ', '');  }
+
 
 // trim the 'remium ' out of each option (for space)
 export var trimSelectedOption = (opt) =>  {
@@ -40,8 +43,8 @@ function nbc(prev_breadcrumb) {
   return prev_breadcrumb + 1;
 }
 
-export const _signUpUser = async (paymentToken, name, email, password, phone, displayName,  selected_option, amountPaid) => {
-  return new Promise(async function(resolve, reject) {
+export const _signUpUser = (paymentToken, name, email, password, phone, displayName,  selected_option, amountPaid) => {
+  return new Promise(function(resolve, reject) {
     try {
 
       let selected_option_with_amt = trimSelectedOption(selected_option);
@@ -59,7 +62,13 @@ export const _signUpUser = async (paymentToken, name, email, password, phone, di
         z: extractPhoneNumber(phone)         // phone number
       };
 
-      let resolve_json = await axios.post(server_urls.initiate_new_user, {params: {
+    } catch (e) {
+      err_log('RES: ' + e);
+      reject(e);
+    }
+
+    let resolve_json;
+      axios.post(server_urls.initiate_new_user, {params: {
         n: userJson.n,
         e: userJson.e,
         p: userJson.p,
@@ -67,16 +76,39 @@ export const _signUpUser = async (paymentToken, name, email, password, phone, di
         z: userJson.z,
         pw: password,
         paymentToken: paymentToken
-      }});
+      }}).then(re => {
 
-      var user = await firebase.auth().signInWithEmailAndPassword(email, password);
-
-      resolve(resolve_json);
-
-    } catch (e) {
-      console.log('RES: ' + e);
+    firebase.auth().signInWithEmailAndPassword(email, password).then((resp) => resolve(re)).catch(
+    function(e) {
+      err_log(e);
+      alert(e);
       reject(e);
-    }
+      return;
+    });
+
+})
+.catch(re => {
+  let msg = re.response.data.message.message;
+  err_log(msg);
+  reject(msg);
+  return;
+ });
+// });
+//       ok_log(JSON.stringify(resolve_json.data));
+//     }catch (e) {
+//       let msg = e.response;
+//       err_log('1. ' +  msg.code);
+//       err_log('1. ' +  msg.message);
+//       // alert('1. ' +  msg);
+//       reject('1. ' +  msg);
+//       return;
+//     }
+//
+
+//
+//
+
+
   });
 
 }

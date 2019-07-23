@@ -206,7 +206,7 @@ signUpUser = async (paymentTokenId) => {
 
       }.bind(this)).catch(function(error)  {
 
-        Popup.alert('It seems we couldn\'t process your request! Here\'s why: ' + error.message);
+        Popup.alert('It seems we couldn\'t process your request! Here\'s why: ' + error);
 
         // setTimeout(function () {
         //       // Oops, error!

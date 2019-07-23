@@ -17,7 +17,7 @@ import numeral from 'numeral';
 import PayPlanOption from "./PayPlanOption";
 import MyInput from './MyInput.js';
 import { _signUpUser, untrimSelectedOption, trimSelectedOption } from './User.js';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Line, LineChart, ComposedChart, ResponsiveContainer } from 'recharts';
 var moneyFormat = (number) => {
   return numeral(number).format('$0,0.00');
 }
@@ -289,18 +289,27 @@ class Stats extends React.Component {
     return (
       <div style={{ marginTop: isMobile ? '-12px' : '50px', marginLeft: isMobile ? '-5%' : '10%', width: isMobile ? '104%' : '80%', height: (isMobile  ? '275px' : '500px') }}>
         <ResponsiveContainer>
-          <AreaChart
+          <ComposedChart
             data={projection_data}
             margin={{
-              top: 10, right: 30, left: 0, bottom: 0,
+              top: 10, right: 10, left: 0, bottom: 0,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month_title" stroke='white'  tick={{ marginTop: '5px' }}/>
+            // <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month_title" stroke='white'  scale="point" tick={{ marginTop: '5px' }}/>
+
             <YAxis style={{color:  'white'}} stroke='white' tickFormatter={formatYAxis}/>
             <Tooltip />
           <Area type="monotone" dataKey="Amount" stroke="#5772a1" fill="#E5FCFC" />
-          </AreaChart>
+            <Line
+              dataKey="Amount"
+            strokeDasharray='20 20'
+             strokeWidth='4'
+              stroke="#E5FCFC"
+
+                />
+         </ComposedChart>
+
         </ResponsiveContainer>
       </div>
     );

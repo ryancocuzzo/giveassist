@@ -1,5 +1,5 @@
 
-let TEST_MODE = false;
+let TEST_MODE = true;
 
 /*
 
@@ -16,15 +16,15 @@ if (TEST_MODE == true) {
   server_root = "http://localhost:1234";
   stripe_api_key = 'pk_test_eDgW1qWOGdRdCnIQocPje0Gg';
   // Your web app's Firebase configuration
-    fb_config = {
-      apiKey: "AIzaSyAUECj3-IzVLcedarFxfFq0vUWzG5yUcWY",
-      authDomain: "giveassist-inc-dev-sandbox.firebaseapp.com",
-      databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com",
-      projectId: "giveassist-inc-dev-sandbox",
-      storageBucket: "giveassist-inc-dev-sandbox.appspot.com",
-      messagingSenderId: "1054713641478",
-      appId: "1:1054713641478:web:bad802e43601947c"
-    };
+  fb_config = {
+    apiKey: "AIzaSyAUECj3-IzVLcedarFxfFq0vUWzG5yUcWY",
+    authDomain: "giveassist-inc-dev-sandbox.firebaseapp.com",
+    databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com",
+    projectId: "giveassist-inc-dev-sandbox",
+    storageBucket: "giveassist-inc-dev-sandbox.appspot.com",
+    messagingSenderId: "1054713641478",
+    appId: "1:1054713641478:web:bad802e43601947c"
+  };
 
 
 } else {
@@ -40,6 +40,19 @@ if (TEST_MODE == true) {
     };
 }
 
+/*
+    --------------------------------   REMOVE THIS LATER !!!!!!   --------------------------------
+    ------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------
+ */
+
+server_root = "http://localhost:1234";
+
+/*
+    --------------------------------   REMOVE THIS LATER !!!!!!   --------------------------------
+    ------------------------------------------------------------------------------------------------
+    ------------------------------------------------------------------------------------------------
+ */
 
 var variables = {
   local_urls: {

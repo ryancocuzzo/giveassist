@@ -341,7 +341,7 @@ app.get('/eventPriviledges', (req, res)  => {
             }
         
       }).catch(function(error) {
-        log('err!')
+        // log('err!')
         // Handle error
         res.send(false);
       });
@@ -389,7 +389,9 @@ app.post('/initiate_new_user', async (req, res) => {
     res.send(result);
   } catch (e) {
     err_log('RESOLVE-> ' + e);
-    res.send(e);
+    res.status(571).send({
+      message: e
+   });
   }
 });
 
