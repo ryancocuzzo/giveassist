@@ -23,7 +23,7 @@ if (TEST_MODE == true) {
   stripe = require("stripe")("[REDACTED]");
   admin.initializeApp(dev_sandbox_app);
  } else { 
-   require("stripe")("[REDACTED]");
+   stripe = require("stripe")("[REDACTED]");
    admin.initializeApp(production_app);
 }
 
