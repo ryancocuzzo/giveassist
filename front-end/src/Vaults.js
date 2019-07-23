@@ -28,6 +28,8 @@ function ensure_trimmed (str, THRESHOLD) {
   if (str.length > THRESHOLD) { return str.substring(0,THRESHOLD-3) + '...'}
 }
 
+function rnd2(num) { return Math.round(num * 100) / 100; }
+
 class Vaults extends Component {
 
   constructor(props) {
@@ -226,7 +228,7 @@ class Vaults extends Component {
       <tr>
           <td>{event.t}</td>
           <td>{event.tu}</td>
-        <td>{Math.round((event.ttl  * 0.91),2)}</td>
+        <td>{rnd2((event.ttl  * 0.91))}</td>
         <td>{event.receipt ? (<button onclick={() => window.open(event.receipt)}>Receipt</button>) : 'Not available'}</td>
       </tr>
       // <Row style={{backgroundColor: backgroundColor, margin: '8px', borderRadius: '7px', color: 'white', fontWeight: '700', paddingBottom: '5px',  paddingTop: '0px'}}>

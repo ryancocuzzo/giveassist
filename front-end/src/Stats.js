@@ -71,6 +71,9 @@ var convert_eventIdAndAmt_to_NameAndAmtPoints = (id_title_sets, donation_list) =
     return points;
 }
 
+function  ok_log(x) { console.log('%cOK%c ' + x, 'background-color: lightGreen; color: green; padding: 5px 3px;  border-radius: 3px; ', '');  }
+function  err_log(x) { console.log('%cError%c ' + x, 'background-color: red; color: white; padding: 5px 3px; border-radius: 3px; ', '');  }
+
 var get_title = (id_title_sets, eventId) => {
   var ret = null;
   id_title_sets.forEach(function(id_title_set) {
@@ -92,23 +95,35 @@ var get_title = (id_title_sets, eventId) => {
 var get_projection_data = async (uid) => {
   // get mapping from event id to names
   let id_title_sets = await get_all_EventIdAndName_sets(); /* { event_id: ..., title:  ... }  */
+  console.table(id_title_sets);
+
   // console.table(id_title_sets);
   // get user donations  (event id & don)
   let user_donations = await userDonations(uid);
   console.table(user_donations);
+
+  if (user_donations == null || user_donations.length == 0) {
+    err_log('could not get user\'s donations')
+      return [];
+  }  else { ok_log('got user\'s donations') }
 
   // convert list to points
   let titled_user_donations = convert_eventIdAndAmt_to_NameAndAmtPoints(id_title_sets, user_donations);
   console.log('Properly formatted donations: ');
   console.table(titled_user_donations);
 
-  if (titled_user_donations == null || titled_user_donations.size == 0) {
+  if (titled_user_donations == null || titled_user_donations.length == 0) {
+    err_log('could not get titles user don')
       return [];
-  }
+  }  else { ok_log('got titled user donations') }
+  console.log(titled_user_donations)
+  console.table(titled_user_donations)
 
   let lastLink = titled_user_donations[titled_user_donations.length-1];
 
-  if (!lastLink || !lastLink['Amount']) { return []; }
+  console.table(lastLink)
+
+  if (!lastLink || !lastLink['Amount']) { err_log('no last element'); return []; }
 
   // amount user donating as of late
   let amount_donating = lastLink['Amount'];
@@ -262,7 +277,7 @@ class Stats extends React.Component {
     console.log('CHART')
     console.log(projection_data);
     return (
-      <div style={{ width: '100%', height: (isMobile  ? '300px' : '500px') }}>
+      <div style={{ marginLeft: isMobile ? '0%' : '10%', width: isMobile ? '97%' : '80%', height: (isMobile  ? '275px' : '500px') }}>
         <ResponsiveContainer>
           <AreaChart
             data={projection_data}
@@ -274,7 +289,7 @@ class Stats extends React.Component {
           <XAxis dataKey="month_title" stroke='white'/>
             <YAxis style={{color:  'white'}} stroke='white'/>
             <Tooltip />
-          <Area type="monotone" dataKey="Amount" stroke="#8884d8" fill="#E5FCFC" />
+          <Area type="monotone" dataKey="Amount" stroke="#5772a1" fill="#E5FCFC" />
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -689,35 +704,19 @@ class Stats extends React.Component {
         <Col>
           <div style={{ borderRadius: '7px', fontSize: '12px'}} className='myGradientBackground'>
             <div style={{ backgroundColor: 'white', width: '100%', height: '20px'}}></div>
-
             <div style={{marginLeft: '10%', width: '80%'}}>
-
             <Popup />
-
           <h1 style={{fontSize: '40px'}}>STATISTICS</h1><br/>
-        {/* <Grid>
-          <Row>
-            <Col>
-              <div>
-                <h1 style={{fontSize: (fontSize+5)+'px', marginTop: (topMargin)+'px'}} >CURRENT PLAN: <span style={{marginLeft: '10px'}}><strong>{this.state.currentPlan != 'Premium Z' ? this.state.currentPlan : 'Custom'}</strong></span></h1><br/>
-                  <br />
-              </div>
-          </Col>
-        </Row>
-        </Grid> */}
-        <Grid>
-          <Row>
-            <Col>
-              <div>
-                  <h1 style={{fontSize: (fontSize+5)+'px'}}>TOTAL DONATED: <span style={{marginLeft: '10px'}}><strong>{moneyFormat(this.state.total_donated)}</strong></span> </h1>
-                  <h1 style={{fontSize: (fontSize+5)+'px'}}>JOINED: <span style={{marginLeft: '10px'}}><strong>{this.state.joined}</strong></span> </h1><br/>
-              </div>
-            </Col>
-          </Row>
-        </Grid>
         <div>
-          {this.myChart(isMobile)}
+            <h1 style={{fontSize: (fontSize+5)+'px'}}>TOTAL DONATED: <span style={{marginLeft: '10px'}}><strong>{moneyFormat(this.state.total_donated)}</strong></span> </h1>
+            <h1 style={{fontSize: (fontSize+5)+'px'}}>JOINED: <span style={{marginLeft: '10px'}}><strong>{this.state.joined}</strong></span> </h1><br/>
         </div>
+      </div>
+      <div>
+        {this.myChart(isMobile)}
+      </div>
+      <div style={{marginLeft: '10%', width: '80%'}}>
+
 
           <h1 style={{fontSize: '40px'}}>ACCOUNT DETAILS</h1><br/>
           <div style={{marginLeft: '50px'}}>

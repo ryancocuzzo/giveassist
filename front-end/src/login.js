@@ -144,7 +144,6 @@ class Login extends React.Component {
 
     return (
           <div style={{  borderRadius: '7px', fontSize: '12px', paddingLeft: '20%', paddingRight: '20%'}} className='myGradientBackground'>
-            <div style={{ backgroundColor: '#249cb5', width: '100%', height: '20px'}}></div>
 
             <Popup />
               <div style={{textAlign: 'center'}}>
@@ -163,9 +162,27 @@ class Login extends React.Component {
           <br />
 
             <hr/>
-            <button style={{marginLeft: '50px'}} onClick={() => this.login()}>LOGIN</button>
-          <button style={{marginLeft: '50px'}} onClick={() => this.sendPasswordReset(this.state.email)}>FORGOT MY PASSWORD</button>
-          <br/>
+          <table>
+            <thead><th style={{width: '33%'}}></th><th style={{width: '33%'}}></th><th style={{width: '33%'}}></th></thead>
+          <tbody>
+            <tr>
+              <td style={{width: '33%'}}></td>
+              <td style={{width: '33%'}}>
+                <button style={{ width: '100%'}} onClick={() => this.login()}>LOGIN</button>
+              </td>
+              <td style={{width: '33%'}}></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>
+                <button style={{width: '100%'}} onClick={() => this.sendPasswordReset(this.state.email)}>FORGOT MY PASSWORD</button>
+              </td>
+              <td></td>
+            </tr>
+          </tbody>
+
+          </table>
+    <br/>
 
 
           <br/><br/><br/>
