@@ -25,7 +25,7 @@ const client = require('twilio')(accountSid, authToken);
 const twilio_phoneNumber = '+19083049973';
 
 
-let TEST_MODE = true;
+let TEST_MODE = false;
 
 var stripe;
 
