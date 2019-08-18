@@ -8,6 +8,8 @@ var assert = chai.assert;
 var expect = chai.expect;
 var clc = require("cli-color");
 
+if (utils.TEST_MODE == false) { throw new Error("Hey we gotta run in test mode!"); }
+
 
 // Get a reference to the root of the Database
 var root = utils.root;
@@ -147,12 +149,13 @@ describe('New Sign Up Flow Test Suite', async function() {                      
            resolve('User info has been successfully deleted');
         }
         else {
+          console.table(user_info_fetched);
           assert.fail('ISSUE: User info Still exists.');
           reject('ISSUE: User info Still exists.');
         }
-      } catch (e) {
-        assert.fail('ISSUE: User info Still exists.');
-        reject('ISSUE: User info Still exists. -> ' + e);
+      } catch {
+        assert.ok('User info has been successfully deleted');
+        resolve('User info has been successfully deleted');
       }
       });
   });
@@ -182,4 +185,25 @@ describe('Utility Function tester', async function() {                          
 
 });
 
+
+describe('Monthly rollover test', async function() {                                                                                                                                      log('\n');
+
+  this.timeout(0);
+
+      it('performs the monthly rollover', function() {
+        return new Promise(async function (resolve, reject) {
+          try {
+              let rollover_response = await utils.performMonthlyRollover();
+                let test_value = rollover_response != null;
+                expect(test_value).to.be.true; 
+                resolve(test_value);   
+          } catch (e) {
+            err_log(e);
+            assert.fail('ISSUE: ' + e);
+            reject(e);
+          }
+        })
+      });
+
+});
 
