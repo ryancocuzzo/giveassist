@@ -55,7 +55,6 @@ function Customer(cid, amt_contributed) {
 }
 
 
-
 // Get a reference to the root of the Database
 var root = utils.root; //admin.database();
 
