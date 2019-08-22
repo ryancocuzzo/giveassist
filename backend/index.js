@@ -391,7 +391,7 @@ var castVote = async (eventId, voteId, userId) => {
           let hasVoted = await userHasAlreadyVoted(eventId, userId);
           if (hasVoted == true) { err_log('User has already voted!'); reject('It seens you have already voted!'); return; }
           ok_log('(User hasn\'t voted yet')
-          let user_payment_succeeded = await getPrevChargeStatus(userId);
+          let user_payment_succeeded = await utils.getPrevChargeStatus(userId);
           ok_log('User payment clean')
 
           DBLinks.eventVoters(eventId, voteId).pushValue(userId)

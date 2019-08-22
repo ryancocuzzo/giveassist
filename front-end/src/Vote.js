@@ -252,8 +252,8 @@ class Vote extends React.Component {
         try {
             let event_ref = firebase.database().ref('/users/' + userId + '/v/' + eventId + '/c');
             event_ref.once('value').then(function(snapshot, err) {
-                if (err) { this.setState({hasVoted: false}) }
-                if (snapshot && snapshot.val()) {
+                if (err) { this.setState({hasVoted: false});return; }
+                if (snapshot != null && snapshot.val()) {
                     this.setState({hasVoted: true})
                 } else {
                     this.setState({hasVoted: false})
@@ -307,7 +307,7 @@ class Vote extends React.Component {
         });
       Popup.alert('Your vote has been recieved.\nThanks for voting on this event!')
     }).catch((e) => Popup.alert(e));
-    
+
   }
 
   createEvent = () => {
