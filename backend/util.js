@@ -14,6 +14,7 @@ var production_app = {
   storageBucket: "donate-rcocuzzo-17387568.appspot.com"
 }
 
+
 var dev_sandbox_app = {
     credential: admin.credential.cert(dev_serviceAccountKey),
     databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
@@ -24,15 +25,19 @@ const authToken = '[REDACTED]';
 const client = require('twilio')(accountSid, authToken);
 const twilio_phoneNumber = '+19083049973';
 
+// xxxxxxxxxxxxxxxxxxxxxxxx
+                       // x
+let TEST_MODE = false;  // x
+                       // x
+// xxxxxxxxxxxxxxxxxxxxxxxx
 
-let TEST_MODE = false;
 
 var stripe;
 
-if (TEST_MODE == true) { 
+if (TEST_MODE == true) {
   stripe = require("stripe")("[REDACTED]");
   admin.initializeApp(dev_sandbox_app);
- } else { 
+ } else {
    stripe = require("stripe")("[REDACTED]");
    admin.initializeApp(production_app);
 }
@@ -42,13 +47,61 @@ if (TEST_MODE == true) {
 //   LIVE: [REDACTED]
 // */
 // // var stripe = require("stripe")("[REDACTED]"); // test
-// var stripe = require("stripe")("[REDACTED]"); // live                                                                                                                                                                                                                                          
+// var stripe = require("stripe")("[REDACTED]"); // live
 // Get a reference to the root of the Database
 var root = admin.database();
 
 let PRICE_PREM_X = 4.99;
 let PRICE_PREM_Y = 2.99;
 let PRICE_PREM_Z = 1.00;
+
+let PLAN = {
+  premiumX: 'PX',
+  premiumY: 'PY',
+  premiumZ: 'PZ',
+}
+
+class Link {
+  constructor(base_ref, single_val) {
+    this.base_ref = base_ref;
+    this.single_val = single_val;
+    }
+
+  shortRef() { return this.base_ref;  }
+  longRef() { return this.single_val ? this.base_ref.child(this.single_val) : this.base_ref;  }
+  async fetch (){
+    let b = this.base_ref;
+    let self = this;
+    return new Promise ( function(resolve, reject) {
+    b.once('value').then (function(snap) {
+          if (snap && snap.val()) {
+            if (self.single_val)
+              resolve(snap.val()[self.single_val])
+            else
+            resolve(snap.val())
+          }
+          else
+              reject('No snapshot value found for ref ' + b)
+      }).catch(function(err) { reject(err) })
+    })
+  }
+  async setValue(to) { this.longRef().set(to); }
+  async pushValue(val) { this.longRef().push(val); }
+}
+
+let DBLinks = {
+  totalDonated: function (uid) { return new Link( root.ref('/users/' + uid + '/d'), 't'); },
+  eventTotalUsers:  function (eventId) { return new Link( root.ref('/db/events/' + eventId), 'tu'); },
+  prevChargeStatus: function (uid){ return new Link( root.ref('/users/' + uid + '/st'), 'pcs'); },
+  eventVoters: function(eventId, voteId) { return new Link( root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/'), null); },
+  userVoteChoice: function(userid, eventId) { return new Link( root.ref('/users/' + userid + '/v/' + eventId), 'c'); },
+  eventOptionTotalVotes: function(eventId, voteId) { return new Link(root.ref('/db/events/' + eventId + '/o/' + voteId), 'ttl'); },// remove ttl
+  eventOverallTotalVotes: function(eventId) { return  new Link(root.ref('/db/events/'+eventId+'/o'), 'ttl'); },  //  remove ttl
+  premiumPlanTotalCount: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'ttl') },
+  premiumPlanMostRecent: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'mr') }, // remove mr
+  userInfo: function (uid){ return new Link( root.ref('/users/' + uid + '/i')) },
+  userDonation: function (uid, eventId){ return new Link( root.ref('/users/' + uid + '/v/'+eventId+"/don")) }
+}
 
 // ____________________________________________________________________________________________________________________________________________
 // ____________________________________________________________________________________________________________________________________________
@@ -113,7 +166,7 @@ rNumber = () => {
     var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
     return cleaned;
   }
-  
+
   var comparePhoneNumbers  = (a, b) => {
     var same_10 = (extractPhoneNumber(a).slice(-10) == extractPhoneNumber(b).slice(-10));
     return same_10; // no country compare yet
@@ -164,6 +217,155 @@ var getStripeCustomerId = async (uid) => {
       })
   })
 }
+
+function unformalized_new_test_event() {
+    let json = {
+        "id" : "-eid" + randstring(10),
+        "o" : {
+          "a" : {
+            "link" : "https://" +randstring(10) + '.com',
+            "org" : "Random org",
+            "s" : randstring(100),
+            "t" : "Test test",
+            "ttl" : 0,
+          },
+          "b" : {
+            "link" : "https://" +randstring(10) + '.com',
+            "org" : "Random org",
+            "s" : randstring(100),
+            "t" : "Test test",
+            "ttl" : 0,
+          },
+          "c" : {
+            "link" : "https://" +randstring(10) + '.com',
+            "org" : "Random org",
+            "s" : randstring(100),
+            "t" : "Test test",
+            "ttl" : 0,
+          },
+          "ttl" : 0
+        },
+        "s" : randstring(100),
+        "t" : "Test 2019",
+        "ttl" : 0,
+        "tu" : 777
+    };
+    let new_json = {
+        "id": json.id,
+        "gen_summary": json.s,
+        "gen_title": json.t,
+        "gen_num_users": json.tu,
+        "gen_revenue_generated": json.ttl,
+        "a_title": json.o.a.t,
+        "b_title": json.o.b.t,
+        "c_title": json.o.c.t,
+        "a_org": json.o.a.org,
+        "b_org": json.o.b.org,
+        "c_org": json.o.c.org,
+        "a_link": json.o.a.link,
+        "b_link": json.o.b.link,
+        "c_link": json.o.c.link,
+        "a_summary": json.o.a.s,
+        "b_summary": json.o.b.s,
+        "c_summary": json.o.c.s,
+    };
+    return new_json;
+}
+
+function prettify(json) { return JSON.stringify(json, null, 2); }
+
+async function new_event_result(body) {
+    // log("Recieved JSON: " + JSON.stringify(body, null, 3));
+    if (body.a_link && body.a_org && body.a_title && body.a_summary && body.b_link && body.b_org && body.b_title && body.b_summary  && body.c_link && body.c_org && body.c_title && body.c_summary )
+        ok_log("New event passes option requirements.");
+    else {
+        err_log("New event failed option requirements.");
+        return null;
+    }
+    // log("Gen Rev: " +  body.gen_revenue_generated + " -> Null ? " + body.gen_revenue_generated != null);
+    // log("Users: " +  body.gen_num_users + " -> Null ? " + body.gen_num_users != null);
+    if (body.gen_summary && body.gen_title)
+        ok_log("New event passes general requirements.");
+    else {
+        err_log("New event failed general requirements.");
+        return null;
+    }
+
+    if (body.gen_revenue_generated == null || body.gen_num_users == null || body.gen_revenue_generated == "" || body.gen_num_users == "") {
+          let info = await user_info();
+          if (!body.gen_revenue_generated)
+            body.gen_revenue_generated = info.revenue;
+          if (!body.gen_num_users)
+                 body.gen_num_users = info.total;
+    }
+
+    return {
+        "id" : "eid" + randstring(5),
+        "o" : {
+          "a" : {
+            "link" : body.a_link,
+            "org" : body.a_org,
+            "s" : body.a_summary,
+            "t" : body.a_title,
+            "ttl" : 0,
+          },
+          "b" : {
+            "link" : body.b_link,
+            "org" : body.b_org,
+            "s" : body.b_summary,
+            "t" : body.b_title,
+            "ttl" : 0,
+          },
+          "c" : {
+            "link" : body.c_link,
+            "org" : body.c_org,
+            "s" : body.c_summary,
+            "t" : body.c_title,
+            "ttl" : 0,
+          },
+          "ttl" : 0
+        },
+        "s" : body.gen_summary,
+        "t" : body.gen_title,
+        "ttl" : body.gen_revenue_generated,
+        "tu" : body.gen_num_users
+    };
+
+}
+const sleep = (milliseconds) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+var create_new_event = async (req_body, is_preexisting) => {
+    return new Promise( async function(resolve, reject) {
+        // make json
+        let new_event_json = await new_event_result(req_body);
+        if (!new_event_json) reject("Invalid Input");
+        let event_id = new_event_json.id;
+        ok_log("Attempting to inject new event with id " + event_id);
+        // if it is old data we're inserting after-the-fact *special case*
+        if (is_preexisting) {
+            let list = await usersList();
+            for (let user_id of list) {
+                getUserInfo(user_id).then((info) => {
+                    var parts = info.p.split(',', 2);
+                    var current_payment_amt  = parts[1];
+                    DBLinks.userDonation(user_id, event_id).setValue(current_payment_amt);
+                });
+            }
+        } else {
+            log("Not preexisting ..");
+        }
+        let dbstring = '/db/events/'+event_id;
+        log('Attempting to set ' + dbstring + ' to ' + prettify(new_event_json));
+        let re = root.ref(dbstring);
+        if (is_preexisting) sleep(5000).then(re.set(new_event_json)).then(() => resolve(event_id));
+        else re.set(new_event_json).then(() => resolve(event_id));
+    });
+}
+
+
+
+
 
 
 function make_test_event() {
@@ -224,7 +426,7 @@ var getWinningOptionForEvent = async (active_event_id) => {
           options: snap["o"],
           id: snap['id']
         }
-    
+
         var winner = {
             votes: null,
             id: null
@@ -235,7 +437,7 @@ var getWinningOptionForEvent = async (active_event_id) => {
                 if (event.options[key].vrs != null) { // option had voters
                   var votes = event.options[key].ttl;
                   if (votes > winner.votes) {
-                      log('setting winner to ' + key + ' at ' + votes + ' votes'); 
+                      log('setting winner to ' + key + ' at ' + votes + ' votes');
                       winner.votes = votes;
                       winner.id = key;
                   } else if (votes == winner.votes) {
@@ -245,17 +447,17 @@ var getWinningOptionForEvent = async (active_event_id) => {
                           winner.id = key;
                       };
                   }
-                } 
-                
-                
+                }
+
+
             });
         }
-       
+
        resolve(winner);
-    
+
    } catch (e) {
        reject(e);
-   }      
+   }
   })
 }
 
@@ -321,7 +523,7 @@ async function notifyPeople() {
     voting_options.forEach(function(opt) {
       // let option = voting_options[index-1];
       // log('Options: ' + JSON.stringify(opt));
-      if ((opt['name'] != null && opt['summary'] != null)) { 
+      if ((opt['name'] != null && opt['summary'] != null)) {
         resp += ('\n\n' + index + '. ');
           let option_string = opt['name'] + '\n' + (opt['summary'].length < 70 ? opt.summary : (opt.summary.substring(0, 70) + '.. [Read more on our site!]'));
           // log('Option string: ' + option_string);
@@ -330,7 +532,7 @@ async function notifyPeople() {
       }
     })
     resp += '\n\nhttps://giveassist.org/vote'
-    
+
     groupText(user_phoneNumbers, resp);
     // groupText(user_phoneNumbers, 'https://giveassist.org/vote');
   } catch (e)   {
@@ -345,7 +547,7 @@ var get_all_user_phoneNumbers = async () => {
       let ref = root.ref('/users/');
       ref.once('value', function(snap) {
         snap.forEach((child) => {
-          // console.log(child.key, child.val()); 
+          // console.log(child.key, child.val());
           var user = child.val();
           var user_id = child.key;
           if (user['i'] != null) {
@@ -370,7 +572,7 @@ function updateSpamChecker(phone) {
   } else {
     spamChecker[phone] = Number(spamChecker[phone]) + 1;
   }
-  
+
   if (spamChecker[phone] > 8) {
     send_text_message('9086421391', 'GIVEASSIST SERVER AUTO MSG: WE ARE GETTING SPAMMED FROM ' + phone);
   }
@@ -379,7 +581,7 @@ function updateSpamChecker(phone) {
 
 
 var canPostEvents = async (uid) => {
-    
+
   var event_ref = root.ref('/admins/' + uid + '/');
   return new Promise( function (resolve, reject) {
     event_ref.once('value').then(function(snapshot, err) {
@@ -397,7 +599,7 @@ var getOptionsDispersion = async () => {
   return new Promise ( async function(resolve, reject) {
    try {
        let active_event_id = await getActiveEventId();
-       
+
        let snap = await eventSnapshot(active_event_id);
        let event = {
           title: snap["t"],
@@ -421,12 +623,12 @@ var getOptionsDispersion = async () => {
                 objArray.push(opt);
             });
         }
-       
+
        resolve(objArray);
-    
+
    } catch (e) {
        reject(e);
-   }      
+   }
   })
 }
 
@@ -454,7 +656,7 @@ async function customer_charged_successfully (cust_id, amountContributed) {
   return new Promise(async function(resolve, reject) {
     log_group_begin('Processing Customer');
     let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated, totalEventUsers;
-    
+
     try {   uid = await getFirebaseUserFromCustomerId(cust_id);              } catch (e) { err_log('Could not find firebase user for stripe user!'); reject('Could not find firebase user for stripe user! -> ' + e); log_group_end(); return; }
 
     ok_log(' (1/8) Found uid -> ' + uid);
@@ -462,11 +664,11 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     try {   active_event = await getActiveEventId();              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
 
     ok_log(' (2/8) Found active event -> ' + active_event);
-    
+
     let ap_string = 'We have already processed this user! -> ';
-    
+
     try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(ap_string + e); reject(e); log_group_end(); return; }
-        
+
     ok_log(' (3/8) we have not yet processed user payment for this month');
     try {   incomeForEvent = await getTotalIncomeForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end();return; }
 
@@ -475,7 +677,7 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     ok_log(' (4/8) got and incremented income');
 
     try {   totalDonated = await getTotalDonated(uid);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
-    
+
     totalDonated = Number(totalDonated) + amountContributed;
 
     ok_log(' (5/8) got amount donated and incremented -> ' + totalDonated + ' (contributed ' + amountContributed + ')');
@@ -485,11 +687,11 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     totalEventUsers = Number(totalEventUsers)+1;
 
     ok_log(' (6/8) got total event users and incremented');
-    
+
     // ok_log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
 
     try {  user_plan = await getUserInfo(uid); ok_log('got userinfo'); log(JSON.stringify(user_plan)); user_plan = user_plan['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
-    
+
     ok_log(' (7/8) got user plan -> ' + user_plan);
 
     try {  planTotalCount = await getPremiumPlanTotalCount(user_plan);                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
@@ -499,11 +701,11 @@ async function customer_charged_successfully (cust_id, amountContributed) {
     ok_log(' (8/8) got plan total count -> ' + planTotalCount);
 
     ok_log('completed db requests');
-    
+
 
     // Set amount that user donated
     root.ref('/users/' + uid + '/v/' + active_event + '/don/').set(amountContributed)
-    
+
     root.ref('/users/' + uid + '/d/t').set(totalDonated)
 
     root.ref('/db/events/' + active_event + '/ttl/').set(Math.round(incomeForEvent, 3));
@@ -581,7 +783,7 @@ function cast_texted_vote(user_vote, msg_from) {
       if(isNaN(user_vote)){
         // it's NOT a number
         reject('User text was not a number');
-      } else { 
+      } else {
         //  it's a number
         if (voting_options.length > Number(user_vote))  {
           // can vote this..  VOTE
@@ -598,7 +800,7 @@ function cast_texted_vote(user_vote, msg_from) {
       }
       } else {
         reject('User has no phone number');
-      } 
+      }
   })
 }
 
@@ -607,7 +809,7 @@ var performMonthlyRollover = () => {
   return new Promise ( async function (resolve, reject) {
     log_group_begin('Monthly Rollover');
     try {
-      
+
       log('Payout created');
       let active_event = await getActiveEventId();
       let winningOption = await getWinningOptionForEvent(active_event);
@@ -624,15 +826,15 @@ var performMonthlyRollover = () => {
       log('ne => ' + nextEvent);
 
       if (nextEvent == null) { throw('Cannot find a next event!'); }
-      
+
       root.ref(ref_string).set(winningOption);
 
-      // ------- UPATE WINNING OPTION AS WINNING OPTION ------- // 
-            
+      // ------- UPATE WINNING OPTION AS WINNING OPTION ------- //
+
       root.ref('/db/active_event/').set(nextEvent);
 
       notifyPeople();
-      
+
       resolve('Good!');
   } catch (e) {
 
@@ -674,7 +876,7 @@ var makeid = () => {
 
 var randstring = (l) => {
   var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz    ';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
   var charactersLength = characters.length;
   for ( var i = 0; i < l; i++ ) {
      result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -699,19 +901,62 @@ var untrimSelectedOptionAmount = (opt) =>  {
 
 
 
+
+var usersList = async () => {
+    return new Promise( async function(resolve, reject) {
+      var list = [];
+      let ref = root.ref('/users/');
+      ref.once('value',  function(snap) {
+        snap.forEach((child) => {
+          var user_id = child.key;
+         list.push(user_id);
+        });
+              resolve(list);
+      })
+  })
+}
+
+/*
+    Format:
+    {
+        total: total # of users
+        revenue: total revenue
+    }
+ */
+var user_info = async () => {
+    return new Promise( async function(resolve, reject) {
+      let ref = root.ref('/users/');
+      // get all users
+      ref.once('value',  function(snap) {
+            var num_users = 0;
+            var total_rev = 0;
+            snap.forEach((child) => {
+                  let val = child.val();
+                  if (val && val['i']) {
+                        // get their don amt as a # (base 10)
+                        let amt = parseFloat(untrimSelectedOptionAmount(val['i']['p']), 10);
+                        num_users++;
+                        total_rev+=amt;
+                  }
+            });
+            resolve({'total': num_users, 'revenue': total_rev});
+      })
+  })
+}
+
 var idFromNumber = async (phone) => {
   return new Promise( function(resolve, reject) {
       let ref = root.ref('/users/');
       ref.once('value', function(snap) {
         snap.forEach((child) => {
-          // console.log(child.key, child.val()); 
+          // console.log(child.key, child.val());
           var user = child.val();
           var user_id = child.key;
           if (user['i'] != null) {
             // log('found user info!: ' + JSON.stringify(user['i']));
             var user_phone  = user['i']['z'];
             if (user_phone != null) {
-              
+
               // log('found user phone!: ' + extractPhoneNumber(user_phone) + ' (v. ' + extractPhoneNumber(phone) + ' => ' + (user_phone == phone ? 'TRUE' : 'FALSE') + ' )');
               // match
               if (comparePhoneNumbers(user_phone, phone)){
@@ -831,73 +1076,15 @@ function getToday() {
   var yyyy = today.getFullYear();
   if (dd < 10) {
     dd = '0' + dd;
-  } 
+  }
   if (mm < 10) {
     mm = '0' + mm;
-  } 
+  }
   var td = mm + '/' + dd + '/' + yyyy;
   return td;
 }
 
-let PLAN = {
-  premiumX: 'PX',
-  premiumY: 'PY',
-  premiumZ: 'PZ',
-}
 
-class Link {  
-  constructor(base_ref, single_val) {
-    this.base_ref = base_ref;
-    this.single_val = single_val;
-    }
-
-  shortRef() { return this.base_ref;  }
-  longRef() { return this.single_val ? this.base_ref.child(this.single_val) : this.base_ref;  }
-  async fetch (){
-    let b = this.base_ref;
-    let self = this;
-    return new Promise ( function(resolve, reject) {
-    b.once('value').then (function(snap) {
-          if (snap && snap.val()) {
-            if (self.single_val)
-              resolve(snap.val()[self.single_val])
-            else
-            resolve(snap.val())
-          }
-          else
-              reject('No snapshot value found for ref ' + b)
-      }).catch(function(err) { reject(err) })
-    })
-  }
-  async setValue(to) { this.longRef().set(to); }
-  async pushValue(val) { this.longRef().push(val); }
-}
-
-let DBLinks = {
-  totalDonated: function (uid) { return new Link( root.ref('/users/' + uid + '/d'), 't'); },
-  eventTotalUsers:  function (eventId) { return new Link( root.ref('/db/events/' + eventId), 'tu'); },
-  prevChargeStatus: function (uid){ return new Link( root.ref('/users/' + uid + '/st'), 'pcs'); },
-  eventVoters: function(eventId, voteId) { return new Link( root.ref('/db/events/' + eventId + '/o/' + voteId+'/vrs/'), null); },
-  userVoteChoice: function(userid, eventId) { return new Link( root.ref('/users/' + userid + '/v/' + eventId), 'c'); },
-  eventOptionTotalVotes: function(eventId, voteId) { return new Link(root.ref('/db/events/' + eventId + '/o/' + voteId), 'ttl'); },// remove ttl
-  eventOverallTotalVotes: function(eventId) { return  new Link(root.ref('/db/events/'+eventId+'/o'), 'ttl'); },  //  remove ttl
-  premiumPlanTotalCount: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'ttl') },  
-  premiumPlanMostRecent: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'mr') }, // remove mr
-  userInfo: function (uid){ return new Link( root.ref('/users/' + uid + '/i')) }
-} 
-
-// var db_fetch = async (ref) => {
-//   log('fetching ' + ref)
-//   return new Promise ( function(resolve, reject) {
-//     var events_ref = root.ref(ref);
-//     events_ref.once('value').then (function(snap) {
-//         if (snap && snap.val())
-//             resolve(snap.val())
-//         else
-//             reject('No snapshot value found')
-//     }).catch(function(err) { reject(err) })
-//   })
-// }
 
 var getPremiumPlanTotalCount = async (plan) => {
   return new Promise ( function(resolve, reject) { DBLinks.premiumPlanTotalCount(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
@@ -909,9 +1096,9 @@ var getPremiumPlanMostRecent = async (plan) => {
 var get_plan_total_counts = async () => {
   return new Promise(async function(resolve, reject){
     try {
-      let premx = await getPremiumPlanTotalCount(PLAN.premiumX); ok_log('got premx count  ->  '  + JSON.stringify(premx)); 
-      let premy = await getPremiumPlanTotalCount(PLAN.premiumY); ok_log('got premy count  ->  '  + premy); 
-      let premz = await getPremiumPlanTotalCount(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz); 
+      let premx = await getPremiumPlanTotalCount(PLAN.premiumX); ok_log('got premx count  ->  '  + JSON.stringify(premx));
+      let premy = await getPremiumPlanTotalCount(PLAN.premiumY); ok_log('got premy count  ->  '  + premy);
+      let premz = await getPremiumPlanTotalCount(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz);
       resolve( { x: premx, y: premy, z: premz } );
     } catch (e) { err_log(e); reject(e); }
   })
@@ -919,9 +1106,9 @@ var get_plan_total_counts = async () => {
 var get_plan_most_recents = async () => {
   return new Promise(async function(resolve, reject){
     try {
-      let premx = await getPremiumPlanMostRecent(PLAN.premiumX); ok_log('got premx count  ->  '  + premx); 
-      let premy = await getPremiumPlanMostRecent(PLAN.premiumY); ok_log('got premy count  ->  '  + premy); 
-      let premz = await getPremiumPlanMostRecent(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz); 
+      let premx = await getPremiumPlanMostRecent(PLAN.premiumX); ok_log('got premx count  ->  '  + premx);
+      let premy = await getPremiumPlanMostRecent(PLAN.premiumY); ok_log('got premy count  ->  '  + premy);
+      let premz = await getPremiumPlanMostRecent(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz);
       resolve( { x: premx, y: premy, z: premz } );
     } catch (e) { err_log(e); reject(e); }
   })
@@ -969,9 +1156,9 @@ function postUserInfo (n,e,p,dn,z, uid) {
       j: getToday(),                  // timestamp
       z: z                            // phone number
   };
-  
+
   let problems = user_info_problems(userJson);
-  
+
   if (problems == null) {
       // log('Info post passed requirements..');
       userJson['dn'] =  makeid();
@@ -1022,7 +1209,7 @@ async function executeCreateSubscription (uid, planNameAndAmount) {
                   reject(err);
                   return;
                 }
-              }); 
+              });
       } catch (err) {
         // logn('FUNCTION executeCreateSubscription Error: ' + err)
       reject('Payment could not process! Failed with error: ' + err);
@@ -1040,7 +1227,7 @@ async function createStripeUser (paymentToken, email, uid) {
           source: paymentToken,
           email: email,
         })
-        
+
         if (customer) {
             let customer_id = customer.id;
             if (uid && customer_id) {
@@ -1077,7 +1264,7 @@ async function deleteUser(uid) {
       stripe.customers.del(cust_id,
         function(err, confirmation) {
           if (confirmation) {
-              
+
               // Clear firebase references
               root.ref('/users/' + uid + '/').set(null);
               root.ref('/queriable/' + uid + '/').set(null);
@@ -1125,13 +1312,15 @@ async function deleteUser(uid) {
         });
     });
   })
-  
+
 }
 
 // ____________________________________________________________________________________________________________________________________________
 // ____________________________________________________________________________________________________________________________________________
 
-module.exports = { 
+module.exports = {
+  usersList: async function() { return await usersList(); },
+  create_new_event: async function (req_body, is_preexisting) { return await create_new_event(req_body, is_preexisting); },
   getWinningOptionForEvent: async function (active_event_id) { return getWinningOptionForEvent(active_event_id); },
   updateSpamChecker: function(num) { return updateSpamChecker(num); },
   Customer: function(cid, amt_contributed) { return Customer(cid, amt_contributed); },
@@ -1163,7 +1352,7 @@ module.exports = {
     postUserInfo: function (n,e,p,dn,z, uid) {
         return postUserInfo(n,e,p,dn,z,uid);
     },
-    
+
     get_plan_stats: async () => { return new Promise(function(resolve, reject) { get_plan_stats().then((res) => resolve(res)).catch((err) => reject(err)) })},
     getPremiumPlanTotalCount: async (plan) => { return new Promise(function(resolve, reject) { getPremiumPlanTotalCount(plan).then((res) => resolve(res)).catch((err) => reject(err)) })},
     getPremiumPlanMostRecent: async (plan) => { return new Promise(function(resolve, reject) { getPremiumPlanMostRecent(plan).then((res) => resolve(res)).catch((err) => reject(err)) })},
@@ -1200,10 +1389,10 @@ module.exports = {
   },
   initiate_new_user: async function (email, password, usr, paymentToken) {
     return new Promise(async function(resolve,  reject)  {
-      
+
       let unclean_user_info = user_info_problems(usr);
       if (unclean_user_info) { reject(unclean_user_info); return; }
-  
+
       let new_user = new User(usr.n,email, password, usr.p, usr.dn, usr.j, usr.z);
 
       if (new_user.PhoneNumber.charAt(0) != '+' || new_user.PhoneNumber.length == 10)
@@ -1224,22 +1413,22 @@ module.exports = {
         reject(e);
         return;
       }
-  
+
       let uid = user_record.uid;
-    
+
       // post user info & handle fail
       if (!postUserInfo(new_user.Name, new_user.Email, new_user.Plan, new_user.DisplayName, new_user.PhoneNumber, uid)) { deleteUser(uid);err_log('Weirdly rejected while posting user info');reject('Invalid info'); return; }
-      
+
       ok_log('posted user info')
 
       var stripe_user;
       try { stripe_user = await createStripeUser(paymentToken, email, uid); } catch (e) { deleteUser(uid);err_log('while creating stripe user -> ' + e); reject('Could not create stripe user'); return; }
-      
+
       ok_log('created stripe user ');
 
       var init_payments;
       try { init_payments = await executeCreateSubscription(uid, new_user.Plan) } catch (e) { deleteUser(uid);err_log('while initializing payments (creating subscription) -> ' + e); reject('Could not initialize stripe payments'); return; }
-      
+
       ok_log('init. payments')
 
       DBLinks.totalDonated(uid).setValue(0);
@@ -1247,11 +1436,8 @@ module.exports = {
       ok_log('init. total donated for uid -> ' + uid);
 
       resolve(uid);
-  
+
     });
   }
-    
+
 };
-  
-  
-  

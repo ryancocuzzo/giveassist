@@ -21,7 +21,7 @@ app.use(function(req, res, next) {
 
 // create application/json parser
 var jsonParser = bodyParser.json()
- 
+
 // // create application/x-www-form-urlencoded parser
 // var urlencodedParser = bodyParser.urlencoded({ extended: true })
 
@@ -69,7 +69,7 @@ app.post('/sms', async (req, res) =>  {
       const twiml = new MessagingResponse();
       twiml.message('Vote submitted!');
       res.writeHead(200, {'Content-Type': 'text/xml'});
-      res.end(twiml.toString());  
+      res.end(twiml.toString());
     }).catch((issue) => {
       log('Caught SMS Error: ' + issue);
       const twiml = new MessagingResponse();
@@ -78,7 +78,7 @@ app.post('/sms', async (req, res) =>  {
         res.end(twiml.toString());
     })
 })
- 
+
 
 app.post('/smserror', (req, res) =>  {
     log('TWILIO ERROR: ' + JSON.stringify(req.body.ErrorCode));
@@ -96,19 +96,19 @@ app.get('/', (req, res)  => {
 
 // Get the priveledges of a user
 app.get('/eventPriviledges', (req, res)  => {
-    
+
     var idToken = req.query.idToken;
 
     if (idToken == null)  { res.send(false); return; }
 
     utils.get_decoded_token(idToken).then((decodedToken) => {
       var uid = decodedToken.uid;
-                
+
       utils.canPostEvents(uid).then(function(canPost) {
-        if (canPost != null) 
+        if (canPost != null)
             res.send( canPost );
-        else 
-            res.send(false); 
+        else
+            res.send(false);
       }).catch(() => {
           res.send(false);
       });
@@ -120,9 +120,9 @@ app.get('/eventPriviledges', (req, res)  => {
 
 app.post('/initiate_new_user', async (req, res) => {
   if (req.body == null || req.body.params == null) { res.send('Error');return; }
-    
+
   var password = req.body.params.pw; // note pw, not password
-  var paymentToken = req.body.params.paymentToken; 
+  var paymentToken = req.body.params.paymentToken;
 
   var usr = {
     n: req.body.params.n,                           // name
@@ -145,7 +145,9 @@ app.post('/initiate_new_user', async (req, res) => {
 
 // Get the priveledges of a user
 app.post('/createEvent', (req, res)  => {
-    
+
+    if (req.body == null) res.status(401).send("Invalid input");
+
     var idToken = req.body.params.idToken;
     var event = req.body.params.event;
 
@@ -160,18 +162,18 @@ app.post('/createEvent', (req, res)  => {
             var eventId = newPostRef.key;
             let child_ref = ref.ref(eventId + '/id/');
             child_ref.set(eventId);
-            
+
             res.send(true);
         } else {
             res.send(false);
         }
-        
+
       }).catch(function(error) {
         // Handle error
         res.send(false);
       });
-    
-    
+
+
 })
 
 
@@ -181,7 +183,7 @@ app.get('/totalUsersForEvent', async function(req, res) {
 });
 
 app.get('/get_plan_stats', async (req,res) => {
-  
+
   if (req == null || req.query == null) { res.send(new Error('invalid request')); return;}
   utils.get_plan_stats().then((obj) => res.send(obj)).catch((e) => res.send(e));
 });
@@ -191,7 +193,7 @@ app.post('/event_log', async function(request, response) {
     const event_json = request.body;
     if (event_json.type == 'charge.succeeded') {
         try {
-            
+
             ok_log('charge succeeded');
             let object = event_json.data.object;
 
@@ -204,11 +206,11 @@ app.post('/event_log', async function(request, response) {
 
             ok_log('found customer id and the amount they contributed!');
             table_log([new Customer(cust_id, amountContributed)]);
-            
+
             let successful_charge = await utils.customer_charged_successfully(cust_id, amountContributed);
-                
+
             response.send(successful_charge);
-            
+
         } catch (e) { err_log(e); response.send(e); return; }
     } else if (event_json.type == 'payout.created') {
 
@@ -231,30 +233,30 @@ app.post('/event_log', async function(request, response) {
       }
 
     }
-    
+
     else { response.send("ok");}
 
 });
-    
+
 
 app.get('/changePaymentSource', async (req,res) => {
     console.log('Changing stripe user source payment...')
     var idToken = req.query.idToken;
     var paymentToken = req.query.paymentToken;
-    
+
     try {
-       
+
         // Get decoded token
         let decodedToken = await utils.get_decoded_token(idToken);
 
         var uid = decodedToken.uid;
         var cust_id = await getStripeCustomerId(uid);
-          
-          
+
+
           let x = await stripe.customers.createSource(cust_id, {
             source: paymentToken
           });
-          
+
           // Perform update
           stripe.customers.update(cust_id, {
             default_source: x.id
@@ -266,11 +268,11 @@ app.get('/changePaymentSource', async (req,res) => {
                     log(err)
                     res.send(err)
                 }
-          }); 
+          });
     } catch(e) {
         res.send('Server error: ' + e);
     }
-    
+
 })
 
 
@@ -287,12 +289,12 @@ var getUserSubscriptionId = async (uid) => {
 }
 
 app.get('/change_plan', async (req,res) => {
-    
+
     var idToken = req.query.idToken;
     var planName = req.query.plan;
-    
+
     var planId = planIDForNameAndAmt(planName);
-    
+
     try {
 
         // Get decoded token
@@ -300,10 +302,10 @@ app.get('/change_plan', async (req,res) => {
 
         var uid = decodedToken.uid;
         var sub_id = await getUserSubscriptionId(uid);
-        
-          
+
+
         const subscription = await stripe.subscriptions.retrieve(sub_id);
-        
+
         stripe.subscriptions.update(sub_id, {
           cancel_at_period_end: false,
           items: [{
@@ -319,33 +321,33 @@ app.get('/change_plan', async (req,res) => {
                 root.ref('/users/' + uid + '/i/p/').set(planName);
                 root.ref('/queriable/' + uid + '/p').set(planName);
 
-                
+
                 res.send(subscription)
               } else {
                   err_log(err);
                   res.send(err);
               }
-              }); 
-          
+              });
+
     } catch(e) {
         res.send('Server error: ' + e);
     }
-    
+
 })
-        
+
 app.get('/deleteUser', async (req,res) => {
 
   var idToken = req.query.idToken;
-  
+
   log_group_begin('POST Delete User..');
   try {
     // Get decoded token
     let decodedToken = await utils.get_decoded_token(idToken);
 
     ok_log('DELETE authenticated..');
-      
+
     var uid = decodedToken.uid;
-    
+
     let deleted_user_response = await utils.deleteUser(uid);
 
     ok_log('Successfully deleted user');
@@ -376,7 +378,7 @@ var userHasAlreadyVoted = async (eventId, userId) => {
                     resolve(false)
                 }
             });
-            
+
         } catch (e) {
             reject(e);
         }
@@ -387,7 +389,7 @@ var castVote = async (eventId, voteId, userId) => {
   return new Promise( async function(resolve, reject) {
 
       try {
-          
+
           let hasVoted = await userHasAlreadyVoted(eventId, userId);
           if (hasVoted == true) { err_log('User has already voted!'); reject('It seens you have already voted!'); return; }
           ok_log('(User hasn\'t voted yet')
@@ -432,16 +434,16 @@ var castVote = async (eventId, voteId, userId) => {
           err_log(e);
           reject(e);
       }
-      
+
   })
 }
 
 app.get('/castVote', async (req,res) => {
-    
+
     var idToken = req.query.idToken;
     var voteId = req.query.voteId;
     var eventId = req.query.eventId;
-    
+
     try {
 
       let decodedToken = await utils.get_decoded_token(idToken);
@@ -454,11 +456,28 @@ app.get('/castVote', async (req,res) => {
     }
 })
 
-app.get('/crete_test_event', async (req,res) => {
+app.get('/create_test_event', async (req,res) => {
 
   if (utils.TEST_MODE == true) {
     root.ref('/db/events/').push(utils.make_test_event());
   }
 })
+
+app.post('/create_event', async (req, res) => {
+    if (req && req.body) { // legit post
+        if (req.body.ADMIN_KEY == 'hi_ryan_here'  && req.body.is_preexisting != null && req.body.is_preexisting != '') {
+            var pre = (req.body.is_preexisting == 'true' || req.body.is_preexisting == true);
+            pre = !pre; // Naming on form is inverted
+            log('Got ' + req.body.is_preexisting + ' -> pre = ' + pre);
+            try {
+                let created = await utils.create_new_event(req.body, pre);
+                res.status(200).send(created);
+            } catch (e) {
+                assert.fail(e);
+                res.status(500).send(created);
+            }
+        } else res.status(401).send('User not authorized.');
+    } else res.status(501).send('Bad input.');
+});
 
 app.listen(port, () => console.log('Server running on port '+ port + '!\n'))
