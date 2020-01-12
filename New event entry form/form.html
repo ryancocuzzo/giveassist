@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Event Submission Form</title>
+<link rel="stylesheet" type="text/css" href="view.css" media="all">
+<script type="text/javascript" src="view.js"></script>
+
+</head>
+<body id="main_body" >
+	
+	<img id="top" src="top.png" alt="">
+	<div id="form_container">
+	
+		<h1><a>Event Submission Form</a></h1>
+        <! https://donate-mate-app.herokuapp.com/create_event >
+        <! http://localhost:1234/create_event >
+		<form id="form_95287" class="appnitro"  method="post" action="http://localhost:1234/create_event">
+					<div class="form_description">
+			<h2>Event Submission Form</h2>
+			<p>This information will be posted directly to the database :)</p>
+		</div>						
+			<ul >
+			
+					<li id="li_5" >
+		<label class="description" for="gen_title">Event Title (Usually "Month Year") </label>
+		<div>
+			<input id="element_5" name="gen_title" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_7" >
+		<label class="description" for="gen_summary">Event Summary </label>
+		<div>
+			<textarea id="element_7" name="gen_summary" class="element textarea medium"></textarea> 
+		</div> 
+		</li>		<li id="li_6" >
+		<label class="description" for="gen_num_users">How many users are/were there? </label>
+		<div>
+			<input id="element_6" name="gen_num_users" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_8" >
+		<label class="description" for="gen_revenue_generated">How much revenue was/will be generated from those users? </label>
+		<div>
+			<input id="element_8" name="gen_revenue_generated" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_1" >
+		<label class="description" for="a_title">First Option Title </label>
+		<div>
+			<input id="element_1" name="a_title" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_4" >
+		<label class="description" for="a_org">First Option Organization </label>
+		<div>
+			<input id="element_4" name="a_org" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_3" >
+		<label class="description" for="a_link">First Option Link
+ </label>
+		<div>
+			<input id="element_3" name="a_link" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_2" >
+		<label class="description" for="a_summary">First Option Summary </label>
+		<div>
+			<textarea id="element_2" name="a_summary" class="element textarea medium"></textarea> 
+		</div> 
+		</li>		<li id="li_9" >
+		<label class="description" for="b_title">Second Option Title </label>
+		<div>
+			<input id="element_9" name="b_title" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_10" >
+		<label class="description" for="b_org">Second Option Organization </label>
+		<div>
+			<input id="element_10" name="b_org" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_11" >
+		<label class="description" for="b_link">Second Organization Link </label>
+		<div>
+			<input id="element_11" name="b_link" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_12" >
+		<label class="description" for="b_summary">Second Option Summary </label>
+		<div>
+			<textarea id="element_12" name="b_summary" class="element textarea medium"></textarea> 
+		</div> 
+		</li>		<li id="li_13" >
+		<label class="description" for="c_title">Third Option Title </label>
+		<div>
+			<input id="element_13" name="c_title" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_14" >
+		<label class="description" for="c_org">Third Option Organization </label>
+		<div>
+			<input id="element_14" name="c_org" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_15" >
+		<label class="description" for="c_link">Third Option Link </label>
+		<div>
+			<input id="element_15" name="c_link" class="element text medium" type="text" maxlength="255" value=""/> 
+		</div> 
+		</li>		<li id="li_16" >
+		<label class="description" for="c_summary">Third Option Summary </label>
+		<div>
+			<textarea id="element_16" name="c_summary" class="element textarea medium"></textarea> 
+		</div> 
+                
+		</li>
+                <li id="li_16" >
+		<label class="description" for="is_preexisting"> This is a new month ? </label>
+		<div>
+                <input type="checkbox" name="is_preexisting" value="true" checked> <br>
+		</div> 
+                
+		</li>
+                <input type="hidden" id="ADMIN_KEY" name="ADMIN_KEY" value="hi_ryan_here">
+                <input type="hidden" id="is_preexisting" name="is_preexisting" value="false">
+                
+					<li class="buttons">
+			    <input type="hidden" name="form_id" value="95287" />
+			    
+				<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+		</li>
+			</ul>
+		</form>	
+		<div id="footer">
+		</div>
+	</div>
+	<img id="bottom" src="bottom.png" alt="">
+	</body>
+</html>

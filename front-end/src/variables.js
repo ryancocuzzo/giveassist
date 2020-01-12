@@ -1,5 +1,5 @@
 
-let TEST_MODE = false;
+let TEST_MODE = true;
 
 /*
 
