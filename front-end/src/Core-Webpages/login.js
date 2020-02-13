@@ -1,20 +1,20 @@
 import React from 'react';
 import { Button, Row, Col, InputGroup, FormControl, MenuItem, ButtonToolbar,  Dropdown, ToggleButtonGroup, ToggleButton, DropdownButton } from 'react-bootstrap';
 import { Link, withRouter} from 'react-router-dom';
-import variables from './variables.js';
+import variables from '../Helper-Files/variables.js';
 import Datetime from 'react-datetime';
 import {Elements, StripeProvider} from 'react-stripe-elements';
-import CheckoutForm from './CheckoutForm';
-import PaymentRequestForm from './PaymentRequestForm';
+import CheckoutForm from '../Custom-Components/CheckoutForm';
+import PaymentRequestForm from '../Custom-Components/PaymentRequestForm';
 import axios from 'axios';
 import Popup from 'react-popup';
 import moment from 'moment';
-import firebase, { auth, provider } from './firebase.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
 import * as util from 'util' // has no default export
 import { inspect } from 'util' // or directly
-import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo} from './Database.js';
-import MyInput from './MyInput.js';
-import imgs from './ImgFactory.js';
+import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo} from '../Helper-Files/Database.js';
+import MyInput from '../Custom-Components/MyInput.js';
+import imgs from '../Helper-Files/ImgFactory.js';
 
 let urls = variables.local_urls;
 

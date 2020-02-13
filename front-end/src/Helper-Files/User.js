@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import moment from 'moment';
-import firebase, { auth, provider } from './firebase.js';
-import variables from './variables.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import variables from '../Helper-Files/variables.js';
 let server_urls = variables.server_urls;
 
 function  ok_log(x) { console.log('%cOK%c ' + x, 'background-color: lightGreen; color: green; padding: 5px 3px;  border-radius: 3px; ', '');  }

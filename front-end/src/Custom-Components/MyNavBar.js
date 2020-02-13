@@ -1,18 +1,11 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { DropdownButton, MenuItem, Button, ButtonToolbar, ButtonGroup, Navbar, NavItem, NavDropdown, Nav } from 'react-bootstrap';
-import imgs from './ImgFactory.js';
-// import './App.css';
-import vars from './variables.js';
+import imgs from '../Helper-Files/ImgFactory.js';
+import vars from '../Helper-Files/variables.js';
 import { Link, withRouter} from 'react-router-dom';
-// import auth0Client from './Auth';
-import firebase, { auth, provider } from './firebase.js';
-// Imports the Google Cloud client library
-// import  {Storage} from '@google-cloud/storage';
-import { getProfilePictureFilename } from './Database.js';
-
-// Creates a client
-// const storage = new Storage();
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import { getProfilePictureFilename } from '../Helper-Files/Database.js';
 
 let urls = vars.local_urls;
 
@@ -37,11 +30,6 @@ class MyNavBar extends Component {
       navExpanded: false
     };
 
-    // if (user) {
-    //   this.getProfilePicture(user.uid);
-    // }
-
-    // this.login = this.login.bind(this); // <-- add this line
     this.logout = this.logout.bind(this); // <-- add this line
 
   }
@@ -52,75 +40,6 @@ class MyNavBar extends Component {
     });
   }
 
-  // async getProfilePicture(uid) {
-  //   let ref = firebase.database().ref('/users/' + uid + '/img/p');
-  //
-  //     ref.once('value').then (function(snap) {
-  //         console.log('Snapback & unload');
-  //         console.log(snap.val())
-  //         if (snap && snap.val()) {
-  //             let raw_filename = snap.val();
-  //             console.log('X_found raw filename: ' + raw_filename);
-  //             // Create a reference to the file we want to download
-  //             var ref = firebase.storage().ref(uid+'/profilePicture/' + raw_filename);
-  //             console.log('found ref: ' + ref);
-  //             // Get the download URL
-  //             ref.getDownloadURL().then(function(url) {
-  //               console.log('Found download URL: ' + url);
-  //               this.setState({
-  //                   picture: url
-  //               });
-  //             }.bind(this)).catch(function(error) {
-  //
-  //               // A full list of error codes is available at
-  //               // https://firebase.google.com/docs/storage/web/handle-errors
-  //               switch (error.code) {
-  //                 case 'storage/object-not-found':
-  //                   // File doesn't exist
-  //                   break;
-  //
-  //                 case 'storage/unauthorized':
-  //                   // User doesn't have permission to access the object
-  //                   break;
-  //
-  //                 case 'storage/canceled':
-  //                   // User canceled the upload
-  //                   break;
-  //
-  //                 case 'storage/unknown':
-  //                   // Unknown error occurred, inspect the server response
-  //                   break;
-  //               }
-  //             });
-  //         } else {
-  //           console.log('No prifdaaj pic!')
-  //         }
-  //     }.bind(this))
-  //
-  //
-  //   // let destFilename = './' + raw_filename;
-  //   //
-  //   // const bucketName = uid;
-  //   // const srcFilename = raw_filename;
-  //   // const options = {
-  //   //   // The path to which the file should be downloaded, e.g. "./file.txt"
-  //   //   destination: destFilename,
-  //   // };
-  //   //
-  //   // // // Downloads the file
-  //   // // await storage
-  //   // //   .bucket(bucketName)
-  //   // //   .file(srcFilename)
-  //   // //   .download(options);
-  //   //
-  //   // console.log(
-  //   //   `gs://${bucketName}/${srcFilename} downloaded to ${destFilename}.`
-  //   // );
-  //
-  //
-  //
-  // }
-
   /**
    * When the component mounts..
    */
@@ -128,14 +47,7 @@ class MyNavBar extends Component {
     // Check for new user (state change)
     firebase.auth().onAuthStateChanged(function(user) {
         this.setState({user: user});
-        // if (user) {
-        //   this.getProfilePicture(user.uid);
-        // }
     }.bind(this));
-    //
-    // if (this.state.user) {
-    //   this.getProfilePicture(this.state.user.uid);
-    // }
 
     window.addEventListener("resize", function(event) {
       this.setState({width: document.body.clientWidth});
@@ -150,10 +62,6 @@ class MyNavBar extends Component {
         this.setState({navOpacity: 'white'})
 
    }
-
-
-
-
 
   }
 
@@ -337,65 +245,10 @@ class MyNavBar extends Component {
 
   }
 
-  // navigationBar = (margin, textSizeH) => {
-  //   let marginTop = textSizeH < 4 ? '10px' : (textSizeH < 5 ? '9px' : '11px');
-  //   return <Navbar expand="xl" fixedTop collapseOnSelect style={{backgroundColor: this.state.navOpacity, border: 'none', headerStyle: {
-  //         borderBottomWidth: 0,
-  //     }}} className='myNavbar'>
-  //     <Navbar.Header style={{marginLeft: margin, marginTop: '6px'}} pullLeft>
-  //       <img src={imgs.logo_lg} height="50px" className='fixedAdjacentChild' alt="Picture" style={{marginTop: '16px', marginBottom: '20px', marginTop: '20px', borderRadius: '5px'}}></img>
-  //
-  //       <Navbar.Toggle className='blackOnHover' style={{height: '50px'}}>
-  //         <h4 style={{marginTop: '7px',height: '50px'}}>MENU</h4>
-  //       </Navbar.Toggle>
-  //     </Navbar.Header>
-  //     <Navbar.Collapse >
-  //       <Nav pullRight style={{marginTop: marginTop}}>
-  //
-  //         <ButtonGroup aria-label="Basic example"  style={{marginTop: marginTop}}>
-  //
-  //           <button  className='navigationButton' style={{border: 'none', marginRight: '0px', marginLeft: '10px',height: '50px'}} onClick={this.logout}>
-  //             {this.dynamicHComponent('SIGN OUT',textSizeH)}
-  //           </button>
-  //
-  //           <Link to={urls.vaults} >
-  //             <button  className='navigationButton' style={{border: 'none', marginRight: '0px', marginLeft: '10px',height: '50px'}} value={this.whoWeAre} onClick={this.scrollToWhoWeAre}>
-  //               {this.dynamicHComponent('VAULTS',textSizeH)}
-  //             </button>
-  //           </Link>
-  //           <span class="divider"></span>
-  //
-  //             <Link to={urls.stats} >
-  //               <button  className='navigationButton' style={{border: 'none', marginLeft: '10px', marginRight: '10px',height: '50px'}} value={this.theProblem} onClick={this.scrollToTheProblem}>
-  //                 {this.dynamicHComponent('INFO',textSizeH)}
-  //                 </button>
-  //             </Link>
-  //           <span class="divider"></span>
-  //
-  //             <Link to={urls.vote}>
-  //               <button  className='navigationButton' style={{border: 'none', marginRight: '10px',height: '50px'}} value={this.theSolution} onClick={this.scrollToTheSolution}>
-  //                   {this.dynamicHComponent('VOTE',textSizeH)}
-  //
-  //                 </button>
-  //               </Link>
-  //
-  //         </ButtonGroup>
-  //
-  //
-  //
-  //       </Nav>
-  //     </Navbar.Collapse>
-  //   </Navbar>;
-  //
-  //
-  // }
-
   al = () => {
     console.log('x')
     alert(this.state.width)
   }
-
-
 
   render() {
 
@@ -519,18 +372,6 @@ if (this.state.width < 600) {
 }
 
 return this.navigationBar(navMarginLeft, textSizeH);
-
-
-  // return (
-  //   <Navbar fixedTop inverse collapseOnSelect style={{backgroundColor: 'white', headerStyle: {
-  //         height: '100px'
-  //     }}} className='myNavbar'>
-  //     {header}
-  //     {rest}
-  //
-  //     </Navbar>
-  // );
-
 
   }
 

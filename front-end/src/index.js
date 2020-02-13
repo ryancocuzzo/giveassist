@@ -1,20 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import MyNavBar from './MyNavBar';
-import './App.css';
+import './Styling/index.css';
+import MyNavBar from './Custom-Components/MyNavBar';
+import './Styling/App.css';
 import registerServiceWorker from './registerServiceWorker';
 import Popup from 'react-popup';
 import axios from 'axios';
 import { Form, FormControl, Jumbotron, FormGroup, Checkbox, ControlLabel, ProgressBar, Col, Row, Grid, DropdownButton, MenuItem, Button, ButtonToolbar, Well} from 'react-bootstrap';
-import firebase, { auth, provider } from './firebase.js';
-import VotePage from './Vote.js';
-import IntroPage from './IntroPage.js';
-import SignUpPage from './signUp.js';
-import StatsPage from './Stats.js';
-import LoginPage from './login.js';
-import VaultPage from './Vaults.js';
-import Loadinggg from './LoadingScreen.js';
+import firebase, { auth, provider } from './Helper-Files/firebase.js';
+import variables from './Helper-Files/variables.js';
+import VotePage from './Core-Webpages/Vote.js';
+import IntroPage from './Core-Webpages/IntroPage.js';
+import SignUpPage from './Core-Webpages/signUp.js';
+import StatsPage from './Core-Webpages/Stats.js';
+import LoginPage from './Core-Webpages/login.js';
+import VaultPage from './Core-Webpages/Vaults.js';
+import Loadinggg from './Custom-Components/LoadingScreen.js';
 
 import {
   BrowserRouter,
@@ -22,7 +23,6 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import variables from './variables.js';
 
 class App extends React.Component {
   /**
@@ -41,7 +41,7 @@ class App extends React.Component {
    * When the component mounts..
    */
   componentDidMount() {
-    // 
+    //
     // var user = firebase.auth().currentUser;
     // // alert(user.uid);
     // this.setState({user: user, doneLooking: true});

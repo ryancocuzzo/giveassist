@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "react-dom";
-import "./styles.css";
+import "../Styling/styles.css";
 import { checkPropTypes } from "prop-types";
 
 var strong_pass_regex = new RegExp(

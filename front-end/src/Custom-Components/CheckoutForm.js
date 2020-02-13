@@ -13,10 +13,7 @@ class CheckoutForm extends Component {
   }
 
   async submit(ev) {
-    console.log(ev)
-    console.log(this.props.stripe);
     let {token} = await this.props.stripe.createToken();
-    console.log(token);
     if (token)
       this.props.onSignUp(token.id);
     else
@@ -26,7 +23,6 @@ class CheckoutForm extends Component {
 componentDidMount() {
 
   window.addEventListener("resize", function(event) {
-    // console.log(document.body.clientWidth + ' wide by ' + document.body.clientHeight+' high');
     this.setState({width: document.body.clientWidth});
   }.bind(this))
 

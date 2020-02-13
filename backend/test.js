@@ -2,11 +2,11 @@
 // var assert = require('assert');
 var admin = require("firebase-admin");
 var utils = require('./util.js');
-var stripe = utils.stripe;
 let chai = require('chai');
+var clc = require("cli-color");
+var stripe = utils.stripe;
 var assert = chai.assert;
 var expect = chai.expect;
-var clc = require("cli-color");
 
 if (utils.TEST_MODE == false) { throw new Error("Hey we gotta run in test mode!"); }
 
@@ -131,21 +131,224 @@ const sleep = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
-describe('*NEW* Create New Event Test Suite',  function() {
+function prettify(json) { return JSON.stringify(json, null, 2); }
+
+
+describe('Process Customer Charge Test Suite',  function() {
+    this.timeout(0);                                                                                                                                  log('\n');                                                                                                                                 log('\n');
+    let sample_user_uid = "cATSYis1ldZvRT4L5geR6Q0Vcym1";
+    let sample_amount_donated = 20; // USD
+    var result_id;
+    
+        it('gets the customer\'s stripe id', async function() {
+           try {
+              result_id = await utils.getStripeCustomerId(sample_user_uid);
+              let test_value = result_id != null;
+              expect(test_value).to.be.true;
+              return 'ok';
+           } catch (e) {
+               assert.fail(e);
+               return 'oh';
+           }
+       });
+
+      it('gets the user\'s charged info', async function() {
+          try {
+              let resp = await utils.customer_charged_successfully(result_id, sample_amount_donated);
+                  console.log(prettify(resp));
+              let test_value = resp != null;
+              expect(test_value).to.be.true;
+              return 'ok';
+          } catch (e) {
+              assert.fail(e);
+              return 'oh';
+          }
+      });
+});
+
+
+
+
+
+
+
+
+
+
+
+describe('Sign Up Flow Test Suite', async function() {                                                                                                                                      log('\n');
+
+  this.timeout(0);
+
+
+    /*   1    */
+
+    var card_token;
+
+      it('creates the stripe payment token', function() {
+        return new Promise(async function (resolve, reject) {
+          try {
+              card_token = await stripe.tokens.create({
+                card: {
+                  number: '4242424242424242',
+                  exp_month: 12,
+                  exp_year: 2020,
+                  cvc: '123'
+                }
+              })
+                let test_value = card_token != null;
+                expect(test_value).to.be.true;
+                resolve(card_token);
+          } catch (e) {
+            assert.fail('ISSUE: ' + e);
+            reject(e);
+          }
+        })
+      });
+
+   /*   2    */
+
+   let result_uid;
+
+  it('initializes a new fully-capable user', async function() {
+      return new Promise(async function (resolve, reject) {
+        try {
+
+          var usr = {
+            n: name,                                 // name
+            e: email,                                // email
+            p: plan,                                 // plan
+            dn: displayName,                         // display name
+            z: phoneNumber                           // phone number
+          };
+
+
+          // create user
+          result_uid = await utils.initiate_new_user(email,password,usr,card_token.id);
+          // log(result_uid);
+          let test_value = result_uid != null;
+          expect(test_value).to.be.true;
+          resolve(user_record);
+        } catch (e) {
+          assert.fail('Did not create user -> ' + e);
+          reject(e);
+        }
+    })
+  });
+
+  it('deletes the test user\'s data', async function() {
+    this.timeout(0);
+    return new Promise(async function (resolve, reject) {
+
+      if (result_uid == null) { resolve('Could not delete -> no user info to delete'); return; }
+
+      try {
+
+        // delete user
+        await utils.deleteUser(result_uid);
+        // log('Delete executed.');
+
+      } catch (e) {
+        // log('Could not find a user to delete!');
+        assert.fail('Could not find a user to delete! -> ' + e);
+        reject(e);
+      }
+
+      try {
+
+        // verify user's deleted - auth
+        let user_exists = await utils.userExists(result_uid);
+        if (user_exists == null)
+          assert.ok('User auth has been successfully deleted');
+        else
+          assert.fail('ISSUE: User auth Still exists.');
+      } catch (e) {
+        assert.fail('ISSUE: User auth Still exists. -> ' + e);
+      }
+
+      try {
+
+        // verify user's deleted - db
+        let user_info_fetched = await utils.getUserInfo(result_uid);
+        if (user_info_fetched == null) {
+           assert.ok('User info has been successfully deleted');
+           resolve('User info has been successfully deleted');
+        }
+        else {
+          console.table(user_info_fetched);
+          assert.fail('ISSUE: User info Still exists.');
+          reject('ISSUE: User info Still exists.');
+        }
+      } catch {
+        assert.ok('User info has been successfully deleted');
+        resolve('User info has been successfully deleted');
+      }
+      });
+  });
+
+
+});
+
+
+describe('Utility Function tester', async function() {                                                                                                                                      log('\n');
+
+  this.timeout(0);
+
+      it('finds the plan stats', function() {
+        return new Promise(async function (resolve, reject) {
+          try {
+              let plan_stats = await utils.get_plan_stats();
+                let test_value = plan_stats != null && plan_stats.counts != null  && plan_stats.recents != null;
+                expect(test_value).to.be.true;
+                resolve(plan_stats);
+          } catch (e) {
+            err_log(e);
+            assert.fail('ISSUE: ' + e);
+            reject(e);
+          }
+        })
+      });
+
+});
+
+
+describe('Monthly rollover test', async function() {                                                                                                                                      log('\n');
+
+  this.timeout(0);
+
+      it('performs the monthly rollover', function() {
+        return new Promise(async function (resolve, reject) {
+          try {
+              let rollover_response = await utils.performMonthlyRollover();
+                let test_value = rollover_response != null;
+                expect(test_value).to.be.true;
+                resolve(test_value);
+          } catch (e) {
+            err_log(e);
+            assert.fail('ISSUE: ' + e);
+            reject(e);
+          }
+        })
+      });
+
+});
+
+
+describe('Create New Event Test Suite',  function() {
     this.timeout(0);                                                                                                                                  log('\n');                                                                                                                                 log('\n');
     let new_event_req_body = unformalized_new_test_event();
     let is_preexisting = false;
-      // it('creates a new event', async function() {
-      //     try {
-      //         let res = await utils.create_new_event(new_event_req_body, is_preexisting); // ISSUE. Remove line & it posts the data (but never terminates test)
-      //         assert.isOk('Ok','Ok');
-      //         return 'ok';
-      //     } catch (e) {
-      //         assert.fail(e);
-      //         reject('oh');
-      //         return 'oh';
-      //     }
-      // });
+       it('creates a new event', async function() {
+           try {
+               let res = await utils.create_new_event(new_event_req_body, is_preexisting); // ISSUE. Remove line & it posts the data (but never terminates test)
+               assert.isOk('Ok','Ok');
+               return 'ok';
+           } catch (e) {
+               assert.fail(e);
+               reject('oh');
+               return 'oh';
+           }
+       });
 
       it('creates a pre-existing event', async function() {
           try {
@@ -159,182 +362,3 @@ describe('*NEW* Create New Event Test Suite',  function() {
           }
       });
 });
-
-
-
-
-//      it('creates a pre-existing event', function() {
-//        return new Promise(async function (resolve, reject) {
-//          try {
-//
-//              let new_event_req_body = unformalized_new_test_event();
-//              let is_preexisting = true;
-//              let new_event_was_posted = await utils.create_new_event(new_event_req_body, is_preexisting);
-//                let test_value = new_event_was_posted != null;
-//                expect(test_value).to.be.true;
-//                resolve(new_event_was_posted);
-//          } catch (e) {
-//            assert.fail('ISSUE: ' + e);
-//            reject(e);
-//          }
-//        })
-//      });
-
-
-//
-//describe('Sign Up Flow Test Suite', async function() {                                                                                                                                      log('\n');
-//
-//  this.timeout(0);
-//
-//
-//    /*   1    */
-//
-//    var card_token;
-//
-//      it('creates the stripe payment token', function() {
-//        return new Promise(async function (resolve, reject) {
-//          try {
-//              card_token = await stripe.tokens.create({
-//                card: {
-//                  number: '4242424242424242',
-//                  exp_month: 12,
-//                  exp_year: 2020,
-//                  cvc: '123'
-//                }
-//              })
-//                let test_value = card_token != null;
-//                expect(test_value).to.be.true;
-//                resolve(card_token);
-//          } catch (e) {
-//            assert.fail('ISSUE: ' + e);
-//            reject(e);
-//          }
-//        })
-//      });
-//
-//   /*   2    */
-//
-//   let result_uid;
-//
-//  it('initializes a new fully-capable user', async function() {
-//      return new Promise(async function (resolve, reject) {
-//        try {
-//
-//          var usr = {
-//            n: name,                                 // name
-//            e: email,                                // email
-//            p: plan,                                 // plan
-//            dn: displayName,                         // display name
-//            z: phoneNumber                           // phone number
-//          };
-//
-//
-//          // create user
-//          result_uid = await utils.initiate_new_user(email,password,usr,card_token.id);
-//          // log(result_uid);
-//          let test_value = result_uid != null;
-//          expect(test_value).to.be.true;
-//          resolve(user_record);
-//        } catch (e) {
-//          assert.fail('Did not create user -> ' + e);
-//          reject(e);
-//        }
-//    })
-//  });
-//
-//  it('deletes the test user\'s data', async function() {
-//    this.timeout(0);
-//    return new Promise(async function (resolve, reject) {
-//
-//      if (result_uid == null) { resolve('Could not delete -> no user info to delete'); return; }
-//
-//      try {
-//
-//        // delete user
-//        await utils.deleteUser(result_uid);
-//        // log('Delete executed.');
-//
-//      } catch (e) {
-//        // log('Could not find a user to delete!');
-//        assert.fail('Could not find a user to delete! -> ' + e);
-//        reject(e);
-//      }
-//
-//      try {
-//
-//        // verify user's deleted - auth
-//        let user_exists = await utils.userExists(result_uid);
-//        if (user_exists == null)
-//          assert.ok('User auth has been successfully deleted');
-//        else
-//          assert.fail('ISSUE: User auth Still exists.');
-//      } catch (e) {
-//        assert.fail('ISSUE: User auth Still exists. -> ' + e);
-//      }
-//
-//      try {
-//
-//        // verify user's deleted - db
-//        let user_info_fetched = await utils.getUserInfo(result_uid);
-//        if (user_info_fetched == null) {
-//           assert.ok('User info has been successfully deleted');
-//           resolve('User info has been successfully deleted');
-//        }
-//        else {
-//          console.table(user_info_fetched);
-//          assert.fail('ISSUE: User info Still exists.');
-//          reject('ISSUE: User info Still exists.');
-//        }
-//      } catch {
-//        assert.ok('User info has been successfully deleted');
-//        resolve('User info has been successfully deleted');
-//      }
-//      });
-//  });
-//
-//
-//});
-//
-//
-//describe('Utility Function tester', async function() {                                                                                                                                      log('\n');
-//
-//  this.timeout(0);
-//
-//      it('finds the plan stats', function() {
-//        return new Promise(async function (resolve, reject) {
-//          try {
-//              let plan_stats = await utils.get_plan_stats();
-//                let test_value = plan_stats != null && plan_stats.counts != null  && plan_stats.recents != null;
-//                expect(test_value).to.be.true;
-//                resolve(plan_stats);
-//          } catch (e) {
-//            err_log(e);
-//            assert.fail('ISSUE: ' + e);
-//            reject(e);
-//          }
-//        })
-//      });
-//
-//});
-//
-//
-//describe('Monthly rollover test', async function() {                                                                                                                                      log('\n');
-//
-//  this.timeout(0);
-//
-//      it('performs the monthly rollover', function() {
-//        return new Promise(async function (resolve, reject) {
-//          try {
-//              let rollover_response = await utils.performMonthlyRollover();
-//                let test_value = rollover_response != null;
-//                expect(test_value).to.be.true;
-//                resolve(test_value);
-//          } catch (e) {
-//            err_log(e);
-//            assert.fail('ISSUE: ' + e);
-//            reject(e);
-//          }
-//        })
-//      });
-//
-//});

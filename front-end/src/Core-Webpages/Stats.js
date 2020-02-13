@@ -1,23 +1,23 @@
 import React from 'react';
 import { Button, Row, Col, Grid } from 'react-bootstrap';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Line, LineChart, ComposedChart, ResponsiveContainer } from 'recharts';
 import { Link, withRouter} from 'react-router-dom';
-import variables from './variables.js';
 import Datetime from 'react-datetime';
 import {Elements, StripeProvider} from 'react-stripe-elements';
-import CheckoutForm from './CheckoutForm';
-import PaymentRequestForm from './PaymentRequestForm';
 import axios from 'axios';
 import Popup from 'react-popup';
 import moment from 'moment';
-import firebase, { auth, provider } from './firebase.js';
 import * as util from 'util' // has no default export
 import { inspect } from 'util' // or directly
-import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo, getTotalDonated, get_all_EventIdAndName_sets, userDonations} from './Database.js';
+import {eventSnapshot, userVotes, getActiveEventId, votersFor, createEvent, getOptions, genKey, castVote, getUserInfo, getTotalDonated, get_all_EventIdAndName_sets, userDonations} from '../Helper-Files/Database.js';
 import numeral from 'numeral';
-import PayPlanOption from "./PayPlanOption";
-import MyInput from './MyInput.js';
-import { _signUpUser, untrimSelectedOption, trimSelectedOption } from './User.js';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Line, LineChart, ComposedChart, ResponsiveContainer } from 'recharts';
+import variables from '../Helper-Files/variables.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import { _signUpUser, untrimSelectedOption, trimSelectedOption } from '../Helper-Files/User.js';
+import PayPlanOption from "../Custom-Components/PayPlanOption";
+import MyInput from '../Custom-Components/MyInput.js';
+import CheckoutForm from '../Custom-Components/CheckoutForm';
+import PaymentRequestForm from '../Custom-Components/PaymentRequestForm';
 var moneyFormat = (number) => {
   return numeral(number).format('$0,0.00');
 }
@@ -43,16 +43,23 @@ var make_accumulated_list = (donation_list)  => {
 
 var generate_projection_data = (donation_list, amount_donating) => {
   var projected_list = make_accumulated_list(donation_list);
+  console.log("Proj Data")
+  console.table(projected_list)
   let THRESHOLD = 4; // 6 projected points
   for (var i = 1; i < THRESHOLD+1; i++) {
 
     let next_month  = moment(new Date()).add(i,'months').format('LL');
     let split_next_month = next_month.split(' ');
     let usable_next_month_value = split_next_month[0] + ' ' + split_next_month[2];
-
+    var last = 0;
     if (projected_list[projected_list.length-1] != null) {
       let last_val = projected_list[projected_list.length-1]['Amount'];
-      projected_list.push(generate_point(usable_next_month_value, last_val+amount_donating));
+      last+=parseFloat(last_val);
+      let p = generate_point(usable_next_month_value, last+parseFloat(amount_donating));
+      console.log("point: ");
+      console.log(p);
+
+      projected_list.push();
     }
   }
   return projected_list;

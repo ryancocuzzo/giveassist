@@ -1,8 +1,8 @@
 
-import firebase, { auth, provider } from './firebase.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
 import Gen from 'firebase-auto-ids';
 import axios from 'axios';
-import vars from './variables.js';
+import vars from '../Helper-Files/variables.js';
 import moment from 'moment';
 
 var server_urls = vars.server_urls;

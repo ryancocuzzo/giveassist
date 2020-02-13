@@ -1,21 +1,21 @@
 import React, { Component } from 'react';
 import { Button, Grid, Row, Col, InputGroup, Table } from 'react-bootstrap';
 import { Link, withRouter} from 'react-router-dom';
-import firebase, { auth, provider } from './firebase.js';
-import './App.css';
-import variables from './variables.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import '../Styling/App.css';
+import variables from '../Helper-Files/variables.js';
 import Datetime from 'react-datetime';
 import {Elements, StripeProvider} from 'react-stripe-elements';
-import CheckoutForm from './CheckoutForm';
-import PaymentRequestForm from './PaymentRequestForm';
+import CheckoutForm from '../Custom-Components/CheckoutForm';
+import PaymentRequestForm from '../Custom-Components/PaymentRequestForm';
 import axios from 'axios';
 import Popup from 'react-popup';
 import moment from 'moment';
-import { get_users, get_n_events, get_reciepts_count, getUploadedReceiptsRefs} from './Database.js';
+import { get_users, get_n_events, get_reciepts_count, getUploadedReceiptsRefs} from '../Helper-Files/Database.js';
 import numeral from 'numeral';
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table-next';
-import {trimSelectedOption,untrimSelectedOption} from './User.js';
+import {trimSelectedOption,untrimSelectedOption} from '../Helper-Files/User.js';
 
 
 var moneyFormat = (number) => {

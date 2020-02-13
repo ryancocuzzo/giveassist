@@ -2,6 +2,7 @@ var admin = require("firebase-admin");
 var prod_serviceAccountKey = require("./prod_serviceAccountKey");
 var dev_serviceAccountKey = require("./dev_serviceAccountKey");
 var clc = require("cli-color");
+var moment = require('moment');
 
 String.prototype.replaceAll = function(search, replacement) {
   var target = this + '';
@@ -97,9 +98,10 @@ let DBLinks = {
   userVoteChoice: function(userid, eventId) { return new Link( root.ref('/users/' + userid + '/v/' + eventId), 'c'); },
   eventOptionTotalVotes: function(eventId, voteId) { return new Link(root.ref('/db/events/' + eventId + '/o/' + voteId), 'ttl'); },// remove ttl
   eventOverallTotalVotes: function(eventId) { return  new Link(root.ref('/db/events/'+eventId+'/o'), 'ttl'); },  //  remove ttl
-  premiumPlanTotalCount: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'ttl') },
-  premiumPlanMostRecent: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'mr') }, // remove mr
+  planTotalCount: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'ttl') },
+  planMostRecent: function(plan) { return  new Link(root.ref('/db/plans/'+plan), 'mr') }, // remove mr
   userInfo: function (uid){ return new Link( root.ref('/users/' + uid + '/i')) },
+  eventTotalDonated: function (eventId){ return new Link( root.ref('/db/events/' + eventId + '/ttl/') ) },
   userDonation: function (uid, eventId){ return new Link( root.ref('/users/' + uid + '/v/'+eventId+"/don")) }
 }
 
@@ -139,17 +141,6 @@ function User(name, email, password, plan, displayName, joined,  phoneNumber) {
   this.Joined = joined;
   this.PhoneNumber = phoneNumber;
 }
-
-randomSnippet = () => {
-  var length = 3;
-  var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-  }
 
 rNumber = () => {
   var length = 3;
@@ -205,17 +196,6 @@ var getTotalIncomeForEvent = async (eventId) => {
     });
   })
 
-}
-
-var getStripeCustomerId = async (uid) => {
-  return new Promise( function(resolve, reject) {
-      root.ref('/users/' + uid + '/st/id').once('value').then (function(snap) {
-          if (snap && snap.val())
-              resolve(snap.val())
-          else
-              reject('No stripe customer id!')
-      })
-  })
 }
 
 function unformalized_new_test_event() {
@@ -652,74 +632,120 @@ function Customer(cid, amt_contributed) {
   this.AmountContributed = '$' + amt_contributed;
 }
 
-async function customer_charged_successfully (cust_id, amountContributed) {
-  return new Promise(async function(resolve, reject) {
-    log_group_begin('Processing Customer');
-    let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated, totalEventUsers;
 
-    try {   uid = await getFirebaseUserFromCustomerId(cust_id);              } catch (e) { err_log('Could not find firebase user for stripe user!'); reject('Could not find firebase user for stripe user! -> ' + e); log_group_end(); return; }
+async function process_charged_customer_info(cust_id, amountContributed) {
+    log_group_begin('Processing Customer info');
+    
+    let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated, totalEventUsers, planTotalCount;
+    let p_incomeForEvent, p_totalDonated, p_totalEventUsers, p_planTotalCount;
+    
+    /* Phase 1 - Firebase UID from Stripe Customer Id */
+
+    try {   uid = await getFirebaseUserFromCustomerId(cust_id);            } catch (e) { err_log('Could not find firebase user for stripe user!'); reject('Could not find firebase user for stripe user! -> ' + e); log_group_end(); return null; }
 
     ok_log(' (1/8) Found uid -> ' + uid);
+    
+    /* Phase 2 - Get Active Event */
 
-    try {   active_event = await getActiveEventId();              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    try {   active_event = await getActiveEventId();           } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
 
     ok_log(' (2/8) Found active event -> ' + active_event);
+    
+    /* Phase 3 - Check that we are not processing an already-processed user */
 
     let ap_string = 'We have already processed this user! -> ';
 
-    try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(ap_string + e); reject(e); log_group_end(); return; }
-
+    try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(ap_string + e); reject(e); log_group_end(); return null; }
+    
     ok_log(' (3/8) we have not yet processed user payment for this month');
-    try {   incomeForEvent = await getTotalIncomeForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end();return; }
+    
+    /* Phase 4 - Get total amount the contributed to this event & raise it by the amount the user contributed (parameter) */
+    
+    try {   p_incomeForEvent = await getTotalIncomeForEvent(active_event); p_incomeForEvent = Number(p_incomeForEvent);            } catch (e) { err_log(e); reject(e);  log_group_end();return null; }
 
-    incomeForEvent = Number(incomeForEvent) + amountContributed;
+    incomeForEvent = p_incomeForEvent + amountContributed;
 
     ok_log(' (4/8) got and incremented income');
+    
+    /* Phase 5 - Get total amount the user has donated & raise it by the amount the user contributed to this specific event (parameter) */
 
-    try {   totalDonated = await getTotalDonated(uid);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    try {   p_totalDonated = await getTotalDonated(uid); p_totalDonated = Number(p_totalDonated);             } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
 
-    totalDonated = Number(totalDonated) + amountContributed;
+    totalDonated = p_totalDonated + amountContributed;
 
     ok_log(' (5/8) got amount donated and incremented -> ' + totalDonated + ' (contributed ' + amountContributed + ')');
 
-    try {  totalEventUsers = await getTotalUsersForEvent(active_event);              } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    /* Phase 6 - Get and increment the total # of users contributing to this event */
+    
+    try {  p_totalEventUsers = await getTotalUsersForEvent(active_event);  p_totalEventUsers =  Number(p_totalEventUsers);            } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
 
-    totalEventUsers = Number(totalEventUsers)+1;
+    totalEventUsers = p_totalEventUsers+1;
 
     ok_log(' (6/8) got total event users and incremented');
+    
+    /* Phase 7 - Get user's plan. This is done by first getting their info, then manipulating the string result. */ 
 
-    // ok_log('Adding ' + amountContributed + ' to user: ' + uid + '\n  for successful charge for event ' + active_event);
 
-    try {  user_plan = await getUserInfo(uid); ok_log('got userinfo'); log(JSON.stringify(user_plan)); user_plan = user_plan['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
+    try {  user_plan = await getUserInfo(uid); ok_log('got userinfo'); log(JSON.stringify(user_plan)); user_plan = user_plan['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
 
     ok_log(' (7/8) got user plan -> ' + user_plan);
+    
+    /* Phase 8 - Get and increment the total amount that premium users have contributed (to this event, I believe) */
 
-    try {  planTotalCount = await getPremiumPlanTotalCount(user_plan);                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return; }
-
-    planTotalCount++;
-
+    try {  p_planTotalCount = await getPremiumPlanTotalCount(user_plan); p_planTotalCount = Number(p_planTotalCount);            } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
+    
+    planTotalCount = p_planTotalCount + 1;
+    
     ok_log(' (8/8) got plan total count -> ' + planTotalCount);
 
     ok_log('completed db requests');
 
+    let result_json = {
+        "uid": uid,
+        "active_event": active_event,
+        "amountContributed": amountContributed,
+        "p_totalDonated": p_totalDonated,
+        "totalDonated": totalDonated,
+        "p_incomeForEvent": p_incomeForEvent,
+        "incomeForEvent": Math.round(incomeForEvent, 3),
+        "user_plan": user_plan,
+        "p_totalEventUsers": p_totalEventUsers,
+        "totalEventUsers": totalEventUsers,
+        "p_planTotalCount": p_planTotalCount,
+        "planTotalCount": planTotalCount,
+        "formatted_time": moment().format('LL'),
+    };
+    
+        
+    return result_json;
+    
 
-    // Set amount that user donated
-    root.ref('/users/' + uid + '/v/' + active_event + '/don/').set(amountContributed)
+}
 
-    root.ref('/users/' + uid + '/d/t').set(totalDonated)
+async function customer_charged_successfully (cust_id, amountContributed) {
+  return new Promise(async function(resolve, reject) {
+      
+    let processed_info = await process_charged_customer_info(cust_id, amountContributed);
+    if (processed_info == null) { reject("We could not properly process user info. "); return; }
+      
+    DBLinks.userDonation(processed_info.uid,processed_info.active_event).setValue(amountContributed);
+      
+    DBLinks.totalDonated(processed_info.uid).setValue(processed_info.totalDonated);
+      
+    DBLinks.eventTotalDonated(processed_info.active_event).setValue(processed_info.incomeForEvent);
 
-    root.ref('/db/events/' + active_event + '/ttl/').set(Math.round(incomeForEvent, 3));
-
-    DBLinks.eventTotalUsers(active_event).setValue(totalEventUsers);
-    DBLinks.premiumPlanTotalCount(user_plan).setValue(planTotalCount);
-    DBLinks.premiumPlanMostRecent(user_plan).setValue(moment().format('LL'));
-
-    DBLinks.prevChargeStatus(uid).setValue('OK');
+    DBLinks.eventTotalUsers(processed_info.active_event).setValue(processed_info.totalEventUsers);
+      
+    
+    DBLinks.planTotalCount(processed_info.user_plan).setValue(processed_info.planTotalCount);
+    DBLinks.planMostRecent(processed_info.user_plan).setValue(processed_info.formatted_time);
+    DBLinks.prevChargeStatus(processed_info.uid).setValue('OK');
 
     ok_log('Finished processing charge!');
-
-    resolve('Finished processing charge!');
     log_group_end();
+
+    resolve(processed_info);
+    return processed_info;
   })
 }
 
@@ -858,7 +884,7 @@ var validatePhone = (phone) => {
    return re.test(String(phone));
 }
 
-varextractPhoneNumber = (uncleaned) => {
+var extractPhoneNumber = (uncleaned) => {
   var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
   return cleaned;
 }
@@ -1087,10 +1113,10 @@ function getToday() {
 
 
 var getPremiumPlanTotalCount = async (plan) => {
-  return new Promise ( function(resolve, reject) { DBLinks.premiumPlanTotalCount(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
+  return new Promise ( function(resolve, reject) { DBLinks.planTotalCount(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
 }
 var getPremiumPlanMostRecent = async (plan) => {
-  return new Promise ( function(resolve, reject) { DBLinks.premiumPlanMostRecent(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
+  return new Promise ( function(resolve, reject) { DBLinks.planMostRecent(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
 }
 
 var get_plan_total_counts = async () => {
@@ -1325,6 +1351,7 @@ module.exports = {
   updateSpamChecker: function(num) { return updateSpamChecker(num); },
   Customer: function(cid, amt_contributed) { return Customer(cid, amt_contributed); },
   customer_charged_successfully: async function(cust_id, amountContributed) { return await customer_charged_successfully(cust_id, amountContributed); },
+  process_charged_customer_info: async function(cust_id, amountContributed) { return await process_charged_customer_info(cust_id, amountContributed); },    
   cast_texted_vote: async function (user_vote, msg_from){ return await cast_texted_vote(user_vote, msg_from); },
   getTotalDonated: async function(uid) { return await getTotalDonated(uid); },
   canPostEvents: async function(uid) { return await canPostEvents(uid); },
@@ -1341,6 +1368,7 @@ module.exports = {
   idFromNumber: async function(ph) { return await idFromNumber(ph); },
   getFirebaseUserFromCustomerId: async function(i) { return await getFirebaseUserFromCustomerId(i); },
   make_test_event: function() { return make_test_event(); },
+  getStripeCustomerId: async function(uid) { return await getStripeCustomerId(uid); },
     TEST_MODE: TEST_MODE,
     root: root,
     stripe: stripe,

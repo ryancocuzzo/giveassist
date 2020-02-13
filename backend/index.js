@@ -189,6 +189,7 @@ app.get('/get_plan_stats', async (req,res) => {
 });
 
 app.post('/event_log', async function(request, response) {
+    if (request ==  null || request.body == null) { response.send("Sorry, bad input!"); return;  }
   // Retrieve the request's body and parse it as JSON:
     const event_json = request.body;
     if (event_json.type == 'charge.succeeded') {

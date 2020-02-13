@@ -1,17 +1,14 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom';
-// import './index.css';
-// import './App.css';
 import Popup from 'react-popup';
 import axios from 'axios';
 import { Col, Row, Grid, DropdownButton, Button} from 'react-bootstrap';
-import firebase, { auth, provider } from './firebase.js';
-import {eventSnapshot, userVotes, getActiveEventId, votersFor, totalVotesFor, createEvent, getOptions, genKey, castVote} from './Database.js';
-import vars from './variables.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import {eventSnapshot, userVotes, getActiveEventId, votersFor, totalVotesFor, createEvent, getOptions, genKey, castVote} from '../Helper-Files/Database.js';
+import vars from '../Helper-Files/variables.js';
 import { SizeMe } from 'react-sizeme';
 import ReadMoreReact from 'read-more-react';
-
 
 /**
  * Draws an event component (dynamically generated)

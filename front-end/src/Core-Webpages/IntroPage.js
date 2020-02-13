@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import { Link, withRouter} from 'react-router-dom';
-import firebase, { auth, provider } from './firebase.js';
-import variables from './variables.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import variables from '../Helper-Files/variables.js';
 import TypeWriter from 'react-typewriter';
-import imgs from './ImgFactory.js';
+import imgs from '../Helper-Files/ImgFactory.js';
 import { Parallax, Background } from 'react-parallax';
 import Slider, { Range } from 'rc-slider';
 import Popup from 'react-popup';
 import 'rc-slider/assets/index.css';
 import numeral from 'numeral';
-// import variables from './variables.js';
 import { DropdownButton, MenuItem, Button, ButtonToolbar, ButtonGroup, Navbar, NavItem, NavDropdown, Nav } from 'react-bootstrap';
 import axios from 'axios';
 
