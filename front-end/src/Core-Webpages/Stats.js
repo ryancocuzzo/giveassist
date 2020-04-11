@@ -59,7 +59,7 @@ var generate_projection_data = (donation_list, amount_donating) => {
       console.log("point: ");
       console.log(p);
 
-      projected_list.push();
+      projected_list.push(p);
     }
   }
   return projected_list;
@@ -69,7 +69,7 @@ var convert_eventIdAndAmt_to_NameAndAmtPoints = (id_title_sets, donation_list) =
     var points = [];
     donation_list.forEach(function(don) {
       let title = get_title(id_title_sets, don['event_id']);
-      let amt = don['don'];
+      let amt = Number(don['don']);
       let new_point = generate_point(title, amt);
       // console.log('Generated point: ');
       // console.table(new_point);
@@ -116,13 +116,12 @@ var get_projection_data = async (uid) => {
 
   // convert list to points
   let titled_user_donations = convert_eventIdAndAmt_to_NameAndAmtPoints(id_title_sets, user_donations);
-  console.log('Properly formatted donations: ');
-  console.table(titled_user_donations);
 
   if (titled_user_donations == null || titled_user_donations.length == 0) {
     err_log('could not get titles user don')
       return [];
   }  else { ok_log('got titled user donations') }
+  console.log('Properly formatted donations: ');
   console.log(titled_user_donations)
   console.table(titled_user_donations)
 

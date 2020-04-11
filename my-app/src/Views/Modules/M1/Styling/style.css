@@ -1,0 +1,65 @@
+/*
+    Colors:
+    Primary: #0E3F81
+    Secondary: #5BEAA5
+    Tertiary: #3490B9
+ */
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+.title {
+    margin-top: 1px;
+}
+
+button.login {
+    margin: 5px;
+    font-size: 25px;
+    /* height: 48px; */
+}
+
+@media only screen and (min-width: 200px) and (max-width: 1200px)  {
+    button.login {
+        font-size: 18px;
+        padding: 5px 15px 5px 15px;
+        margin-top: 0px;
+     }
+     div.cnavbar {
+         width:100%;
+         padding: 0px;
+         margin-bottom: 0px;
+         margin-top: 5px;
+     }
+
+}
+
+.give {
+    color: #5BEAA5;
+    font-size: 45px;
+}
+.assist {
+    color: #3490B9;
+    font-size: 45px;
+}
+
+.title {
+    margin: 0px;
+    padding: 0px;
+}
+
+div.cnavbar {
+    width:100%;
+    padding: 0px;
+    margin-bottom: 0px;
+}

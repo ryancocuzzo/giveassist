@@ -1,5 +1,8 @@
 
 @import url('https://fonts.googleapis.com/css?family=Charm|Thasadith');
+div {
+  font-family: Thasadith;
+}
 html {
   background-color: #dfedd6;
 
@@ -12,9 +15,7 @@ html, body {
     max-width: 100% !important;
     overflow-x: hidden !important;
 }
-div {
-  font-family: Thasadith;
-}
+
 
 
 .myGradientBackground {

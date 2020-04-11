@@ -5,7 +5,7 @@ import Popup from 'react-popup';
 import axios from 'axios';
 import { Col, Row, Grid, DropdownButton, Button} from 'react-bootstrap';
 import firebase, { auth, provider } from '../Helper-Files/firebase.js';
-import {eventSnapshot, userVotes, getActiveEventId, votersFor, totalVotesFor, createEvent, getOptions, genKey, castVote} from '../Helper-Files/Database.js';
+import {eventSnapshot, userVotes, getActiveEventId, votersFor, totalVotesFor, getOptions, genKey, castVote} from '../Helper-Files/Database.js';
 import vars from '../Helper-Files/variables.js';
 import { SizeMe } from 'react-sizeme';
 import ReadMoreReact from 'read-more-react';
@@ -97,7 +97,6 @@ class Vote extends React.Component {
       user: user,
       event: null,
       token: null,
-      canCreateEvents: false,
       hasVoted: 'IDK',
       something: false,
       votes: [],
@@ -115,14 +114,6 @@ class Vote extends React.Component {
     window.history.pushState(null, '', '/vote')
 
 
-  }
-
-  createEventComponent = () => {
-    return (
-      <div>
-        <button style={{marginLeft: '20px'}} onClick={() => this.createEvent()}>Create Event</button>
-      </div>
-    );
   }
 
   onSize = size => {
@@ -143,13 +134,6 @@ class Vote extends React.Component {
         // Handle tokens
 
         this.setState({token: idToken});
-
-        if (idToken) {
-          axios.get(server_urls.eventPriviledges, {params: {idToken: idToken}}).then( function(response) {
-            let canCreateEvents = response.data;
-            this.setState({canCreateEvents:canCreateEvents});
-          }.bind(this))
-        }
 
         // Handle whether or not the user has voted
 
@@ -221,14 +205,6 @@ class Vote extends React.Component {
 
             this.setState({token: idToken});
 
-            if (idToken) {
-              axios.get(server_urls.eventPriviledges, {params: {idToken: idToken}}).then( function(response) {
-                let canCreateEvents = response.data;
-                this.setState({canCreateEvents:canCreateEvents});
-              }.bind(this))
-            } else {
-              this.setState({canCreateEvents:false});
-            }
           }.bind(this)).catch(function(error) {
             // Handle error
           });
@@ -305,16 +281,6 @@ class Vote extends React.Component {
       Popup.alert('Your vote has been recieved.\nThanks for voting on this event!')
     }).catch((e) => Popup.alert(e));
 
-  }
-
-  createEvent = () => {
-    var token = this.state.token;
-    var titles = ['peace', 'love', 'dev'];
-    var summaries = ['Summary 1', 'Summary 2', 'Summary 3'];
-    var options = getOptions(titles, summaries);
-    var eventTitle = 'Week X'
-    var eventSummary = 'Time to donate!';
-    createEvent(eventTitle, eventSummary, options, token);
   }
 
   /**
@@ -455,8 +421,6 @@ class Vote extends React.Component {
       eventMap = <div></div>;
     };
 
-    var createEventComponent_local = (this.state.canCreateEvents == true) ? this.createEventComponent() : (<div></div>);
-
 
     // Generaet a default HTML object that we are gonna append to
     var voteComponent = (
@@ -470,7 +434,6 @@ class Vote extends React.Component {
             {event ? (event.summary) : ""}
           </p>
         </div>
-          {createEventComponent_local}
           <br /><br />
         {dynamic_vote_component}
         </span>

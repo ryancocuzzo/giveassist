@@ -4,8 +4,14 @@ import Gen from 'firebase-auto-ids';
 import axios from 'axios';
 import vars from '../Helper-Files/variables.js';
 import moment from 'moment';
-
+import DBLinks from '../Helper-Files/utils.js';
 var server_urls = vars.server_urls;
+
+export const G = 12;
+
+var getKey = () => {
+  return firebase.database().ref().push().key;
+}
 
 /**
  * Gets the snapshot for an event
@@ -39,8 +45,6 @@ export const eventSnapshot = async (eventId) => {
   })
 }
 
-
-
 /**
  * Gets the active event id
  * @return {[String]} the active event id
@@ -59,7 +63,6 @@ export const getActiveEventId = async () => {
   })
 
 }
-
 
 /**
  * Gets the total votes for a certain vote id
@@ -103,22 +106,6 @@ export const totalVotesFor = async (eventId, voteId) => {
       }
     });
   })
-}
-
-export const createEvent = async (title, summary, options, idToken) => {
-    let event = {
-      t: title,
-      created: moment(),
-      s: summary,
-      o: JSON.parse(JSON.stringify(options)),
-
-    };
-    console.log("Sending createEvent post with params: \nEvent: \n" + event + "idToken: " + idToken)
-    axios.post(server_urls.createEvent, {params: {event: event, idToken: idToken}}).then( function(response) {
-      let created = response.data;
-      let msg = created ? "Event created!" : "Event could not be created!";
-      alert(msg);
-    })
 }
 
 export const getEventPriveledges = async (idToken) => {
@@ -179,7 +166,6 @@ export const userVotes = async (userId) => {
     })
 }
 
-
 export const userDonations = async (userId) => {
     let ref = firebase.database().ref('/users/' + userId + '/v/')
     return new Promise( function (resolve, reject) {
@@ -232,10 +218,6 @@ export const get_all_EventIdAndName_sets = async () => {
     })
 }
 
-export const getKey = () => {
-  return firebase.database().ref().push().key;
-}
-
 export const castVote = async (eventId, voteId, token) => {
   return new Promise( function(resolve, reject) {
     axios.get(server_urls.castVote, {params: {eventId: eventId, idToken: token, voteId: voteId}}).then( function(response) {
@@ -244,20 +226,6 @@ export const castVote = async (eventId, voteId, token) => {
       reject(e);
     })
   })
-}
-
-export const getProfilePictureFilename = async (uid) => {
-    return new Promise( function(resolve, reject) {
-      let ref = firebase.database().ref('/users/' + uid + '/img/p');
-
-        ref.once('value').then (function(snap) {
-            console.log('Snapback & unload');
-            if (snap && snap.val())
-                resolve(snap.val())
-            else
-                reject('No profilie pic!')
-        })
-    })
 }
 
 export const getUserInfo = async (uid) => {
@@ -325,7 +293,6 @@ export const get_users = async () => {
     })
   })
 }
-
 
 /**
  * Gets the active event id

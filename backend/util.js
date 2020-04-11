@@ -28,7 +28,7 @@ const twilio_phoneNumber = '+19083049973';
 
 // xxxxxxxxxxxxxxxxxxxxxxxx
                        // x
-let TEST_MODE = false;  // x
+let TEST_MODE = true;  // x
                        // x
 // xxxxxxxxxxxxxxxxxxxxxxxx
 

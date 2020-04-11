@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "The preorder code repo for WarRiders: http://warriders.com",
+  "description": "GA",
   "main": "index.js",
   "dependencies": {
     "@google-cloud/storage": "^2.3.4",

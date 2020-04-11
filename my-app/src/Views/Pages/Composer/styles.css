@@ -1,0 +1,110 @@
+.composer_boundary {
+    padding: 30px;
+    text-align: center;
+}
+
+.oneWide {
+    display: grid;
+    padding: 5px;
+    padding-top: 0px;
+    grid-template-columns: repeat(1, 1fr);
+    grid-auto-rows: min-content;
+}
+
+.twoWide {
+    display: grid;
+    text-align: center;
+    padding: 5px;
+    padding-top: 0px;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: min-content;
+
+}
+
+.grid_block {
+    margin: 0px;
+    border: 2px solid lightgrey;
+    min-width: 200px;
+    padding: 10px;
+    padding-top: 0px;
+}
+
+.bordered {
+    border: 2px solid lightgrey;
+}
+
+.one {
+    margin-bottom: 35px;
+}
+
+.not {
+    border-width: 0px;
+}
+
+@media only screen and (min-width: 200px) and (max-width: 1200px)  {
+     .twoWide {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .composer_boundary {
+        padding: 8px;
+    }
+    .give, .assist {
+        font-size: 24px;
+    }
+
+    p { text-indent: 20px; }
+    h1 { font-size: 30px; }
+    h2 { font-size: 24px; }
+
+    .oneWide {
+        display: block;
+    }
+    .twoWide {
+        display: block;
+    }
+    .one {
+        margin-bottom: 0px;
+    }
+
+    .nav {
+        margin-top: 0px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        margin-bottom: 0px;
+    }
+}
+
+.nav {
+    height: 50px;
+}
+
+
+
+
+
+
+/*
+    --------
+    Fun Grid
+    --------
+
+.grid_block {
+    background-color: darkgrey;
+    border-radius: 5px;
+    margin: 10px;
+}
+
+.active {
+    color: red;
+}
+
+.composer_boundary {
+    background-color: grey;
+    padding: 50px;
+    grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
+    grid-column-gap: 10px;
+    text-align: center;
+    display: grid;
+}
+*/
