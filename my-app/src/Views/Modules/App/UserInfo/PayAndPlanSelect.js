@@ -68,8 +68,8 @@ export default class PayAndPlanSelect extends Component {
                         </div>
                         </div>
                         <br/>
-                        <div class={styles.restrictedPayView}>
-                            { this.state.current == "PZ" ? <div class={styles.restrictedInput}><InputComponent type="number" title="Custom Amount" placeholder="12" pretext="$" validate={validateMoney} onChange={secure} /></div> : ''}
+                    <div class={styles.restrictedPayView2} style={{textAlign: 'left'}}>
+                            { this.state.current == "PZ" ? <div class={styles.restrictedInput} style={{minWidth: '250px'}}><InputComponent type="number" title="Custom Amount" placeholder="12" pretext="$" validate={validateMoney} onChange={secure} /></div> : ''}
                         </div>
 
                         <div style={{marginTop: '15px'}}>

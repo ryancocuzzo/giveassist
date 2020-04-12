@@ -53,12 +53,14 @@ let inputs = [ nameField, emailField, passwordField, phoneField ];
 let OptionSelect = <OptionSelection onSubmitPlan={pr} payInfoText="Payment Info" planSelectText="Select Plan" notSubmittable={true}/>;
 
 let CombinedComponents = (
-    <div>
+    <div style={{backgroundColor: 'whitesmoke', padding: '10px', margin: '10px', borderRadius: '10px'}}>
         <h1>Sign Up</h1>
         <br/>
         <InputForm fields={inputs} submit={pr} isSequential={true} notSubmittable={true}/>
         <br/>
         {OptionSelect}
+        <button class="submit">Sign Up</button>
+        <br/>
     </div>
 )
 
@@ -70,14 +72,11 @@ export default class SignUp extends React.Component {
 
     render() {
         let mobile = window.innerHeight < 950;
-        let height =  !mobile ? window.innerHeight + 'px' : ((window.innerHeight * 1.2) + 'px');
+        let height =  !mobile ? window.innerHeight + 'px' : ((window.innerHeight * 1.3) + 'px');
 
         return (
-            <div className="dark">
-                <div className="signupContainer">
-                    {/* <div style={{backgroundColor: 'red', width: window.width + 'px', height: window.innerHeight + 'px'}}>g</div> */}
-                    {ParticledContent(CombinedComponents, {width: '80%', height: height})}
-                </div>
+            <div className="signupContainer">
+                {ParticledContent(CombinedComponents, {height: height, marginTop: '20px'})}
             </div>
         )
     }

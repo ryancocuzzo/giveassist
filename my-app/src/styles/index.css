@@ -64,7 +64,8 @@ button::selection {
 
 button:hover {
   cursor: pointer;
-  background-color: rgb(91,234,165);
+  background-color: var(--quartiary);
+  font-weight: 900;
   transform: translateY(-2px);
   box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
 }

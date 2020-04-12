@@ -29,8 +29,6 @@ export class InputComponent extends Component {
             passed: isPassing,
             val: props.value,
             isEditing: false,
-            width: window.innerWidth,
-            height: window.innerHeight,
             formIndex: props.formIndex /* index in form */,
             onValid: props.onValid,
             onInvalid: props.onInvalid,
@@ -48,18 +46,11 @@ export class InputComponent extends Component {
 
   componentDidMount() {
     document.addEventListener("click", this.handleClickOutside, true);
-    this.updateWindowDimensions();
-    window.addEventListener("resize", this.updateWindowDimensions);
   }
 
   componentWillUnmount() {
     document.removeEventListener("click", this.handleClickOutside, true);
-    window.removeEventListener("resize", this.updateWindowDimensions);
   }
-
-  updateWindowDimensions = () => {
-    this.setState({ width: window.innerWidth, height: window.innerHeight });
-  };
 
   handleClickOutside = event => {
     const domNode = ReactDOM.findDOMNode(this);

@@ -9,6 +9,11 @@
     margin-top: 30px;
 }
 
+.inner_contained {
+    width: 95%;
+    margin-left: 2.5%;
+}
+
 @media only screen and (max-width: 900px) {
     .inner_contained {
         width: 96%;

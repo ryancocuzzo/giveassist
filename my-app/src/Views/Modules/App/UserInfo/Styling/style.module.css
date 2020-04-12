@@ -19,6 +19,14 @@
     justify-items:center;
 }
 
+.restrictedPayView2 {
+    position: 'static';
+    display: grid;
+    align-items: center;
+    align-content: center;
+    justify-items:center;
+}
+
 button:focus {
     outline: none;
 }
