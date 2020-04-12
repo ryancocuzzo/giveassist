@@ -4,9 +4,9 @@ import * as particle_json from './particle_descr.json';
 import cssstyles from './Styles/styles.module.css';
 /*
     Colors:
-    Primary: #0E3F81
-    Secondary: #5BEAA5
-    Tertiary: #3490B9
+    Primary: var(--primary)
+    Secondary: var(--secondary)
+    Tertiary: var(--tertiary)
  */
 
 function addPixels(to, amt) {

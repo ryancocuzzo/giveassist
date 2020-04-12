@@ -1,8 +1,8 @@
 /*
     Colors:
-    Primary: #0E3F81
-    Secondary: #5BEAA5
-    Tertiary: #3490B9
+    Primary: var(--primary)
+    Secondary: var(--secondary)
+    Tertiary: var(--tertiary)
  */
 
 .siblings {
@@ -35,7 +35,7 @@
 }
 
 .expanded_label {
-  animation: expand_input_label 1s forwards;
+  animation: expand_input_label 0.5s forwards;
 }
 .shrunk_label {
   padding-left: 0px;
@@ -48,13 +48,13 @@
   margin-bottom: 0px;
   padding-bottom: 0px;
   margin-left: 20px;
-  color: #0E3F81;
+  color: var(--primary);
   font-size: 24px;
   margin-left: 0px;
   position: relative;
   top: 13px;
   left: 20px;
-  animation: diminish 1s forwards;
+  animation: diminish 0.5s forwards;
 }
 
 .passing_input {
@@ -66,7 +66,7 @@
   position: relative;
   top: 0px;
   left: 15px;
-  animation: black_to_red 1s reverse;
+  animation: black_to_red 0.5s reverse;
 }
 .failing_input {
   color: black;
@@ -77,7 +77,7 @@
   position: relative;
   top: 0px;
   left: 15px;
-  animation: black_to_red 1s forwards;
+  animation: black_to_red 0.5s forwards;
 }
 
 @keyframes black_to_red {
@@ -95,7 +95,7 @@
 @keyframes diminish {
     0% {
         /* color: purple; */
-         color: #0E3F81;
+         color: var(--primary);
          opacity: 0.5;
          position: relative;
          top: 10px;
@@ -103,7 +103,7 @@
     }
   50% {
       /* color: purple; */
-       color: #0E3F81;
+       color: var(--primary);
        opacity: 0.8;
   }
 
@@ -135,7 +135,7 @@
     /* color: purple; */
   }
   100% {
-    color: #0E3F81;
+    color: var(--primary);
     font-size: 22px;
     margin-left: 0px;
     position: relative;
@@ -232,7 +232,7 @@
           /* color: purple; */
         }
         100% {
-          color: #0E3F81;
+          color: var(--primary);
           font-size: 18px;
           margin-left: 0px;
           position: relative;

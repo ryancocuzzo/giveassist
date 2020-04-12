@@ -1,8 +1,8 @@
 /*
     Colors:
-    Primary: #0E3F81
-    Secondary: #5BEAA5
-    Tertiary: #3490B9
+    Primary: var(--primary)
+    Secondary: var(--secondary)
+    Tertiary: var(--tertiary)
  */
 
 @import url('https://fonts.googleapis.com/css?family=Thasadith');
@@ -39,7 +39,7 @@ input {
 }
 
 button {
-    background-color: #D6EAF8;
+    background-color: var(--tertiary);
     border-radius: 5px;
     padding: 4px 10px 4px 10px;
     margin-top: 10px;
@@ -47,7 +47,7 @@ button {
     text-decoration: none;
     text-transform: uppercase;
     padding: 0 14px;
-    color: black;
+    color: white;
     border-radius: 4px;
     font-size: 15px;
     font-weight: 600;
@@ -69,7 +69,7 @@ button:hover {
   box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
 }
 
-h1 { font-weight: 600; padding: 20px; }
+h1 { font-weight: 600; padding: 10px; margin-top: 10px; padding-left: 5px; }
 h2 { font-weight: 500;}
 
 

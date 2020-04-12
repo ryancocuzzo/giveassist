@@ -54,7 +54,7 @@ let chunk = (
 
         </div>
 
-        <h1 style={{textAlign: 'left'}}>Settings</h1>
+        <h1 class="settings" style={{textAlign: 'left'}}>Settings</h1>
         <br/>
 
         <div class="twoWide bordered basic">
@@ -70,8 +70,9 @@ let chonk = (
             <div class="grid_block two"><h1>hey</h1></div>
             <div class="grid_block three"><h1>hi</h1></div>
         </div>
-
-        <h1 class="settings" style={{textAlign: 'left'}}>Settings</h1>
+        <div style={{marginLeft: '10px'}}>
+            <h1 class="settings" style={{textAlign: 'left'}}>Settings</h1>
+        </div>
         <br/>
 
         <div class="twoWide bordered basic">
@@ -104,16 +105,16 @@ export default class Composer extends Component {
 
         let height;
         // depends on width this time
-        if (window.innerWidth > 1100 ) height = '1600px';
-        else if (window.innerWidth > 900 ) height = '1600px';
-        else if (window.innerWidth > 800 ) height = '1700px';
-        else if (window.innerWidth > 500 ) height = '2850px';
-        else height = '2900px';
+        if (window.innerWidth > 1100 ) height = '1500px';
+        else if (window.innerWidth > 900 ) height = '1550px';
+        else if (window.innerWidth > 800 ) height = '1650px';
+        else if (window.innerWidth > 500 ) height = '2700px';
+        else height = '2750px';
         let orangeBlock = <div style={{backgroundColor: 'orange', height: '100px'}}>hey</div>;
         return (
             <div class="composer_boundary">
                 <Popup />
-                <div class="grid_block one not nav">{navbar}</div>
+                <div class="one not nav">{navbar}</div>
             {ParticledContent(chunk, {width: '100%', height: height})}
             </div>
         );

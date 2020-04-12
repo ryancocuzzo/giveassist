@@ -1,8 +1,8 @@
 /*
     Colors:
-    Primary: #0E3F81
-    Secondary: #5BEAA5
-    Tertiary: #3490B9
+    Primary: var(--primary)
+    Secondary: var(--secondary)
+    Tertiary: var(--tertiary)
  */
 
 .bar {

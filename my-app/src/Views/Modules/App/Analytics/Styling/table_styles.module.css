@@ -2,16 +2,18 @@
 
 table.darkTable {
   font-family: "Lucida Console", Monaco, monospace;
-  border: 2px solid #000000;
+  /* border: 2px solid #000000; */
   background-color: #242424;
   width: 100%;
   max-height: 300px;
   text-align: center;
   border-collapse: collapse;
   overflow-y: scroll;
+  border-radius:10px;
+-moz-border-radius:10px;
 }
 table.darkTable td, table.darkTable th {
-  border: 1px solid #4A4A4A;
+  /* border: 1px solid #4A4A4A; */
   padding: 3px 2px;
 }
 table.darkTable tbody td {
@@ -33,14 +35,21 @@ table.darkTable thead th {
   font-weight: bold;
   color: #E6E6E6;
   text-align: center;
-  border-left: 2px solid #4A4A4A;
+  /* border-left: 2px solid #4A4A4A; */
 }
+
 table.darkTable thead th:first-child {
   border-left: none;
+  border-top-left-radius: 10px;
+}
+table.darkTable thead th:last-child {
+  border-right: none;
+  border-top-right-radius: 10px;
 }
 
 table.darkTable tfoot td {
   font-size: 12px;
+  border-radius: 10px;
 }
 
 

@@ -93,8 +93,8 @@ div.payment input[type="radio"] ~ label {
 
 
 .danger {
-    background-color: #E6B0AA;
-    box-shadow: 3px 4px #CD6155;
+    background-color: #cc0000;
+    box-shadow: 3px 4px #990000;
 }
 
 
