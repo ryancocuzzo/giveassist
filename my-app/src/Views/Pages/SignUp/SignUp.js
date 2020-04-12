@@ -1,8 +1,8 @@
 import React from 'react';
-import InputForm from '../../Modules/Form/InputForm.js';
-import ParticledContent from '../../../ParticleBackground.js';
-import OptionSelection from '../../Modules/M4/Submodules/SM2.js';
-import './Styles/styles.css';
+import InputForm from '../../Modules/General/Form/InputForm.js';
+import ParticledContent from '../../Modules/General/Particle/ParticleBackground.js';
+import OptionSelection from '../../Modules/App/UserInfo/PayAndPlanSelect.js';
+import styles from './Styles/styles.module.css';
 /* Validation */
 
 function validateName(name) {

@@ -1,5 +1,22 @@
+/*
+    Colors:
+    Primary: #0E3F81
+    Secondary: #5BEAA5
+    Tertiary: #3490B9
+ */
 
 @import url('https://fonts.googleapis.com/css?family=Thasadith');
+@import url('https://fonts.googleapis.com/css?family=Charm|Thasadith');
+
+/* define variables */
+:root {
+    --primary: rgba(51, 101, 138, 1);
+    --secondary: rgba(134, 187, 216, 1);
+    --tertiary: rgba(47, 72, 88, 1);
+    --quartiary: rgba(246, 174, 45, 1);
+    --quinciary: rgba(242, 100, 25, 1);
+}
+
 html {
     font-family: Thasadith;
 }
@@ -9,6 +26,7 @@ p {
     text-indent: 40px;
     margin-top: 20px;
     margin-bottom: 20px;
+    line-height: 1.4;
 }
 
 a {
@@ -33,7 +51,7 @@ button {
     border-radius: 4px;
     font-size: 15px;
     font-weight: 600;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.095em;
     white-space: nowrap;
     border: 0;
     outline: 0;
@@ -51,41 +69,21 @@ button:hover {
   box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
 }
 
-h1 { font-weight: 600;}
+h1 { font-weight: 600; padding: 20px; }
 h2 { font-weight: 500;}
 
-.gridded_centered {
-    display: grid;
-    align-items: center;
-    align-content: center;
-    justify-items:center;
-}
 
-.static { position: 'static'; }
-.pinned  {
-    padding: 20px
-}
-/* .full_height { height: 100%; } */
-.content_box {
-    position: static;
-    width: 80%;
-    height: 100%;
-    background-color: #e8e8e8;
-    padding: 30px;
-    max-width: 600px;
-}
 
-@media only screen and (max-width: 500px) {
-    .pinned {
-        padding: 0px;
-        padding-top: 20px;
-    }
 
-    .content_box {
-        position: static;
-        width: 90%;
-        padding: 20px;
-        padding-top: 5px;
-    }
+@media only screen (max-width: 499px)  {
+
+    button {
+        font-size: 18px;
+        padding: 5px 15px 5px 15px;
+     }
+
+     h1 {
+         padding: 5px;
+     }
 
 }

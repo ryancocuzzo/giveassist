@@ -1,0 +1,27 @@
+.contained  {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+}
+
+.inner_contained button {
+    margin-top: 30px;
+}
+
+@media only screen and (max-width: 900px) {
+    .inner_contained {
+        width: 96%;
+        margin-left: 2%;
+    }
+}
+
+@media only screen (max-width: 499px)  {
+
+    .submit {
+        font-size: 18px;
+        padding: 5px 15px 5px 15px;
+        margin-top: 0px;
+     }
+
+}

@@ -1,0 +1,44 @@
+
+.gridded_centered {
+    position: 'static';
+    display: grid;
+    align-items: center;
+    align-content: center;
+    justify-items:center;
+}
+
+.pinned  {
+    /* padding: 20px */
+}
+/* .full_height { height: 100%; } */
+.content_box {
+    position: static;
+    height: 100%;
+    border-radius: 15px;
+    /* background-color: #F8F8F8; */
+    /* padding: 30px; */
+    /* max-width: 600px; */
+}
+
+@media only screen and (max-width: 700px) {
+    .pinned {
+        padding: 0px;
+        padding-top: 20px;
+    }
+
+    .content_box {
+        position: static;
+        width: 90%;
+        padding: 20px;
+        padding-top: 5px;
+    }
+
+}
+
+@media only screen and (max-width: 700px) {
+    .content_box {
+        padding: 8px;
+        padding-top: 5px;
+    }
+
+}

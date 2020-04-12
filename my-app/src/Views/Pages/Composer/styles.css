@@ -1,14 +1,15 @@
 .composer_boundary {
-    padding: 30px;
+    padding: 10px 0px;
     text-align: center;
 }
 
 .oneWide {
     display: grid;
-    padding: 5px;
+    /* padding: 5px; */
     padding-top: 0px;
     grid-template-columns: repeat(1, 1fr);
     grid-auto-rows: min-content;
+    /* background-color: #F8F8F8; */
 }
 
 .twoWide {
@@ -18,15 +19,22 @@
     padding-top: 0px;
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: min-content;
-
 }
 
 .grid_block {
-    margin: 0px;
+    margin: 10px;
     border: 2px solid lightgrey;
-    min-width: 200px;
+    min-width: 250px;
     padding: 10px;
     padding-top: 0px;
+    background-color: #F8F8F8;
+}
+
+.twoWide .grid_block:first-child {
+    margin-left: 0px;
+}
+.twoWide  .grid_block:last-child {
+    margin-right: 0px;
 }
 
 .bordered {
@@ -34,28 +42,42 @@
 }
 
 .one {
-    margin-bottom: 35px;
+    /* margin-bottom: 35px; */
+}
+
+.basic {
+    background-color: #F8F8F8;
+    width: 99.5%;
+    margin-left: 0.25%;
 }
 
 .not {
     border-width: 0px;
 }
 
-@media only screen and (min-width: 200px) and (max-width: 1200px)  {
+.nav {
+    border-bottom: 2px solid whitesmoke;
+    background-color: white;
+}
+
+
+
+@media only screen and (max-width: 800px)  {
      .twoWide {
         grid-template-columns: repeat(1, 1fr);
     }
 
-    .composer_boundary {
-        padding: 8px;
+    .twoWide .grid_block:first-child {
+        margin-left: 10px;
+
     }
-    .give, .assist {
-        font-size: 24px;
+    .twoWide  .grid_block:last-child {
+        margin-right: 10px;
     }
 
-    p { text-indent: 20px; }
-    h1 { font-size: 30px; }
-    h2 { font-size: 24px; }
+    .composer_boundary {
+        padding: 8px 0px;
+    }
 
     .oneWide {
         display: block;
@@ -70,16 +92,24 @@
     .nav {
         margin-top: 0px;
         padding-top: 0px;
-        padding-bottom: 0px;
-        margin-bottom: 0px;
+        margin-bottom: 10px;
+        height: 80px;
+    }
+
+    .basic {
+        width: 92%;
+        margin-left: 3%;
     }
 }
 
-.nav {
-    height: 50px;
+@media only screen and (min-width: 0px) and (max-width: 799px) {
+    .basic {
+        width: 96%;
+        margin-left: 2%;
+    }
+
+    .settings { font-size: 20px;}
 }
-
-
 
 
 

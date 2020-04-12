@@ -4,9 +4,8 @@ import ReactDOM from 'react-dom';
 import './styles/index.css';
 import './styles/popup_styles.css';
 import Composer from './Views/Pages/Composer/Composer.js';
-import {signup, comp} from './TestComponents.js';
-
-ReactDOM.render(signup, document.getElementById('root'));
+import {signup, comp, Test} from './TestComponents.js';
+ReactDOM.render(comp, document.getElementById('root'));
 
 
 

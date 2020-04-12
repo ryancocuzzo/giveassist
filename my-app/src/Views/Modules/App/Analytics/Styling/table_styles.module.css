@@ -1,0 +1,59 @@
+
+
+table.darkTable {
+  font-family: "Lucida Console", Monaco, monospace;
+  border: 2px solid #000000;
+  background-color: #242424;
+  width: 100%;
+  max-height: 300px;
+  text-align: center;
+  border-collapse: collapse;
+  overflow-y: scroll;
+}
+table.darkTable td, table.darkTable th {
+  border: 1px solid #4A4A4A;
+  padding: 3px 2px;
+}
+table.darkTable tbody td {
+  font-size: 13px;
+  color: #E6E6E6;
+}
+table.darkTable tr:nth-child(even) {
+  background: #363636;
+}
+table.darkTable thead {
+  background: #124669;
+  background: -moz-linear-gradient(top, #4d748e 0%, #295878 66%, #124669 100%);
+  background: -webkit-linear-gradient(top, #4d748e 0%, #295878 66%, #124669 100%);
+  background: linear-gradient(to bottom, #4d748e 0%, #295878 66%, #124669 100%);
+  border-bottom: 3px solid #000000;
+}
+table.darkTable thead th {
+  font-size: 15px;
+  font-weight: bold;
+  color: #E6E6E6;
+  text-align: center;
+  border-left: 2px solid #4A4A4A;
+}
+table.darkTable thead th:first-child {
+  border-left: none;
+}
+
+table.darkTable tfoot td {
+  font-size: 12px;
+}
+
+
+@media only screen and (max-width: 500px) {
+
+    table.darkTable tbody tr td{
+        font-size: 10px;
+    }
+    table.darkTable tbody tr {
+        min-height: 10px;
+        max-height: 20px;
+    }
+    table.darkTable thead th {
+        font-size: 10px;
+    }
+}
