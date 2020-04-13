@@ -8,9 +8,6 @@ import {InputComponent} from '../../General/Form/InputComponent.js';
 let urls = variables.local_urls;
 let stripe_api_key = variables.stripe_api_key;
 
-
-function secure(the) {}
-
  let money_regex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
  function validateMoney(amt) {
@@ -20,16 +17,24 @@ function secure(the) {}
  }
 
 export default class PayAndPlanSelect extends Component {
-    /* planSelectText, onSubmitPayment, ..*/
+
+    /* !!!!!    NOTE: Needs to handle card validation/submission !!!!!!!! */
+    /* planSelectText, onSubmitPayment, notSubmittable, payInfoText, onSubmitPlan */
     constructor(props) {
         super(props);
-        this.state = { current: null };
+        this.state = { current: null, customAmount: 0 };
+        let submittable = !props.notSubmittable;
+        if (submittable && (props.onSubmitPayment == null || props.onSubmitPlan == null)) throw ('PayAndPlanSelect Error: onSubmit not provided as params -> ' + (props.onSubmitPayment) + " " + (props.onSubmitPlan));
     }
     setActive = (event) => {
         let val = event.target.value;
         if (val) {
             this.setState({current: val});
         }
+    }
+
+    customAmountChanged = (amt) => {
+        this.setState({customAmount: parseInt(amt)});
     }
 
     render() {
@@ -69,7 +74,7 @@ export default class PayAndPlanSelect extends Component {
                         </div>
                         <br/>
                     <div class={styles.restrictedPayView2} style={{textAlign: 'left'}}>
-                            { this.state.current == "PZ" ? <div class={styles.restrictedInput} style={{minWidth: '250px'}}><InputComponent type="number" title="Custom Amount" placeholder="12" pretext="$" validate={validateMoney} onChange={secure} /></div> : ''}
+                            { this.state.current == "PZ" ? <div class={styles.restrictedInput} style={{minWidth: '250px'}}><InputComponent type="number" title="Custom Amount" placeholder="12" pretext="$" validate={validateMoney} onChange={this.customAmountChanged} /></div> : ''}
                         </div>
 
                         <div style={{marginTop: '15px'}}>
@@ -80,37 +85,7 @@ export default class PayAndPlanSelect extends Component {
                 </StripeProvider>
             </div>
         );
-        /* Inputs:
-            title, placeholder, onChange(text), validate(text) */
+
     }
 
 }
-
-/*
-Old styles
-
-
-
-<div class="payment">
-   <ul>
-       <li>
-           <input type="radio"  onClick={this.setActive} id="premX" name="prem" value="PX"/>
-           <div class="woah"></div>
-           <label for="premX" >$4.99</label><br/>
-       </li>
-       <li>
-           <input type="radio" onClick={this.setActive} id="premY" name="prem" value="PY"/>
-           <div class="woah"></div>
-           <label for="premY">$3.99</label><br/>
-       </li>
-       <li>
-           <input type="radio" onClick={this.setActive} id="premZ" name="prem" value="PZ"/>
-           <div class="woah"></div>
-           <label for="premZ">Other</label><br/><br/>
-       </li>
-   </ul>
-
-
-</div>
-
- */

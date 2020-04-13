@@ -22,7 +22,10 @@ function gradient_color_chooser(inn){
 
 export default class ColoredBarChart extends PureComponent {
 
-
+    constructor(props) {
+        super(props);
+        if (props == null || props.data == null) throw 'Bar Chart Error: No data';
+    }
 
   render() {
     return (

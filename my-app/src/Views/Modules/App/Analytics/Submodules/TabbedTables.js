@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import styles from '../Styling/table_styles.module.css';
 import {TabbedSummary, TabbedContent} from '../../../General/Tabbed/Tabbed.js';
+
 function rnd2(num) { return Math.round(num * 100) / 100; }
 
 let convert_to_iterable_object = (jsonObject) => {

@@ -10,6 +10,10 @@ export class InputComponent extends Component {
          */
         constructor(props) {
           super(props);
+
+          if (props.validate == null) throw 'InputComponent Error: no validation function provided';
+          if (props.title == null) throw 'InputComponent Error: no title provided';
+
           let style_val, isPassing;
           if (props.value) {
            isPassing = this.props.validate(props.value);
@@ -61,7 +65,10 @@ export class InputComponent extends Component {
   };
   onChange = event => {
     let val = event.target.value;
-    this.props.onChange(val);
+    if (this.props.onChange)
+        this.props.onChange(val);
+    if (this.props.formOnChange)
+        this.props.formOnChange(this.state.formIndex, val);
     if (this.props.validate(val)) {
       this.setState({ passed: true, val: val });
       this.passing();
@@ -180,7 +187,7 @@ export class InputComponent extends Component {
     let in_normal = (
       <input
         type={this.props.type ? this.props.type : ""}
-        onChange={this.onChange}
+        onChange={this.props.onChange ? this.props.onChange : () => {}}
         placeholder={this.props.placeholder}
         value={this.state.val != null ? this.state.val : ""}
         ref={input => input && ( canFocus ? input.focus() : null )}
@@ -189,7 +196,7 @@ export class InputComponent extends Component {
     let in_readonly = (
       <input
         type={this.props.type ? this.props.type : ""}
-        onChange={this.onChange}
+        onChange={this.props.onChange ? this.props.onChange : () => {}}
         placeholder={this.props.placeholder}
         value={this.state.val != null ? this.state.val : ""}
         readOnly

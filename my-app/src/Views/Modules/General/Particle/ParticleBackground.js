@@ -19,6 +19,8 @@ function addPixels(to, amt) {
 
 export default function ParticledContent(content, styles, max_width) {
 
+    if (styles == null || styles.height == null) throw 'Particled Content Error: content styling provided should be non-null & contain a height';
+
     /* height after 30px padding -> content_box class */
     let padding_constraintd_height = addPixels(styles.height,-40);
 

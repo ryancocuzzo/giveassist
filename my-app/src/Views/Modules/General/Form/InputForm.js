@@ -15,10 +15,12 @@ export default class InputForm extends Component{
                 readonly: 'true'?
             },
             ..., ]
-        onSubmit: f()
+        submit: f(),
+        submitText: ..
      */
     constructor(props) {
         super(props);
+        if (props.fields == null || props.submit == null) throw 'InputForm Error: invalid params. Either fields or submit is NULL.';
         this.state = {
             fields: props.fields,
             isSequential: props.isSequential,
@@ -45,18 +47,12 @@ export default class InputForm extends Component{
         }
         j = this.state.fields.length-1;
         return j;
-        // let fields = this.state.fields.forEach((field, index) => {
-        //     let valid = field.validate(field.value);
-        //     console.log(field.value + ' is valid? ' + valid);
-        //     if (!valid) {
-        //         console.log('Setting index to ' + index);
-        //         i = index;
-        //         break;
-        //     }
-        // })
-        // return i;
-        // console.log('Setting index to n');
-        // return this.state.fields.length-1;
+    }
+
+    submitting = () => {
+        if (this.getInitialIndex() === this.this.state.fields.length-1)
+            this.props.submit(this.state.fields);
+        else alert('Cannot submit - Form invalid');
     }
 
     formValidated = (index, content) => {
@@ -65,8 +61,6 @@ export default class InputForm extends Component{
                 this.setState({current:index+1});
             }
         }
-
-        // alert('Form index ' + index + ' is Valid!')
     }
     formInvalidated = (index, content) => {
         if (this.state.isSequential) {
@@ -74,9 +68,14 @@ export default class InputForm extends Component{
                 this.setState({current:index});
             }
         }
-        // if (index > this.state.current) this.setState({current:index});
-        // alert('Form index ' + index + ' is Invalid!')
     }
+
+    inputValueChanged = (index, content) => {
+        this.state.fields[index].value = content; // NOTE: may need to set state, not sure
+    }
+
+
+
     render() {
         let fields = this.state.fields.map((field, index) => {
             // if (field.readonly)
@@ -88,6 +87,7 @@ export default class InputForm extends Component{
                         value={field.value}
                         validate={field.validate}
                         onChange={field.onChange}
+                        formOnChange={this.inputValueChanged}
                         onValid={this.formValidated}
                         onInvalid={this.formInvalidated}
                         formIndex={index}
@@ -97,24 +97,8 @@ export default class InputForm extends Component{
                         key={index}
                     />
                 );
-            // else return (
-            //     <InputComponent
-            //         title={field.title}
-            //         pretext={field.pretext}
-            //         placeholder={field.placeholder}
-            //         value={field.value}
-            //         validate={field.validate}
-            //         onChange={field.onChange}
-            //         onValid={this.formValidated}
-            //         onInvalid={this.formInvalidated}
-            //         locked={field.locked || (this.state.isSequential && index > this.state.current)}
-            //         formIndex={index}
-            //         key={index}
-            //
-            //     />
-            // )
         });
-        let submit = <button className={styles.submit} style={{display: this.props.notSubmittable ? 'none' : 'block'}} onClick={this.props.submit}>Submit</button>;
+        let submit = <button className={styles.submit} style={{display: this.props.notSubmittable ? 'none' : 'block'}} onClick={this.submitting}>{this.props.submitText || 'Submit'}</button>;
 
         return (
             <div>

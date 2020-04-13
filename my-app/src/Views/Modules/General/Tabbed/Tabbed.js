@@ -8,6 +8,8 @@ export class TabbedSummary extends Component {
      */
     constructor(props) {
         super(props);
+        if (!props.topics || !props.doSomething) throw 'Tabbed Summary Error: Parameters are invalid';
+        if (props.topics.length === 0) throw 'Tabbed Summary Error: no topics provided';
         this.state = { active: this.props.topics[0], width: window.innerWidth, height: window.innerHeight };
     }
 
@@ -72,6 +74,7 @@ export  class TabbedContent extends Component {
      */
     constructor(props) {
         super(props);
+        if (!props.topics || props.topics.length === 0) throw 'Tabbed Content Error: no topics provided';
         this.state = { active: this.props.topics[0] };
     }
     render() {

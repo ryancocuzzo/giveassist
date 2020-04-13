@@ -3,6 +3,7 @@ import styles from './Styling/style.module.css';
 import {TabbedSummary, TabbedContent} from '../../General/Tabbed/Tabbed.js';
 
 export default function Vote (page_title, section_title, summary, topics, doSomething) {
+    if (!(page_title && section_title && summary && topics && doSomething)) throw 'Vote.js Error: not all params provided';
     return (
         <div style={{textAlign: 'left'}} >
             <h1>{page_title}</h1>
