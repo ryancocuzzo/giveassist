@@ -56,8 +56,12 @@ div.active {
 div.passive {
     background-color: transparent;
 }
+
 .in a {
     padding-left:5px;
+    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 

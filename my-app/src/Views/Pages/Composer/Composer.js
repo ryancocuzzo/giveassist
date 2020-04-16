@@ -27,7 +27,7 @@ export default class Composer extends Component {
         super(props);
         if (!props.tabbed || !props.analytics || !props.basicInfo || !props.deleteAcct || !props.select) throw 'Composer Issue: Invalid parameters.';
         this.state = { width: 0, height: 0 };
-        window.history.pushState(null, '', '/home')
+        window.history.pushState(null, '', '/');
     }
 
     componentDidMount() {

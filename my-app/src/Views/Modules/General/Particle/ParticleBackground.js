@@ -17,8 +17,8 @@ function addPixels(to, amt) {
     return ((pix) + 'px');
 }
 
-export default function ParticledContent(content, styles, max_width) {
-
+export default function ParticledContent(content, styles, max_width, min_width) {
+    
     if (styles == null || styles.height == null) throw 'Particled Content Error: content styling provided should be non-null & contain a height';
 
     /* height after 30px padding -> content_box class */
@@ -33,13 +33,15 @@ export default function ParticledContent(content, styles, max_width) {
 
 
     let particle_content = <div style={{backgroundColor: 'white'}}><Particles height={styles.height} params={particle_json.default} /></div>;
+    console.log('returning component with a min  width of ' + styles.minWidth);
+    
     return (
         <div>
             <div style={styles}>
                 {particle_content}
                 <div style={pinned} class={cssstyles.pinned}>
-                    <div class={cssstyles.gridded_centered } style={{height: padding_constraintd_height}}>
-                        <div class={cssstyles.content_box} style={{maxWidth: max_width, width: styles.width}}>
+                    <div class={cssstyles.gridded_centered } style={{height: padding_constraintd_height, minWidth: styles.minWidth, maxWidth: styles.maxWidth}}>
+                        <div class={cssstyles.content_box} style={{maxWidth: styles.max_width, minWidth: styles.min_width}}>
                             {content}
                         </div>
                     </div>
@@ -49,7 +51,7 @@ export default function ParticledContent(content, styles, max_width) {
     );
 }
 
-export function SpecificParticledContent(content, styles) {
+export function SpecificParticledContent(content, styles, params) {
 
     if (styles == null || styles.height == null) throw 'Particled Content Error: content styling provided should be non-null & contain a height';
 
@@ -76,8 +78,8 @@ export function SpecificParticledContent(content, styles) {
             <div style={styles}>
                 {particle_content}
                 <div style={pinned} class={cssstyles.pinned}>
-                    <div class={cssstyles.gridded_centered } style={{height: padding_constraintd_height}}>
-                        <div class={cssstyles.content_box} style={{maxWidth: styles.maxWidth, width: styles.width}}>
+                    <div class={cssstyles.gridded_centered } style={{height: padding_constraintd_height, justifyItems: params && params.align ? params.align : 'center'}}>
+                        <div class={cssstyles.content_box} style={{maxWidth: styles.maxWidth, minWidth: styles.minWidth, width: styles.width}}>
                             {content}
                         </div>
                     </div>

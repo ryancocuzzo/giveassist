@@ -80,6 +80,37 @@ button:hover {
 h1 { font-weight: 600; padding: 10px; margin-top: 10px; padding-left: 5px; }
 h2 { font-weight: 500;}
 
+.footer {
+    background-color: var(--tertiary);
+    color: white;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+}
+
+.footer h5 {
+    font-style: Raleway;
+    font-size: 22px;
+    font-weight: 900;
+    background-image: linear-gradient(0deg, var(--tertiary) 0%, var(--tertiary) 100%),
+    linear-gradient(0deg, var(--quartiary) 0%, var(--primary) 100%),
+    linear-gradient(0deg, var(--quartiary) 0%, var(--primary) 100%),
+    linear-gradient(0deg, var(--primary) 0%, var(--quartiary) 100%),
+    linear-gradient(0deg, var(--primary) 0%, var(--quartiary) 100%);
+
+    border: 2px solid transparent;
+    background-origin: padding-box, border-box, border-box, border-box, border-box;
+    background-repeat: no-repeat;
+    background-size: 100% 100%, 9px 9px, 9px 9px, 9px 9px, 9px 9px;
+    background-position: top left, top left, top right, bottom left, bottom right;
+    max-width: 400px;
+    padding: 12px;
+}
+
 @media only screen (max-width: 499px)  {
 
     button {

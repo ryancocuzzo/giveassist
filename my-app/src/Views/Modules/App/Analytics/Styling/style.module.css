@@ -71,9 +71,19 @@ h1 {
 section.centered_text p {
     text-align: center;
 }
+.ttl:last-child {
+    margin-bottom: 30px;
+}
 
+@media only screen and (max-width: 1000px) {
+    .ttl {
+        font-size: 18px;
+    }
+}
 
 @media only screen and (max-width: 500px) {
+
+    
 
      .viewport {
          padding-left: 0px;

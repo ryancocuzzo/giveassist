@@ -183,7 +183,9 @@ class App extends React.Component {
      let loading = <div>Loading..</div>;
 
     var footer = (
-      <h5>Copyright © 2020 Giveassist Inc.</h5>
+      <div class="footer">
+        <h5>Copyright © 2020 Giveassist Inc.</h5>
+      </div>
     );
 
     let core_page = this.state.doneLooking ? <div class="css-movement-container">{switched_page}</div> : loading;

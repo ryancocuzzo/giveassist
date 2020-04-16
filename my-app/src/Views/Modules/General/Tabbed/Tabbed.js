@@ -25,6 +25,20 @@ export class TabbedSummary extends Component {
     updateWindowDimensions = () => {
       this.setState({ width: window.innerWidth, height: window.innerHeight });
     }
+
+    trimmed_topic = (topic) => {
+        let threshold = window.innerWidth < 1100 ? 15 : 25;
+        let maxlen = window.innerWidth > 900 && window.innerWidth < 1100 ? 10 : 16;
+        var newtopic = '';
+        topic.split(' ').forEach((str) => {
+            if (str.length > maxlen) newtopic += str.substring(0,maxlen) + '..' + ' ';
+            else if (newtopic.length + str.length < threshold)
+                newtopic += str + ' ';
+            else if (newtopic.substring(newtopic.length-2,newtopic.length) !== '..')
+                newtopic += '..';
+        });
+        return newtopic;
+    }
     render() {
         let small_tabs = this.state.width < 700;
         // let tabsClassname = (small_tabs ? "in" : "in_small");
@@ -34,7 +48,7 @@ export class TabbedSummary extends Component {
             (topic) =>
                 (
                     <li class={styles.in}>
-                        <a class={topic === this.state.active ? styles.active : styles.passive } onClick={() => { this.setState({ active: topic }); }}>{topic.title}</a>
+                        <a class={topic === this.state.active ? styles.active : styles.passive } onClick={() => { this.setState({ active: topic }); }}>{this.trimmed_topic(topic.title)}</a>
                         <div class={topic === this.state.active ? styles.active : styles.passive }></div>
                     </li>
                 )

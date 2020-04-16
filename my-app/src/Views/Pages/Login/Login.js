@@ -1,6 +1,6 @@
 import React from 'react';
 import InputForm from '../../Modules/General/Form/InputForm.js';
-import ParticledContent from '../../Modules/General/Particle/ParticleBackground.js';
+import ParticledContent, {SpecificParticledContent} from '../../Modules/General/Particle/ParticleBackground.js';
 import styles from './Styles/styles.module.css';
 import {validateName, validateEmail, validatePhone, emailField, passwordField} from '../../../Views-Test-Files/Test-Data/Data.js';
 import { Link, withRouter} from 'react-router-dom';
@@ -15,7 +15,7 @@ function handle_login(field_results){
 }
 
 let CombinedComponents = (
-    <div style={{backgroundColor: 'whitesmoke', padding: '10px', margin: '10px', borderRadius: '10px', minWidth: '200px'}}>
+    <div style={{backgroundColor: 'whitesmoke', padding: '10px', margin: '10px', borderRadius: '10px', minWidth: '400px'}}>
         <h1>Login</h1>
         <br/>
     <InputForm fields={inputs} submit={handle_login} submitText="login" customErrorText="Please enter valid login credentials." isSequential={true} notSubmittable={false}/>
@@ -37,6 +37,7 @@ export default class Login extends React.Component {
     render() {
         return (
             <div className="signupContainer">
+                {/* {SpecificParticledContent(CombinedComponents, {height: window.innerHeight+"px", backgroundColor: 'black', color: 'var(--quartiary)', paddingTop:70})} */}
                 {ParticledContent(CombinedComponents, {height: window.innerHeight+"px", marginTop: '20px'})}
             </div>
         )
