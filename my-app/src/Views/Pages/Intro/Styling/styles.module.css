@@ -1,0 +1,224 @@
+.contentcontainer {
+    padding: 20px;
+}
+.particlecontainer {
+    background-color: black;
+}
+
+.big { width: 60%; color: var(--primary); }
+.offcolor { color: var(--quartiary); }
+
+.join, .login {
+    width: 120px;
+    border-radius: 9999px;
+    margin: 10px;
+    margin-left: 20px;
+}
+.join { background-color: var(--quartiary); color: black; }
+
+.centered_join {
+    background-color: var(--quartiary); color: black; 
+    border-radius: 9999px;
+    width: 120px;
+}
+
+.blackWhite h2 {
+    font-family: Raleway;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.blackWhite h3 {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.whiteBlack {
+    background-color: black;
+    color: white;
+}
+
+.whiteBlack h2 {
+    font-family: Raleway;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.whiteBlack h3 {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.blueYellow {
+    background: linear-gradient(black 15%, var(--primary), var(--quartiary));  
+    color: var(--quartiary);
+    height: 800px;
+    margin-top: -6px;
+    padding: 30px;
+}
+
+.blueYellow h1 {
+    font-family: Raleway;
+    font-weight: bold;
+    font-size: 33px;
+}
+
+.blueYellow h2 {
+    font-family: Raleway;
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.blueYellow h3 {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+h2.topic { color: var(--primary); }
+
+.blackpar {
+    color: black;
+    font-size: 24px;
+}
+.whitepar { 
+    color: white;
+    font-size: 24px;
+ }
+
+.gridded {
+    display: grid;
+    grid-template-columns: 100%;
+    justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    padding: 30px;
+}
+
+.mostlygridded {
+    display: grid;
+    grid-template-columns: 100%;
+    justify-items: center;
+    align-items: center;
+}
+
+.parallax {
+    /* The image used */
+    background-image: url("../../../../images/hands_in.jpg");
+  
+    /* Set a specific height */
+    min-height: 600px; 
+  
+    /* Create the parallax scrolling effect */
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    /* Add the blur effect */
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+
+    z-index: -1;
+
+}
+
+.bg-image {
+
+    margin-top: -400px;;
+
+    /* The image used */
+    background-image: url("../../../../images/hands_in.jpg");
+    
+    /* Add the blur effect */
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+    
+    /* Set a specific height */
+    min-height: 600px; 
+  
+    /* Create the parallax scrolling effect */
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    /* Add the blur effect */
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+  }
+  
+  /* Position text in the middle of the page/image */
+  .bg-text {
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0, 0.5); /* Black w/opacity/see-through */
+    color: white;
+    font-weight: bold;
+    border: 3px solid #f1f1f1;
+    border-radius: 15px;
+    position: relative;
+    top: 100px;
+    z-index: 8;
+    width: 80%;
+    padding: 25px;
+    text-align: center;
+    max-height: 400px;
+    overflow-y: scroll;
+  }
+
+  .youWillRecieve {
+      width: 100%;
+      max-width: 500px;
+      color: white;
+      padding-top: 10px;
+  }
+  .listSection {
+    background-color: var(--tertiary);
+    padding: 5px 20px 20px 20px;
+  }
+
+.youWillRecieve ul {
+    width: 100%;
+}
+
+.youWillRecieve ul li {
+    color: lightgrey;
+    padding-bottom: 5px;
+    width:100%;
+    line-height: 40px;
+    padding-top: 0px;
+    margin-top: 0px;
+    font-size: 22px;
+    list-style: none;
+    margin-left: 0px;
+    padding-left: 0px;
+    padding-bottom: 20px;
+}
+
+ .youWillRecieve ul li:before{
+    content: '';
+    display: inline-block;
+    height:28px;
+    width:28px;
+    padding-right: 10px;
+    margin-right: 10px;
+    background: url('../../../../images/baseline_done_white_18dp.png');
+ 
+}
+
+@media only screen and (max-width: 500px){
+    .icontainer {
+        padding-top: 0px;
+    }
+
+    .blackpar {
+        font-size: 20px;
+        text-indent: 15px;
+    }
+    .whitepar { 
+        font-size: 20px;
+        text-indent: 15px;
+     }
+    
+    
+}

@@ -48,3 +48,41 @@ export default function ParticledContent(content, styles, max_width) {
         </div>
     );
 }
+
+export function SpecificParticledContent(content, styles) {
+
+    if (styles == null || styles.height == null) throw 'Particled Content Error: content styling provided should be non-null & contain a height';
+
+    /* height after 30px padding -> content_box class */
+    let padding_constraintd_height = addPixels(styles.height,-40);
+
+    let pinned = {
+      position: "relative",
+      top: '-'+addPixels(styles.height,-styles.paddingTop),
+      left: 0,
+      height: styles.height,
+    };
+
+    styles.paddingTop = '0px';
+
+    if (styles.color) {
+        particle_json.default.particles.color = styles.color;
+        particle_json.default.particles.shape.stroke = styles.color;
+        particle_json.default.particles.line_linked.stroke = styles.color;
+    }
+    let particle_content = <div style={{backgroundColor: styles.backgroundColor}}><Particles height={styles.height} params={particle_json.default} /></div>;
+    return (
+        <div>
+            <div style={styles}>
+                {particle_content}
+                <div style={pinned} class={cssstyles.pinned}>
+                    <div class={cssstyles.gridded_centered } style={{height: padding_constraintd_height}}>
+                        <div class={cssstyles.content_box} style={{maxWidth: styles.maxWidth, width: styles.width}}>
+                            {content}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

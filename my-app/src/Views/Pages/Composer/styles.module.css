@@ -1,0 +1,125 @@
+.composer_boundary {
+    padding: 10px 0px;
+    text-align: center;
+}
+
+.oneWide {
+    display: grid;
+    /* padding: 5px; */
+    padding-top: 0px;
+    grid-template-columns: repeat(1, 1fr);
+    grid-auto-rows: min-content;
+    z-index: -1;
+    /* background-color: #F8F8F8; */
+}
+
+.twoWide {
+    display: grid;
+    text-align: center;
+    padding: 5px;
+    padding-top: 0px;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: min-content;
+    z-index: -1;
+}
+
+.grid_block {
+    margin: 10px;
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    min-width: 250px;
+    padding: 10px;
+    padding-top: 0px;
+    background-color: #F8F8F8;
+}
+
+.twoWide .grid_block:first-child {
+    margin-left: 5px;
+}
+.twoWide  .grid_block:last-child {
+    margin-right: 5px;
+}
+
+.bordered {
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+}
+
+.one {
+    /* margin-bottom: 35px; */
+}
+
+.basic {
+    background-color: #F8F8F8;
+    width: 98%;
+    margin-left: 1%;
+}
+
+.not {
+    border-width: 0px;
+}
+
+.nav {
+    border-bottom: 2px solid whitesmoke;
+    background-color: white;
+    position: sticky;
+    top:0;
+    left:0;
+    z-index: 9;
+    padding: 10px;
+    padding-top: 0px;
+    padding-left: 20px;
+
+}
+
+.settings { margin-left: 20px; }
+
+
+@media only screen and (max-width: 800px)  {
+     .twoWide {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .twoWide .grid_block:first-child {
+        margin-left: 10px;
+
+    }
+    .twoWide  .grid_block:last-child {
+        margin-right: 10px;
+    }
+
+    .composer_boundary {
+        padding: 8px 0px;
+    }
+
+    .oneWide {
+        display: block;
+    }
+    .twoWide {
+        display: block;
+    }
+    .one {
+        margin-bottom: 0px;
+    }
+
+    .nav {
+        margin-top: 0px;
+        padding-top: 0px;
+        margin-bottom: 10px;
+        height: 60px;
+    }
+
+    .basic {
+        width: 92%;
+        margin-left: 3%;
+    }
+}
+
+@media only screen and (min-width: 0px) and (max-width: 799px) {
+    .basic {
+        width: 96%;
+        margin-left: 2%;
+    }
+
+    .settings { margin-left: 10px; }
+}

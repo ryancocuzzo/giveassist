@@ -9,6 +9,8 @@ ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
+    text-decoration: none;
+    outline: none;
 }
 
 li {
@@ -35,15 +37,18 @@ button.login {
 .give {
     color: var(--secondary);
     font-size: 45px;
+    text-decoration: none;
 }
 .assist {
     color: var(--tertiary);
     font-size: 45px;
+    text-decoration: none;
 }
 
 .title {
     margin: 0px;
     padding: 0px;
+    text-decoration: none;
 }
 
 .title:hover { cursor: pointer;}
@@ -54,7 +59,21 @@ div.cnavbar {
     margin-bottom: 0px;
 }
 
-@media only screen and (min-width: 200px) and (max-width: 1200px)  {
+a:hover {
+    text-decoration: none;
+    font-weight:900;
+    text-shadow: 0.5px 0.5px;
+}
+a:visited  {
+    text-decoration: none;
+}
+a:active {
+    text-decoration: none;
+}
+a:focus {
+    text-decoration: none;
+}
+@media only screen and (max-width: 1200px)  {
     button.login {
         font-size: 20px;
         padding: 5px 15px 5px 15px;

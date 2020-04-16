@@ -182,9 +182,11 @@ input[type=number]::-webkit-inner-spin-button {
 }
 
 .submit {
-
+     background-color:  var(--tertiary);
 }
-
+@media only screen and (max-width: 500px) {
+    .submit:hover {   background-color:  var(--tertiary); }
+}
 @media only screen  {
       .siblings input {
         font-size: 19px;

@@ -17,6 +17,7 @@ export default class InputForm extends Component{
             ..., ]
         submit: f(),
         submitText: ..
+        customErrorText: ..
      */
     constructor(props) {
         super(props);
@@ -38,9 +39,9 @@ export default class InputForm extends Component{
         var j = 0;
         for (let field of this.state.fields) {
             let valid = field.validate(field.value);
+
             // console.log(field.value + ' is valid? ' + valid);
             if (!valid) {
-                // console.log('Setting index to ' + index);
                 return j;
             }
           j++;
@@ -50,9 +51,10 @@ export default class InputForm extends Component{
     }
 
     submitting = () => {
-        if (this.getInitialIndex() === this.this.state.fields.length-1)
+
+        if (this.getInitialIndex() === this.state.fields.length-1)
             this.props.submit(this.state.fields);
-        else alert('Cannot submit - Form invalid');
+        else alert(this.props.customErrorText || 'Cannot submit - Form info invalid');
     }
 
     formValidated = (index, content) => {
@@ -72,6 +74,7 @@ export default class InputForm extends Component{
 
     inputValueChanged = (index, content) => {
         this.state.fields[index].value = content; // NOTE: may need to set state, not sure
+        // console.log(index + ' -> ' + content)
     }
 
 

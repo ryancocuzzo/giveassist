@@ -67,8 +67,9 @@ export class InputComponent extends Component {
     let val = event.target.value;
     if (this.props.onChange)
         this.props.onChange(val);
-    if (this.props.formOnChange)
+    if (this.props.formOnChange) {
         this.props.formOnChange(this.state.formIndex, val);
+    }
     if (this.props.validate(val)) {
       this.setState({ passed: true, val: val });
       this.passing();
@@ -148,8 +149,8 @@ export class InputComponent extends Component {
         module_mapped_p_style += styles[style] + ' ';
     })
 
-    console.log(p_style);
-    console.log(module_mapped_p_style);
+    // console.log(p_style);
+    // console.log(module_mapped_p_style);
 
     // if (this.state.val) p_style = 'input_label shrunk_label';
 
@@ -187,7 +188,7 @@ export class InputComponent extends Component {
     let in_normal = (
       <input
         type={this.props.type ? this.props.type : ""}
-        onChange={this.props.onChange ? this.props.onChange : () => {}}
+        onChange={this.onChange}
         placeholder={this.props.placeholder}
         value={this.state.val != null ? this.state.val : ""}
         ref={input => input && ( canFocus ? input.focus() : null )}
@@ -196,7 +197,7 @@ export class InputComponent extends Component {
     let in_readonly = (
       <input
         type={this.props.type ? this.props.type : ""}
-        onChange={this.props.onChange ? this.props.onChange : () => {}}
+        onChange={this.onChange}
         placeholder={this.props.placeholder}
         value={this.state.val != null ? this.state.val : ""}
         readOnly

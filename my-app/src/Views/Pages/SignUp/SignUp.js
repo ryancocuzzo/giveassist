@@ -18,7 +18,7 @@ let CombinedComponents = (
         <br/>
         {OptionSelect}
         <button class="submit">Sign Up</button>
-    <h4 style={{textAlign: 'center',  marginTop: '15px'}}>Already a user? <Link to="/login" ><a> Login Here</a></Link></h4>
+        <h4 style={{textAlign: 'center',  marginTop: '15px'}}>Already a user? <Link to="/login" ><a> Login Here</a></Link></h4>
         <br/>
     </div>
 )
@@ -33,10 +33,10 @@ export default class SignUp extends React.Component {
 
     render() {
         let mobile = window.innerHeight < 950;
-        let height =  !mobile ? window.innerHeight + 'px' : ((window.innerHeight * 1.3) + 'px');
+        let height =  !mobile ? window.innerHeight + 'px' : ((window.innerHeight * 1.4) + 'px');
 
         return (
-            <div className="signupContainer">
+            <div >
                 {ParticledContent(CombinedComponents, {height: height, marginTop: '20px'})}
             </div>
         )

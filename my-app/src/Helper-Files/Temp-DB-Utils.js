@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
 import {eventInfo, printSomething, chartData, userData, prevEventData, total_donated, current_donation} from '../Views-Test-Files/Test-Data/Data.js';
-
+import service from './service.js';
 /* For copy/paste reference
 
 { voted, changedInfo, newPaymentInfoSubmitted, newPlanSubmitted, deleteUserAccount, getVoteJSON, getChartData,
-    getUserData, getPrevEventData, getTotalDonated, getCurrentDonation, getUserInfo
+    getUserData, getPrevEventData, getTotalDonated, getCurrentDonation, getUserInfo, login, logout
   }
  */
 
@@ -26,6 +26,23 @@ export const newPlanSubmitted = async (plan) => {
 }
 export const deleteUserAccount = async () => {
     // TODO: firebase implement
+}
+export const login = async (email, pass) => {
+    // TODO: firebase implement
+    return new Promise((resolve, reject) => {
+        // window.history.pushState(null, '', '/home');
+        let user = {name: 'John Wick', 'email': 'john@wick.go', uid: '123abc'};
+        service.triggerEvent('User', user)
+        resolve(user);
+    });
+}
+export const logout = async () => {
+    // TODO: firebase implement
+    // window.history.pushState(null, '', '/welcome')
+    return new Promise((resolve, reject) => {
+        service.triggerEvent('User', null)
+        resolve('logged out.');
+    });
 }
 /* f(x)s - GET something */
 export async function getVoteJSON() {
@@ -65,5 +82,6 @@ export async function getCurrentDonation() {
 export async function getUserInfo() {
     // TODO: firebase implement -> This is done, I think
     let info = {name: 'John Wick', 'email': 'john@wick.go'};
+    info = null;
     return info;
 }

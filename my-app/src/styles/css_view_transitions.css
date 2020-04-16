@@ -1,0 +1,135 @@
+/* .css-movement-container {
+  position: relative;
+} */
+
+
+
+.page {
+  position: relative;
+}
+
+.page-enter {
+  opacity: 0;
+  transform: scale(1.1);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 500ms, transform 500ms;
+}
+
+.page-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 500ms, transform 500ms;
+}
+
+ .right {
+  position: relative;
+}
+/* This fires as soon as the element enters the DOM */
+.right-enter {
+    opacity: 1;
+  left: -100%;
+}
+/* This is where we can add the transition*/
+.right-enter-active {
+  transform: translate(100%);
+  transition: transform linear 2000ms;
+}
+
+/* This should stage exit */
+.right-exit {
+    transform: translate(130%);
+  transition: transform linear 2000ms;
+}
+/* fires as element leaves the DOM*/
+.right-exit-active {
+  transform: translate(130%);
+  transition:  transform linear 2000ms;
+}
+
+
+.left {
+  position: absolute;
+  width: 90%;
+}
+
+.left-enter {
+  left: 100%;
+}
+
+.left-enter-active {
+  transform: translate(calc(-100% - 15px));
+  transition: transform linear 2000ms;
+}
+
+
+.left-exit {
+  opacity: 1;
+}
+
+.left-exit-active {
+  transform: translate(-100%);
+  transition: transform linear 2000ms;
+}
+
+/*
+.css-movement-container {
+  position: relative;
+}
+
+.right {
+  position: absolute;
+  width: 90%;
+}
+
+.right-enter {
+  left: -100%;
+}
+
+.right-enter-active {
+  transform: translate(115%);
+  transition: transform linear 2000ms;
+}
+
+
+.right-exit {
+  opacity: 1;
+}
+
+.right-exit-active {
+  transform: translate(calc(100% + 15px));
+  transition: transform linear 2000ms;
+}
+
+
+.left {
+  position: absolute;
+  width: 90%;
+}
+
+.left-enter {
+  left: 100%;
+}
+
+.left-enter-active {
+  transform: translate(calc(-100% - 15px));
+  transition: transform linear 2000ms;
+}
+
+
+.left-exit {
+  opacity: 1;
+}
+
+.left-exit-active {
+  transform: translate(-100%);
+  transition: transform linear 2000ms;
+} */

@@ -5,12 +5,13 @@ import Popup from 'react-popup';
 import styles from './Styling/styles.module.css';
 
 class CheckoutForm extends Component {
-
+    /* onValid() */
     constructor(props) {
         super(props);
         /* Not sure if we can use yet!
             if (!props.onChange) throw 'CheckoutForm Error: no onChange param provided';
          */
+         this.state = { width: 0, height: 0 };
     }
 
   submit = async (ev) => {
@@ -21,14 +22,34 @@ class CheckoutForm extends Component {
       Popup.alert('Your payment information is invalid!')
   }
 
+  componentDidMount() {
+    window.addEventListener('resize', this.updateWindowDimensions);
+    this.updateWindowDimensions();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.updateWindowDimensions);
+  }
+
+  updateWindowDimensions = () => {
+    this.setState({ width: window.innerWidth, height: window.innerHeight });
+  }
+
+  onCardInfoChange = async (ev) => {
+      let {token} = await this.props.stripe.createToken();
+      if (token && this.props.onValid)
+        this.props.onValid(token.id);
+  }
+
   render() {
+      let card_style = (this.state.width > 500 ) ? {base: {fontSize: '22px'}} :{base: {fontSize: '15px'}}; //{base: {fontSize: '22px'}, margin: 'auto', width: '100%'}
     return (
       <div class={styles.contained}>
         <Popup />
         <div class={styles.inner_contained}>
             <div style={{width: '100%', height: '3px'}}></div>
             <h4 style={{lineHeight: '23px'}}>This will be securely sent away to a third-party payment processor as an illegible token. <strong>We do not store payment information.</strong> </h4>
-        <CardElement onChange={() => alert('IMPORTANT -> this means we can use unchange val! dalsjhfisjdahsdakdnjl')} style={{base: {fontSize: '22px'}, margin: 'auto', width: '100%'}} />            <div style={{marginTop: '15px'}}>
+        <CardElement onChange={this.onCardInfoChange} style={card_style} />            <div style={{marginTop: '15px'}}>
             <button class={styles.submit} style={{display: this.props.notSubmittable ? 'none' : 'block'}} onClick={this.submit}>{this.props.submitText || 'Update'}</button>
             </div>
         </div>
