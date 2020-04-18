@@ -3,38 +3,37 @@ import styles from './Styling/style.module.css';
 import CheckoutForm from '../../General/Payment/CheckoutForm.js';
 import {Elements, StripeProvider} from 'react-stripe-elements';
 import imgs from '../../../../Helper-Files/ImgFactory.js';
-import variables from '../../../../Helper-Files/variables.js';
+import variables, {PLANS} from '../../../../Helper-Files/variables.js';
 import {InputComponent} from '../../General/Form/InputComponent.js';
+import {validateMoney} from '../../../../Views-Test-Files/Test-Data/Data';
 let urls = variables.local_urls;
 let stripe_api_key = variables.stripe_api_key;
 
- let money_regex = /^[0-9]+(\.[0-9]{1,2})?$/;
 
- function validateMoney(amt) {
-     if (!amt) return false;
-     if (amt.includes('$')) return false;
-     return money_regex.test(amt);
- }
+
 
 export default class PayAndPlanSelect extends Component {
 
-    /* !!!!!    NOTE: Needs to handle card validation/submission !!!!!!!! */
-    /* planSelectText, onSubmitPayment, notSubmittable, payInfoText, onSubmitPlan */
+    /* planSelectText, onTokenChange, planChanged, customAmountChanged, onSubmitPayment, notSubmittable, payInfoText, onSubmitPlan */
     constructor(props) {
         super(props);
         this.state = { current: null, customAmount: 0 };
         let submittable = !props.notSubmittable;
-        if (submittable && (props.onSubmitPayment == null || props.onSubmitPlan == null)) throw ('PayAndPlanSelect Error: onSubmit not provided as params -> ' + (props.onSubmitPayment) + " " + (props.onSubmitPlan));
+        if (submittable && (props.onSubmitPayment === null || props.onSubmitPlan === null)) throw ('PayAndPlanSelect Error: onSubmit not provided as params -> ' + (props.onSubmitPayment) + " " + (props.onSubmitPlan));
     }
     setActive = (event) => {
         let val = event.target.value;
         if (val) {
             this.setState({current: val});
         }
+        if (this.props.planChanged)
+            this.props.planChanged(val);
     }
 
     customAmountChanged = (amt) => {
         this.setState({customAmount: parseInt(amt)});
+        if (this.props.customAmountChanged)
+            this.props.customAmountChanged(amt);
     }
 
     render() {
@@ -45,28 +44,21 @@ export default class PayAndPlanSelect extends Component {
 
                          <h1>{this.props.payInfoText || 'Update Payment Info'}</h1>
                          <Elements >
-                           <CheckoutForm onSubmit={this.props.onSubmitPayment} notSubmittable={this.props.notSubmittable} style={{width: '100%'}}/>
+                           <CheckoutForm onTokenChange={this.props.onTokenChange ? this.props.onTokenChange : null} onSubmit={this.props.onSubmitPayment} notSubmittable={this.props.notSubmittable} style={{width: '100%'}}/>
                          </Elements>
 
                          <h1 style={{marginTop: '35px'}}>{this.props.planSelectText || "Change Plan"}</h1>
                      <div class={styles.restrictedPayView}>
                          <div class={styles.payment}>
                             <ul>
-                                <li>
-                                    <input type="radio"  onClick={this.setActive} id="premX" name="prem" value="PX"/>
-                                    <div class={styles.woah}></div>
-                                    <label for="premX" >$4.99</label><br/>
-                                </li>
-                                <li>
-                                    <input type="radio" onClick={this.setActive} id="premY" name="prem" value="PY"/>
-                                    <div class={styles.woah}></div>
-                                    <label for="premY">$3.99</label><br/>
-                                </li>
-                                <li>
-                                    <input type="radio" onClick={this.setActive} id="premZ" name="prem" value="PZ"/>
-                                    <div class={styles.woah}></div>
-                                    <label for="premZ">Other</label><br/><br/>
-                                </li>
+                                {PLANS.map((plan) => (
+                                    <li key={plan.title}>
+                                        <input type="radio"  onClick={this.setActive} id={plan.title} name="prem" value={plan.title}/>
+                                        <div class={styles.woah}></div>
+                                        <label for={plan.title} >{plan.title !== 'PZ' ? ('$' + plan.cost) : 'Other' }</label><br/>
+                                    </li>
+                                ))}
+
                             </ul>
 
 
@@ -74,7 +66,7 @@ export default class PayAndPlanSelect extends Component {
                         </div>
                         <br/>
                     <div class={styles.restrictedPayView2} style={{textAlign: 'left'}}>
-                            { this.state.current == "PZ" ? <div class={styles.restrictedInput} style={{minWidth: '250px'}}><InputComponent type="number" title="Custom Amount" placeholder="12" pretext="$" validate={validateMoney} onChange={this.customAmountChanged} /></div> : ''}
+                            { this.state.current == "PZ" ? <div class={styles.restrictedInput} style={{minWidth: '250px'}}><InputComponent type="number" title="Custom Amount" pretext="$" validate={validateMoney} onChange={this.customAmountChanged} /></div> : ''}
                         </div>
 
                         <div style={{marginTop: '15px'}}>

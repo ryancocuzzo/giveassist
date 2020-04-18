@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './Styling/styles.module.css';
-import {SpecificParticledContent} from '../../Modules/General/Particle/ParticleBackground.js';
+import ParticledContent from '../../Modules/General/Particle/ParticleBackground.js';
 import imgs from '../../../Helper-Files/ImgFactory';
 import {Link} from 'react-router-dom';
 export default class IntroPage extends React.Component {
@@ -43,7 +43,7 @@ export default class IntroPage extends React.Component {
 
     render() {
         let img_size = this.state.width > 600 ? 150 : 100;
-        
+
         let content =
         (<div class={styles.contentcontainer}>
             <h1 class={styles.big}><span class={styles.offcolor}>Donation</span> for everone.</h1>
@@ -73,7 +73,7 @@ export default class IntroPage extends React.Component {
                 <h2>The Solution.</h2>
                 <p class={styles.whitepar}>With us, you're at the forefront of supplying aid while letting you decide how active a role you want to play. Every month our staff handpicks the most pressing issues at the time, which you then can vote on at any point throughout the month. At the end of the month, money collected from the users goes to the cause with the most votes.</p>
                 { this._buffer(10,30,'transparent') }
-            
+
                 <div class={styles.threeSplitGrid}>
                     <h2 class={styles.topic}>Time</h2>
                     <h2 class={styles.topic}>Money</h2>
@@ -88,13 +88,13 @@ export default class IntroPage extends React.Component {
                 </div>
             </div>
             </div>
-            
+
         );
 
         let mobile_split_grid = (
             <div>
                 <div class={styles.blackWhite + ' ' + styles.gridded}>
-                    
+
                     {/* Time */}
                     <div class={styles.gridblock}>
                         <h2 class={styles.topic}>Time</h2>
@@ -127,7 +127,7 @@ export default class IntroPage extends React.Component {
                 { this._buffer(10,30,'transparent') }
             </div>
             <div class={styles.whiteBlack + ' ' + styles.gridded}>
-            
+
                 {/* Time */}
                 <div class={styles.gridblock}>
                     <h2 class={styles.topic}>Time</h2>
@@ -157,12 +157,24 @@ export default class IntroPage extends React.Component {
             </div>
         );
 
-            let check = <span class="material-icons" style={{fontSize: '40px', pagginTop: '40px', color: 'var(--quartiary)'}}>done</span>;
+            let check = <span class="material-icons" style={{fontSize: '40px', pagginTop: '40px', color: 'var(--quartiary)', marginRight: '3px'}}>done</span>;
+
+            let content_style = {
+                height: this.state.width > 350 ? '550px' : '530px',
+                 backgroundColor: 'black',
+                color: 'var(--quartiary)'
+             };
+              let params = {
+                vertCenter: false,
+                centered: true,
+                particleMargin: '0px 0px 0px 0px',
+              };
+
 
             return (
         <div class={styles.wrapper}>
             <div class={styles.particlecontainer}>
-                {SpecificParticledContent(content, {height: '600px', backgroundColor: 'black', color: 'var(--quartiary)', paddingTop:70}, {align: 'left'})}
+                {ParticledContent(content, content_style, params)}
             </div>
             <div class={styles.blackWhite + ' ' + styles.gridded} style={{textAlign: 'center'}}>
                 <h2>The Problem.</h2>
@@ -173,15 +185,15 @@ export default class IntroPage extends React.Component {
             </div>
 
             {this.state.width > 625 ? fullscreen_split_grid : mobile_split_grid}
-            
+
 
             <div class={styles.mostlygridded}>
                 <div class={styles['bg-text']+ ' ' + styles.gridded}>
                     <h2>Your Donation</h2>
                     { this._buffer(10,5,'var(--quartiary)') }
                     <p class={styles.whitepar}>
-                    We are a nonprofit organization, therefore we only withold operating expenses from direct donation. 
-                    Collectively, we guarantee that 91% of your money goes directly to its intended recipient. 
+                    We are a nonprofit organization, therefore we only withold operating expenses from direct donation.
+                    Collectively, we guarantee that 91% of your money goes directly to its intended recipient.
                     We intend on raising this percentage as we scale.
                     </p>
                 </div>
@@ -190,11 +202,11 @@ export default class IntroPage extends React.Component {
             <div class={styles['bg-image']}></div>
 
             <div class={styles.blueYellow}>
-            { this._buffer(50,50,'transparent') } 
+            { this._buffer(50,50,'transparent') }
             <h1 class={styles.big} style={{color: 'white', marginLeft: this.state.width > 700 ? '50px' : '20px'}}>Subscriptions start at <span class={styles.offcolor}>$3.99/mo.</span></h1>
-                { this._buffer(10,30,'transparent') } 
+                { this._buffer(10,30,'transparent') }
             <div class={styles.mostlygridded }>
-                
+
                 <div class={styles.mostlygridded +' ' +styles.listSection}>
                 <div class={styles.youWillRecieve}>
                     <ul>
@@ -206,11 +218,11 @@ export default class IntroPage extends React.Component {
                     <Link to="/signup"><button class={styles.centered_join}>join</button></Link>
                 </div>
                 </div>
-                
-                
+
+
                 </div>
 
-                
+
             </div>
             <div class={styles.blackWhite + ' ' + styles.gridded} style={{textAlign: 'center'}}>
                 <h2>Questions?</h2>
@@ -225,7 +237,7 @@ export default class IntroPage extends React.Component {
                 </div>
             </div>
         </div>
-        
+
             );
     }
 }

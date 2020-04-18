@@ -5,12 +5,10 @@ import Popup from 'react-popup';
 import styles from './Styling/styles.module.css';
 
 class CheckoutForm extends Component {
-    /* onValid() */
+    /* onValid(), onTokenChange() */
     constructor(props) {
         super(props);
-        /* Not sure if we can use yet!
-            if (!props.onChange) throw 'CheckoutForm Error: no onChange param provided';
-         */
+        if (!(props.onTokenChange || props.onSubmit)) throw 'CheckoutForm Error: no handling function provided!';
          this.state = { width: 0, height: 0 };
     }
 
@@ -37,12 +35,14 @@ class CheckoutForm extends Component {
 
   onCardInfoChange = async (ev) => {
       let {token} = await this.props.stripe.createToken();
+      if (this.props.onTokenChange)
+        this.props.onTokenChange(token?.id);
       if (token && this.props.onValid)
         this.props.onValid(token.id);
   }
 
   render() {
-      let card_style = (this.state.width > 500 ) ? {base: {fontSize: '22px'}} :{base: {fontSize: '15px'}}; //{base: {fontSize: '22px'}, margin: 'auto', width: '100%'}
+      let card_style = (this.state.width > 500 ) ? {base: {fontSize: '22px'}} :{base: {fontSize: '17px'}}; //{base: {fontSize: '22px'}, margin: 'auto', width: '100%'}
     return (
       <div class={styles.contained}>
         <Popup />

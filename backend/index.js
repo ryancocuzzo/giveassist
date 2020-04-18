@@ -118,6 +118,16 @@ app.get('/eventPriviledges', (req, res)  => {
 
 });
 
+var randstring = (l) => {
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < l; i++ ) {
+     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+
 app.post('/initiate_new_user', async (req, res) => {
   if (req.body == null || req.body.params == null) { res.send('Error');return; }
 
@@ -128,8 +138,8 @@ app.post('/initiate_new_user', async (req, res) => {
     n: req.body.params.n,                           // name
     e: req.body.params.e,                           // email
     p: req.body.params.p,                           // plan
-    dn: req.body.params.dn,                         // display name
-    j: utils.getToday(),                                  // timestamp
+    dn: randstring(7),                              // display name
+    j: utils.getToday(),                            // timestamp
     z: req.body.params.z                            // phone number
   };
   try {

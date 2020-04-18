@@ -16,7 +16,7 @@ export default function Analytics (chartData, userData, eventData, total_donated
             <ColoredBarChart data={chartData}/>
             <section style={{textAlign: 'center'}}>
                 <h3 class={styles.ttl}>You've donated ${total_donated}!</h3>
-                <h3 class={styles.ttl}>You're currently donating ${current_donation} per month!</h3>
+            <h3 class={styles.ttl}>You're currently donating ${current_donation}/mo.</h3>
             </section>
             {tables}
         </div>

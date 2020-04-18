@@ -5,19 +5,20 @@
     Tertiary: var(--tertiary)
  */
 
-@import url('https://fonts.googleapis.com/css?family=Thasadith|Roboto');
-
-/* define variables */
+ @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+ /* define variables */
 :root {
     --primary: rgba(51, 101, 138, 1);
     --secondary: rgba(134, 187, 216, 1);
     --tertiary: rgba(47, 72, 88, 1);
     --quartiary: rgba(246, 174, 45, 1);
     --quinciary: rgba(242, 100, 25, 1);
+    --font1: Quicksand;
+    --font2: Quicksand;
 }
 
-html {
-    font-family: Thasadith;
+* {
+    font-family: var(--font2);
 }
 
 p {
@@ -93,7 +94,7 @@ h2 { font-weight: 500;}
 }
 
 .footer h5 {
-    font-style: Raleway;
+    font-family: Quicksand;
     font-size: 22px;
     font-weight: 900;
     background-image: linear-gradient(0deg, var(--tertiary) 0%, var(--tertiary) 100%),

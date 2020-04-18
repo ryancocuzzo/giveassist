@@ -74,6 +74,7 @@ class App extends React.Component {
     };
   }
 
+
   findUser = async () => {
       let user = await getUserInfo();
       // console.log('user -> ' + user ? JSON.stringify(user, null, 3) : 'null');
@@ -112,28 +113,7 @@ class App extends React.Component {
   }
 
   render() {
-      // let switched_page = <div>huncho</div>;
-     // let switched_page = this.state.user ?
-     // (
-     //     <div>
-     //         {routes_loggedIn.map(({path, name, component}) => ( // handle 'exact' here + w/ 'exact' prop in routes_loggedIn
-     //             <Route key={path} path={path} component={handled_page_render(name, component)} />
-     //         ))}
-     //     </div>
-     // ) : (
-     //     <div>
-     //         {routes_notLoggedIn.map(({path, name, component}) => (
-     //             <Route key={path} path={path} component={handled_page_render(name, component)} />
-     //         ))}
-     //     </div>
-     // );
-     //
-     // let switched_page = routes_loggedIn.map(({path, name, component}) => { // handle 'exact' here + w/ 'exact' prop in routes_loggedIn
-     //            // console.log('\nGenerated page: \n\tName: ' + name + '\n\tPath: ' + path + '\n\tComp: ' + JSON.stringify(handled_page_render(name, component)))
-     //             let x = <Route key={path} path={path} component={handled_page_render(component)} />;
-     //             return <div>{x}</div>
-     //         });
-     // alert(this.state.curr)
+
     let switched_page = this.state.user ?
         routes_loggedIn.map(({ path, name, Component }) => {
             console.log(name + ' vs ' + this.state.curr);

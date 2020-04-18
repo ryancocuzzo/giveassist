@@ -3,7 +3,6 @@
     position: 'static';
     display: grid;
     align-items: center;
-    align-content: center;
     justify-items:center;
 }
 
@@ -26,7 +25,6 @@
 
     .content_box {
         position: static;
-        width: 94%;
         padding: 0px;
         padding-top: 5px;
     }

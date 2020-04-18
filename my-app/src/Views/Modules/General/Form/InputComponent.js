@@ -1,50 +1,46 @@
-import React, {Component} from 'react';
-import ReactDOM from 'react-dom';
-import styles from './Styling/styles.module.css';
+import React, { Component } from "react";
+import ReactDOM from "react-dom";
+import styles from "./Styling/styles.module.css";
 
-
-export class InputComponent extends Component {
+export  class InputComponent extends Component {
   /* Inputs:
         title, placeholder, onChange(text), validate(text)
         formIndex, onValid
          */
-        constructor(props) {
-          super(props);
+  constructor(props) {
+    super(props);
 
-          if (props.validate == null) throw 'InputComponent Error: no validation function provided';
-          if (props.title == null) throw 'InputComponent Error: no title provided';
+    if (props.validate == null)
+      throw "InputComponent Error: no validation function provided";
+    if (props.title == null) throw "InputComponent Error: no title provided";
 
-          let style_val, isPassing;
-          if (props.value) {
-           isPassing = this.props.validate(props.value);
-           style_val = "input_label shrunk_label";
-           if (isPassing)
-              style_val += " passing_input";
-           else
-              style_val += " failing_input";
-          console.log('Valid input!')
+    let style_val, isPassing;
+    if (props.value) {
+      isPassing = this.props.validate(props.value);
+      style_val = "input_label shrunk_label";
+      if (isPassing) style_val += " passing_input";
+      else style_val += " failing_input";
+      console.log("Valid input!");
+    } else {
+      isPassing = false;
+      style_val = "input_label expanded_label";
+    }
 
-          } else {
-            isPassing = false;
-            style_val = "input_label expanded_label";
-          }
+    this.state = {
+      passed: isPassing,
+      val: props.value,
+      isEditing: false,
+      formIndex: props.formIndex /* index in form */,
+      onValid: props.onValid,
+      onInvalid: props.onInvalid,
+      p_style: style_val
+    };
 
-          this.state = {
-            passed: isPassing,
-            val: props.value,
-            isEditing: false,
-            formIndex: props.formIndex /* index in form */,
-            onValid: props.onValid,
-            onInvalid: props.onInvalid,
-            p_style: style_val
-          };
+    // if (isPassing) this.passing();
+    // else this.notPassing();
 
-          // if (isPassing) this.passing();
-          // else this.notPassing();
-
-          // this.p_style_to_not_editing();
-
-        }
+    // this.p_style_to_not_editing();
+  }
 
   /* Handle Outside Clicks ! */
 
@@ -65,10 +61,9 @@ export class InputComponent extends Component {
   };
   onChange = event => {
     let val = event.target.value;
-    if (this.props.onChange)
-        this.props.onChange(val);
+    if (this.props.onChange) this.props.onChange(val);
     if (this.props.formOnChange) {
-        this.props.formOnChange(this.state.formIndex, val);
+      this.props.formOnChange(this.state.formIndex, val);
     }
     if (this.props.validate(val)) {
       this.setState({ passed: true, val: val });
@@ -85,50 +80,42 @@ export class InputComponent extends Component {
   };
 
   p_style_to_editing_passing = () => {
-    this.setState({p_style: 'input_label shrunk_label passing_input'});
-  }
+    this.setState({ p_style: "input_label shrunk_label passing_input" });
+  };
 
   p_style_to_editing = () => {
-    this.setState({p_style: 'input_label shrunk_label'});
-  }
+    this.setState({ p_style: "input_label shrunk_label" });
+  };
 
   p_style_to_editing_failing = () => {
-    this.setState({p_style: 'input_label shrunk_label failing_input'});
-  }
+    this.setState({ p_style: "input_label shrunk_label failing_input" });
+  };
 
   p_style_to_not_editing = () => {
-    this.setState({p_style: 'input_label expanded_label'});
-  }
-
-
-
+    this.setState({ p_style: "input_label expanded_label" });
+  };
 
   passing = () => {
     this.p_style_to_editing_passing();
-
   };
 
   notPassing = () => {
     this.p_style_to_editing_failing();
-
   };
 
   turnOnEditing = () => {
     this.setState({ isEditing: true });
-    if (!this.state.val)
-      this.p_style_to_editing();
+    if (!this.state.val) this.p_style_to_editing();
     else {
-      if (this.state.passed)
-        this.p_style_to_editing_passing();
-      else
-        this.p_style_to_editing_failing();
+      if (this.state.passed) this.p_style_to_editing_passing();
+      else this.p_style_to_editing_failing();
     }
-
   };
 
   turnOffEditing = () => {
     this.setState({ isEditing: false });
     this.p_style_to_not_editing();
+    // alert('done editing this comp! ' + this.state.formIndex)
   };
 
   compiled_p_styling = (passing, editing) => {
@@ -141,13 +128,20 @@ export class InputComponent extends Component {
     return style;
   };
 
-  render() {
+  refFx = (input, editing) => {
+      let canFocus = !this.props.readonly && !this.props.locked;
+      /* THIS SHOULD GET FIXED -> shouldFocus SHOULD HAVE LISTENER FOR CLICK IN ANOTHER INPUT */
+      let shouldFocus = !this.state.passed;
+      return input && (canFocus && shouldFocus ? input.focus() : null)
+  }
 
+  render() {
     let p_style = this.state.p_style;
-    let module_mapped_p_style = '';
-    p_style.split(' ').forEach((style) => {
-        module_mapped_p_style += styles[style] + ' ';
-    })
+    let module_mapped_p_style = "";
+    p_style.split(" ").forEach(style => {
+      // console.log(style + ' -> ' + styles[style] )
+      module_mapped_p_style += styles[style] + " ";
+    });
 
     // console.log(p_style);
     // console.log(module_mapped_p_style);
@@ -167,7 +161,7 @@ export class InputComponent extends Component {
       opacity: 0.25,
       editable: false,
       pointerEvents: "none",
-      backgroundColor: '#E8E8E8'
+      backgroundColor: "#E8E8E8"
     };
     let off = {
       opacity: 0.5,
@@ -182,16 +176,13 @@ export class InputComponent extends Component {
 
     let pretext_present = editing && this.props.pretext != null;
 
-
-    let canFocus = (!this.props.readonly && !this.props.locked);
-
     let in_normal = (
       <input
         type={this.props.type ? this.props.type : ""}
         onChange={this.onChange}
         placeholder={this.props.placeholder}
         value={this.state.val != null ? this.state.val : ""}
-        ref={input => input && ( canFocus ? input.focus() : null )}
+        ref={input => this.refFx(input, editing)}
       />
     );
     let in_readonly = (
@@ -201,20 +192,22 @@ export class InputComponent extends Component {
         placeholder={this.props.placeholder}
         value={this.state.val != null ? this.state.val : ""}
         readOnly
-        ref={input => input && ( canFocus ? input.focus() : null )}
+        ref={input => this.refFx(input, editing)}
       />
     );
 
     let editable = (
       <div
         className={styles.outside}
-        style={(this.props.locked || this.props.readonly) ? locked : (editing ? on : off)}
+        style={
+          this.props.locked || this.props.readonly ? locked : editing ? on : off
+        }
         onClick={() => this.turnOnEditing()}
       >
         <span className={module_mapped_p_style}>{this.props.title}</span>
-    <div className={styles.siblings} style={{display: editing}}>
+        <div className={styles.siblings} style={{ display: editing }}>
           {pretext_present ? (
-            <h5 style={pretext_present ? { marginLeft: "0px" } : null}>
+            <h5 style={{fontFamily: 'Quicksand', fontWeight: 'bold'}}>
               {this.props.pretext}
             </h5>
           ) : null}

@@ -47,14 +47,46 @@ export default class Composer extends Component {
 
         let height;
         // depends on width this time
-        if (window.innerWidth > 1100 ) height = '1500px';
-        else if (window.innerWidth > 900 ) height = '1550px';
-        else if (window.innerWidth > 800 ) height = '1650px';
-        else if (window.innerWidth > 500 ) height = '2700px';
-        else height = '2750px';
+        if (window.innerWidth > 1100 ) height = '1575px';
+        else if (window.innerWidth > 900 ) height = '1625px';
+        else if (window.innerWidth > 800 ) height = '1725px';
+        else if (window.innerWidth > 500 ) height = '2775px';
+        else height = '2800px';
+
+        // let mobile = window.innerHeight < 650;
+        // var isSafari, height;
+        // var ua = navigator.userAgent.toLowerCase();
+        // if (ua.indexOf('safari') != -1) {
+        //   if (ua.indexOf('chrome') > -1) {
+        //     isSafari = false; // Chrome
+        //   } else {
+        //     isSafari = true; // Safari
+        //   }
+        // }
+        // // alert(mobile + " " + isSafari)
+        // if (!mobile && !isSafari)
+        //     height = (window.innerHeight * 1) + 'px';
+        // if (mobile && !isSafari)
+        //     height = (window.innerHeight * 1.4) + 'px';
+        // if (mobile && isSafari)
+        //     height = (window.innerHeight * 2.1) + 'px';
+        // if (!mobile && isSafari)
+        //     height = (window.innerHeight * 1.6) + 'px';
+
+        let content_style = {
+            height: height,
+         };
+          let params = {
+            vertCenter: false,
+            horCenter: true,
+            centered: true,
+            particleMargin: '0px',
+          };
+
+
         return (
             <div class={styles.composer_boundary}>
-            {ParticledContent(chunk(this.props.tabbed, this.props.analytics, this.props.basicInfo, this.props.deleteAcct, this.props.select), {width: '100%', height: height})}
+            {ParticledContent(chunk(this.props.tabbed, this.props.analytics, this.props.basicInfo, this.props.deleteAcct, this.props.select), content_style, params)}
             </div>
         );
     }

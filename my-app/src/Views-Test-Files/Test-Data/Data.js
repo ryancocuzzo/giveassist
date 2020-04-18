@@ -1,4 +1,18 @@
 import React from 'react';
+import {priceForPlanWithTitle, titleOfPlanWithCost} from '../../Helper-Files/variables';
+
+String.prototype.replaceAll = function(search, replacement) {
+    var target = this + '';
+    return target.split(search).join(replacement);
+  };
+
+
+  
+
+export const extractPhoneNumber = (uncleaned) => {
+    var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
+    return cleaned;
+}
 
 export function validateName(name) {
     if (!name) return false;
@@ -10,8 +24,27 @@ export const validateEmail = (email) => {
 }
 export const validatePhone = (phone) => {
     var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-    return re.test(String(phone));
+    return re.test(String(phone))&& String(phone).length == 10;
 }
+
+export function validateMoney(amt, min_amt) {
+    let money_regex = /^[0-9]+(\.[0-9]{1,2})?$/;
+    if (!amt) return false;
+    if (typeof amt === 'string' && amt.includes('$')) return false;
+    return money_regex.test(amt) && parseFloat(amt) % 1 === 0 && (min_amt ? parseFloat(amt) > min_amt : true);
+}
+
+/* @param planname will arrive as a string (i.e PX)
+    @param customAmt will arrive as a num or null (i.e 3.99)
+    @return a db-usable plan format (i.e PX,3.99 or PY,4.99 or PZ,12(whole #))   */
+export const formatPlan = (planname, customAmt) => {
+    // ensure it's a floating point number
+    if (typeof planname !== 'string' || customAmt === undefined) throw 'formatPlan params error';
+    let found_price = priceForPlanWithTitle(planname);
+    let price = found_price ? found_price : customAmt;
+    return planname+ ',' + String(price);
+}
+
 export const pr = () => console.log('x');
 export const printSomething = () => alert('woah');
 export const printx = (x) => alert(x);
@@ -22,12 +55,21 @@ export const ran = () => { return Math.round(Math.random() * 100); }
 export const emailField = {
     title: 'Email',
     validate: validateEmail,
+    placeholder: 'Enter your email',
     onChange: pr,
     type: 'email'
 };
 export const passwordField = {
     title: 'Password',
     validate: validateName,
+    placeholder: 'Enter your password',
+    onChange: pr,
+    type: 'password'
+};
+
+export const confirmPasswordField = {
+    title: 'Confirm password',
+    placeholder: 'Re-type your password',
     onChange: pr,
     type: 'password'
 };
@@ -36,14 +78,61 @@ export const phoneField = {
     title: 'Phone',
     validate: validatePhone,
     onChange: pr,
-    type: 'tel'
+    placeholder: 'Enter your phone number',
+    type: 'number'
 };
 
 export const nameField = {
     title: 'Full Name',
     validate: validateName,
+    placeholder: 'Enter your name',
     onChange: pr,
 };
+
+/*TEST_emailField, TEST_passwordField, TEST_confirmPasswordField, 
+TEST_phoneField, TEST_nameField */
+export const TEST_emailField = {
+    title: 'Email',
+    validate: validateEmail,
+    placeholder: 'Enter your email',
+    onChange: pr,
+    value: 'ryan@gm.com',
+    type: 'email'
+};
+export const TEST_passwordField = {
+    title: 'Password',
+    validate: validateName,
+    placeholder: 'Enter your password',
+    onChange: pr,
+    value: 'testpw123',
+    type: 'password'
+};
+
+export const TEST_confirmPasswordField = {
+    title: 'Confirm password',
+    placeholder: 'Re-type your password',
+    onChange: pr,
+    value: 'testpw123',
+    type: 'password'
+};
+
+export const TEST_phoneField = {
+    title: 'Phone',
+    validate: validatePhone,
+    onChange: pr,
+    value: '1234567890',
+    placeholder: 'Enter your phone number',
+    type: 'number'
+};
+
+export const TEST_nameField = {
+    title: 'Full Name',
+    validate: validateName,
+    placeholder: 'Enter your name',
+    value: 'ryanc',
+    onChange: pr,
+};
+
 
 
 

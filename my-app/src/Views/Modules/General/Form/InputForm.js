@@ -1,7 +1,7 @@
 import React, {Component}  from 'react';
 import {InputComponent} from './InputComponent.js';
 import styles from './Styling/styles.module.css';
-
+import Popup from 'react-popup';
 export default class InputForm extends Component{
     /*
         Fields:
@@ -18,6 +18,9 @@ export default class InputForm extends Component{
         submit: f(),
         submitText: ..
         customErrorText: ..
+        confirmFields: [ {index: .., confirmWithIndex: ..} ],
+        fieldsChanged: f(),
+        firstInvalidIndexUpdate: f()
      */
     constructor(props) {
         super(props);
@@ -27,68 +30,98 @@ export default class InputForm extends Component{
             isSequential: props.isSequential,
             length: props.fields.length,
             current: 0,
-            values: []
+            values: [],
+            confirmFields: props.confirmFields || [],
         }
+
     }
 
     componentDidMount() {
-        this.setState({current: this.getInitialIndex()});
+        this.updateCurrent(this.getInitialIndex());
     }
 
     getInitialIndex = () => {
         var j = 0;
         for (let field of this.state.fields) {
-            let valid = field.validate(field.value);
-
-            // console.log(field.value + ' is valid? ' + valid);
-            if (!valid) {
-                return j;
+            let confirmField = this.isConfirmField(j);
+            let confirmIndex = confirmField?.confirmWithIndex;
+            if (confirmField) {
+                if (field.value !== this.state.fields[confirmIndex].value)
+                    return j;
+            } else {
+                let valid = field.validate(field.value);
+                if (!valid) {
+                    return j;
+                }
             }
+
           j++;
         }
-        j = this.state.fields.length-1;
+        j = this.state.fields.length;
         return j;
     }
 
     submitting = () => {
 
-        if (this.getInitialIndex() === this.state.fields.length-1)
+        if (this.getInitialIndex() === this.state.fields.length)
             this.props.submit(this.state.fields);
-        else alert(this.props.customErrorText || 'Cannot submit - Form info invalid');
+        else Popup.alert(this.props.customErrorText || 'Cannot submit - Form info invalid');
+    }
+
+    updateCurrent = (to) => {
+        if (this.state.current !== to) {
+            this.setState({current:to});
+            if (this.props.firstInvalidIndexUpdated)
+                this.props.firstInvalidIndexUpdated(to);
+        }
     }
 
     formValidated = (index, content) => {
         if (this.state.isSequential) {
             if (index >= this.state.current) {
-                this.setState({current:index+1});
+                this.updateCurrent(this.getInitialIndex())
             }
         }
     }
     formInvalidated = (index, content) => {
         if (this.state.isSequential) {
             if (index <= this.state.current) {
-                this.setState({current:index});
+                this.updateCurrent(index);
             }
         }
     }
 
     inputValueChanged = (index, content) => {
         this.state.fields[index].value = content; // NOTE: may need to set state, not sure
+        if (this.props.fieldsChanged)
+            this.props.fieldsChanged(this.state.fields);
         // console.log(index + ' -> ' + content)
+    }
+
+    isConfirmField = (index) => {
+        var i = null;
+        this.state.confirmFields.forEach((field) => {
+            if (field.index === index) {
+                i = field;
+            }
+        })
+        return i;
     }
 
 
 
     render() {
         let fields = this.state.fields.map((field, index) => {
-            // if (field.readonly)
-                return (
+            let confirmField = this.isConfirmField(index);
+            let confirmIndex = confirmField?.confirmWithIndex;
+            let matches = (field_val) => field_val === this.state.fields[confirmIndex].value;
+            return (
                     <InputComponent
                         title={field.title}
                         pretext={field.pretext}
                         placeholder={field.placeholder}
                         value={field.value}
-                        validate={field.validate}
+                        validate={confirmIndex ? matches : field.validate}
                         onChange={field.onChange}
                         formOnChange={this.inputValueChanged}
                         onValid={this.formValidated}

@@ -9,6 +9,8 @@
   padding-left: 20px;
 }
 
+
+
 .outside {
   border: 1px solid lightgrey;
   border-radius: 10px;
@@ -21,126 +23,157 @@
   max-width: 700px;
 }
 
+/* baseline -> top left */
 .input_label {
-  padding-left: 0px;
   text-indent: 0px;
-  color: black;
   font-family: Arial;
   font-size: 15px;
   font-weight: 600;
-  margin-top: 10px;
-  margin-bottom: 0px;
-  padding-bottom: 0px;
+}
+
+/* NEW */
+
+.tinyTitle {
+  color: black;
+  font-size: 16px;;
+  margin-left: 10px;
+}
+
+.bigTitle {
+  color: var(--primary);
+  font-size: 20px;;
   margin-left: 20px;
 }
 
-.expanded_label {
-  animation: expand_input_label 0.5s forwards;
-}
 .shrunk_label {
-  padding-left: 0px;
-  text-indent: 0px;
+  /* Tiny title */
   color: black;
-  font-family: Arial;
-  font-size: 15px;
-  font-weight: 600;
-  margin-top: 10px;
-  margin-bottom: 0px;
-  padding-bottom: 0px;
-  margin-left: 20px;
+  font-size: 16px;
+  margin-left: 10px;
+
+  animation-name: sil;
+  animation-duration: 1s;
+  -webkit-animation-name: sil;
+  -webkit-animation-duration: 1s;
+}
+
+.expanded_label {
   color: var(--primary);
-  font-size: 24px;
-  margin-left: 0px;
-  position: relative;
-  top: 13px;
-  left: 20px;
-  animation: diminish 0.5s forwards;
+  font-size: 20px;;
+  margin-left: 20px;
+  line-height: 45px;
+  animation-name: expand_input_label;
+  animation-duration: 1s;
+  -webkit-animation-name: expand_input_label;
+  -webkit-animation-duration: 1s;
 }
 
 .passing_input {
   color: black;
-  font-size: 17px;
-  padding-left: 0px;
-  margin-left: 0px;
-  margin-top: 15px;
-  position: relative;
-  top: 0px;
-  left: 15px;
-  animation: black_to_red 0.5s reverse;
+  animation-name: r2b;
+  animation-duration: 1s;
+  -webkit-animation-name: r2b;
+  -webkit-animation-duration: 1s;
 }
+
 .failing_input {
-  color: black;
-  font-size: 17px;
-  padding-left: 0px;
-  margin-left: 0px;
-  margin-top: 15px;
-  position: relative;
-  top: 0px;
-  left: 15px;
-  animation: black_to_red 0.5s forwards;
-}
-
-@keyframes black_to_red {
-  0% {
-    color: black;
-  }
-  50% {
-    color: maroon;
-  }
-  100% {
-    color: red;
-  }
-}
-
-@keyframes diminish {
-    0% {
-        /* color: purple; */
-         color: var(--primary);
-         opacity: 0.5;
-         position: relative;
-         top: 10px;
-         left: 20px;
-    }
-  50% {
-      /* color: purple; */
-       color: var(--primary);
-       opacity: 0.8;
-  }
-
-  100% {
-    color: black;
-    font-size: 17px;
-    padding-left: 0px;
-    margin-left: 0px;
-    margin-top: 15px;
-    position: relative;
-    top: 0px;
-    left: 15px;
-    opacity: 1;
-  }
+  color: red;
+  animation-name: b2r;
+  animation-duration: 1s;
+  -webkit-animation-name: b2r;
+  -webkit-animation-duration: 1s;
 }
 
 @keyframes expand_input_label {
   0% {
+    /* Tiny title */
     color: black;
-    font-size: 17px;
-    padding-left: 0px;
-    margin-left: 0px;
-    margin-top: 15px;
-    position: relative;
-    top: 0px;
-    left: 15px;
-  }
-  50% {
-    /* color: purple; */
+    font-size: 16px;;
+    margin-left: 10px;
+    line-height: 12px;
   }
   100% {
     color: var(--primary);
-    font-size: 22px;
-    margin-left: 0px;
-    position: relative;
-    top: 13px;
-    left: 20px;
+    font-size: 20px;
+    margin-left: 20px;
+    line-height: 45px;
+  }
+}
+@-webkit-keyframes expand_input_label {
+  0% {
+    /* Tiny title */
+    color: black;
+    font-size: 16px;;
+    margin-left: 10px;
+    line-height: 12px;
+  }
+  100% {
+    color: var(--primary);
+    font-size: 20px;;
+    margin-left: 20px;
+    line-height: 45px;
+  }
+}
+
+@keyframes sil {
+  100% {
+    /* Tiny title */
+    color: black;
+    font-size: 16px;;
+    margin-left: 10px;
+  }
+  0% {
+    color: var(--primary);
+    font-size: 20px;;
+    margin-left: 20px;
+    line-height: 45px;
+  }
+}
+@-webkit-keyframes sil {
+  100% {
+    /* Tiny title */
+    color: black;
+    font-size: 16px;;
+    margin-left: 10px;
+  }
+  0% {
+    color: var(--primary);
+    font-size: 20px;;
+    margin-left: 20px;
+    line-height: 45px;
+  }
+}
+
+@-webkit-keyframes r2b {
+  100% {
+    color: black;
+  }
+  0% {
+    color: red;
+  }
+}
+@keyframes r2b {
+  100% {
+    color: black;
+  }
+  0% {
+    color: red;
+  }
+}
+@-webkit-keyframes b2r {
+  100% {
+    color: red;
+  }
+  0% {
+    color: black;
+  }
+}
+@keyframes b2r {
+  100% {
+    color: red;
+  }
+  0% {
+    color: black;
   }
 }
 
@@ -151,7 +184,24 @@
   padding: 0px;
   margin-bottom: 10px;
   position: relative;
-  left: 15px;
+  left: 10px;
+}
+
+.siblings input:focus {
+  outline: 0;
+}
+
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.submit {
+  background-color: var(--tertiary);
+}
+@media only screen and (max-width: 500px) {
+  .submit:hover {
+    background-color: var(--tertiary);
+  }
 }
 .siblings input {
   width: 94%;
@@ -159,91 +209,120 @@
   padding-top: 0px;
   border-radius: 5px;
   letter-spacing: 1px;
-  font-size: 25px;
+  font-size: 24px;
   height: 35px;
   margin-left: 1px;
 }
-.siblings input:focus {
-  outline: 0;
+.siblings input {
+  font-size: 17px;
+  margin-bottom: 6px;
+  margin-top: 1px;
+  padding-top: 0px;
+  line-height: 24px;
+  height: 24px;
 }
+
+.siblings input:placeholder-shown {
+  font-size: 17px;
+  line-height: 17px;
+  animation-name: tolife;
+  animation-duration: 1.25s;
+}
+
+@keyframes tolife {
+  0% { opacity: 0; font-size: 1px;}
+  100% { opacity: 1; font-size: 17px; }
+}
+
+.siblings {
+  padding: 0px;
+  margin: 0px;
+}
+
 .siblings h5 {
-  font-family: arial;
-  font-size: 20px;
+  font-family: Quicksand;
+  font-size: 16px;
   text-align: left;
-  font-weight: bold;
+  font-weight: 400;
   height: 8px;
   padding-top: 0px;
-  margin-top: 7px;
-  margin-left: 3px;
+  margin-top: 3px;
+  margin-left: 2px;
+  margin-bottom: 10px;
+  font-style: bold;
+  animation-name: tolife;
+  animation-duration: 1.25s;
 }
 
-input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+.outside {
+  height: 57px;
 }
 
-.submit {
-     background-color:  var(--tertiary);
+/*
+@-ms-keyframes expand_input_label {
+  0% {
+    color: black;
+    font-size: 15px;
+    padding-left: 0px;
+    margin-left: 0px;
+    margin-top: 15px;
+    position: relative;
+    top: 0px;
+    left: 15px;
+  }
+
+  100% {
+    color: var(--primary);
+    font-size: 18px;
+    margin-left: 0px;
+    position: relative;
+    top: 10px;
+    left: 20px;
+  }
 }
-@media only screen and (max-width: 500px) {
-    .submit:hover {   background-color:  var(--tertiary); }
+
+@-moz-keyframes expand_input_label {
+  0% {
+    color: black;
+    font-size: 15px;
+    padding-left: 0px;
+    margin-left: 0px;
+    margin-top: 15px;
+    position: relative;
+    top: 0px;
+    left: 15px;
+  }
+
+  100% {
+    color: var(--primary);
+    font-size: 18px;
+    margin-left: 0px;
+    position: relative;
+    top: 10px;
+    left: 20px;
+  }
 }
-@media only screen  {
-      .siblings input {
-        font-size: 19px;
-        margin-bottom: 6px;
-        margin-top: 1px;
-        padding-top: 0px;
-        line-height: 19px;
-        height: 19px;
-      }
 
-      .siblings input:placeholder-shown {
-        font-size: 19px;
-        line-height: 19px;
-      }
-
-      .siblings {
-        padding: 0px;
-        margin: 0px;
-      }
-
-      .siblings h5 {
-        font-size: 17px;
-        text-align: left;
-        font-weight: 400;
-        height: 8px;
-        padding-top: 0px;
-        margin-top: 3px;
-        margin-left: 2px;
-        margin-bottom: 10px;
-      }
-
-      .outside {
-          height: 60px;
-      }
-
-
-      @keyframes expand_input_label {
-        0% {
-          color: black;
-          font-size: 15px;
-          padding-left: 0px;
-          margin-left: 0px;
-          margin-top: 15px;
-          position: relative;
-          top: 0px;
-          left: 15px;
-        }
-        50% {
-          /* color: purple; */
-        }
-        100% {
-          color: var(--primary);
-          font-size: 18px;
-          margin-left: 0px;
-          position: relative;
-          top: 10px;
-          left: 20px;
-        }
-      }
+@-o-keyframes expand_input_label {
+  0% {
+    color: black;
+    font-size: 15px;
+    padding-left: 0px;
+    margin-left: 0px;
+    margin-top: 15px;
+    position: relative;
+    top: 0px;
+    left: 15px;
+  }
+  50% {
+  }
+  100% {
+    color: var(--primary);
+    font-size: 18px;
+    margin-left: 0px;
+    position: relative;
+    top: 10px;
+    left: 20px;
+  }
 }
+ */

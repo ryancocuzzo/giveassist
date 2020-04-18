@@ -54,6 +54,54 @@ if (TEST_MODE == true) {
 //     ------------------------------------------------------------------------------------------------
 //  */
 
+export const PLANS = [
+  { title: 'PX', cost: 4.99 },
+  { title: 'PY', cost: 2.99 },
+  { title: 'PZ', cost: null }
+];
+
+export function lowestPlanCost() {
+  var lowest = 999;
+  PLANS.forEach((plan) => {
+    if (plan.cost != null && plan.cost < lowest )
+      lowest = plan.cost;
+  });
+  return lowest;
+}
+
+/* Ex input - PX */
+export function priceForPlanWithTitle (title) {
+  if (!title || typeof title !== 'string' || title.length > 2) throw 'priceForPlanWithTitle params issue: incorrect or wrong-formatted title.';
+  var cost = null;
+  PLANS.forEach((plan) => {
+    if (title === plan.title)
+      cost = plan.cost;
+  });
+  return cost;
+}
+
+/* Ex input - 3.99 */
+export function titleOfPlanWithCost (cost) {
+  if (!cost || typeof cost !== 'number') throw 'titleOfPlanWithCost params issue: incorrect or wrong-formatted cost.';
+  var title = null;
+  PLANS.forEach((plan) => {
+    if (cost === plan.cost)
+      title = plan.title;
+  });
+  return title || 'PZ';
+}
+
+export function planExists(title) {
+  if (!title || typeof title !== 'string' || title.length > 2) throw 'planExists params issue: incorrect or wrong-formatted title.';
+  var ret = false;
+  PLANS.forEach((plan) => {
+    if (title === plan.title)
+      ret = true;
+  });
+  
+  return ret;
+}
+
 var variables = {
   local_urls: {
     home: '/',

@@ -36,6 +36,28 @@ export const login = async (email, pass) => {
         resolve(user);
     });
 }
+
+export const signup = async (name, email, password, phone, plan, payToken) => {
+    // TODO: firebase implement
+    return new Promise((resolve, reject) => {
+
+        let body = {
+            pw: password,
+            paymentToken: payToken,
+            n: name,
+            e: email,
+            p: plan,
+            z: phone
+        }
+
+        console.log(JSON.stringify('Sending Signup POST with body: \n' + body,null,2));
+
+        let user = {name: 'John Wick', 'email': 'john@wick.go', uid: '123abc'};
+        service.triggerEvent('User', user)
+        resolve(user);
+    });
+}
+
 export const logout = async () => {
     // TODO: firebase implement
     // window.history.pushState(null, '', '/welcome')
@@ -54,7 +76,7 @@ export async function getVoteJSON() {
         voted_callback: voted
     }
     return {
-        title: 'vote',
+        title: 'Vote',
         queried_result: queried_result
     };
 }

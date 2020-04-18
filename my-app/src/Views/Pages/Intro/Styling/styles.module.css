@@ -3,6 +3,7 @@
 
 .contentcontainer {
     padding: 20px;
+    padding-top: 200px;
 }
 .particlecontainer {
     background-color: black;
@@ -24,7 +25,7 @@
     align-content: center;
 }
 
-.gridded { 
+.gridded {
     padding: 30px;
  }
 
@@ -65,14 +66,13 @@
 
     /* The image used */
     background-image: url("../../../../images/hands_in.jpg");
-    
+
     /* Add the blur effect */
-    filter: blur(8px);
-    -webkit-filter: blur(8px);
-    
+    /* filter: blur(8px); */
+
     /* Set a specific height */
-    min-height: 600px; 
-  
+    min-height: 600px;
+
     /* Create the parallax scrolling effect */
     background-attachment: fixed;
     background-position: center;
@@ -80,8 +80,7 @@
     background-size: cover;
 
     /* Add the blur effect */
-    filter: blur(8px);
-    -webkit-filter: blur(8px);
+
   }
 
   .youWillRecieve {
@@ -106,7 +105,6 @@
     color: white;
     padding-bottom: 5px;
     width:100%;
-    line-height: 40px;
     padding-top: 0px;
     margin-top: 0px;
     font-size: 22px;
@@ -124,7 +122,7 @@
     padding-right: 10px;
     margin-right: 10px;
     background: url('../../../../images/baseline_done_white_18dp.png');
- 
+
 } */
 
 
@@ -142,38 +140,38 @@
 
 /* Texts */
 
-.big { width: 60%; color: var(--primary); font-size: 60px; }
+.big { width: 80%; color: var(--primary); font-size: 60px; }
 .offcolor { color: var(--quartiary); }
 
 .blackWhite h2, .blackWhite h3, .blackWhite a,
 .whiteBlack h2, .whiteBlack h3, .whiteBlack a
 .blueYellow h2, .blueYellow h3, .topic {
     font-size: 30px;
-    font-weight: bold;
+    font-weight: 900;
 }
 
-.blackWhite h2, .whiteBlack h2 { font-family: Raleway;  }
+.blackWhite h2, .whiteBlack h2 { font-family: var(--font2);  }
 
 .whiteBlack {  background-color: black; color: white; }
 
 .blueYellow {
-    background: linear-gradient(black 15%, var(--primary), var(--quartiary));  
+    background: linear-gradient(black 15%, var(--primary), var(--quartiary));
     color: var(--quartiary);
-    height: 800px;
     margin-top: -6px;
     padding: 30px;
+    padding-bottom: 60px;
 }
 
 .blueYellow h1 {
-    font-family: Raleway;
-    font-weight: bold;
+    font-family: var(--font2);
+    font-weight: 900;
     font-size: 33px;
 }
 
-.blueYellow h2 { font-family: Raleway; }
+.blueYellow h2 { font-family: var(--font2); }
 
 
-h2.topic { color: var(--primary); font-family: Raleway; }
+h2.topic { color: var(--primary); font-family: var(--font2); }
 
 .blackpar {
     color: black;
@@ -181,7 +179,7 @@ h2.topic { color: var(--primary); font-family: Raleway; }
 
 
 
-.whitepar { 
+.whitepar {
     color: white;
  }
 
@@ -210,16 +208,16 @@ h2.topic { color: var(--primary); font-family: Raleway; }
     padding: 7px;
  }
 
- .whitepar, .blackpar { 
+ .whitepar, .blackpar {
     font-size: 21px;
-    max-width:1000px;
+    max-width:800px;
  }
 
  .blackWhite .whitepar, .whiteBlack .blackpar {
     margin-left: 20px;
  }
 
-  
+
   /* Position text in the middle of the page/image */
   .bg-text {
     background-color: rgb(0,0,0); /* Fallback color */
@@ -253,7 +251,7 @@ h2.topic { color: var(--primary); font-family: Raleway; }
 .join { background-color: var(--quartiary); color: black; }
 
 .centered_join {
-    background-color: var(--quartiary); color: black; 
+    background-color: var(--quartiary); color: black;
     border-radius: 9999px;
     width: 120px;
 }
@@ -282,9 +280,13 @@ h2.topic { color: var(--primary); font-family: Raleway; }
 
 /* Media */
 
+@media only screen and (max-width: 800px){
+    .contentcontainer {
+        padding-top: 230px;
+    }
+}
 
-
-@media only screen and (max-width: 900px){
+@media only screen and (max-width: 700px){
 
     /* Containers */
 
@@ -295,11 +297,15 @@ h2.topic { color: var(--primary); font-family: Raleway; }
 
     /* Text */
 
+    .youWillRecieve ul li {
+        font-size: 17px;
+    }
+
     .blackpar {
         font-size: 20px;
         text-indent: 15px;
     }
-    .whitepar { 
+    .whitepar {
         font-size: 20px;
         text-indent: 15px;
      }
@@ -312,8 +318,14 @@ h2.topic { color: var(--primary); font-family: Raleway; }
      }
 
      .bg-image {
-
         margin-top: -300px; /*  should match height of bg-text */
+     }
+
+     .contentcontainer {
+         padding-top: 180px;
+     }
+     .contentcontainer p {
+         font-size: 17px;
      }
 
     /* Buttons */
@@ -327,26 +339,57 @@ h2.topic { color: var(--primary); font-family: Raleway; }
         margin-left: 20px;
     }
 
-    
-    
-    
+
+
+
 }
 
 @media only screen and (max-width:800px){
-    .whitepar, .blackpar { font-size: 18px; }
+    .whitepar, .blackpar { font-size: 20px; }
+    .big {
+        font-size: 33px;
+    }
 }
 
 @media only screen and (max-width: 500px){
+
+    .big {
+        font-size: 32px;
+    }
     .bg-text {
         height: 400px;
     }
+
+    .contentcontainer {
+        padding-top: 130px;
+    }
+
+    .blackpar, .whitepar {
+        font-size: 18px;
+    }
+
 
     .bg-image {
 
        margin-top: -400px; /*  should match height of bg-text */
     }
+
+    .blackWhite h2, .blackWhite h3, .blackWhite a,
+    .whiteBlack h2, .whiteBlack h3, .whiteBlack a
+    .blueYellow h2, .blueYellow h3, .topic {
+        font-size: 27px;
+    }
 }
 
 @media only screen and (max-width: 350px){
     .whitepar, .blackpar { font-size: 17px; }
+    .contentcontainer {
+        padding-top: 100px;
+    }
+}
+
+@media only screen and (max-width: 330px){
+    .contentcontainer {
+        padding-top: 80px;
+    }
 }
