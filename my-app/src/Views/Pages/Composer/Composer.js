@@ -2,8 +2,6 @@ import React, {Component} from 'react';
 import styles from './styles.module.css';
 import ParticledContent from '../../Modules/General/Particle/ParticleBackground.js';
 
-// import {navbar,tabbed,analytics,basicInfo,select,deleteAcct} from '../../../Views-Test-Files/Test-Components/Components.js';
-
 var chunk = (tabbed, analytics, basicInfo, deleteAcct, select) => (
     <div >
         <div class={styles.twoWide}>
@@ -51,7 +49,7 @@ export default class Composer extends Component {
         else if (window.innerWidth > 900 ) height = '1625px';
         else if (window.innerWidth > 800 ) height = '1725px';
         else if (window.innerWidth > 500 ) height = '2775px';
-        else height = '2800px';
+        else height = '2825px';
 
         // let mobile = window.innerHeight < 650;
         // var isSafari, height;

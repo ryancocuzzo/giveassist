@@ -40,6 +40,7 @@ export class TabbedSummary extends Component {
         return newtopic;
     }
     render() {
+        // console.log(this.props.topics);
         let small_tabs = this.state.width < 700;
         // let tabsClassname = (small_tabs ? "in" : "in_small");
         let tabs;
@@ -74,7 +75,7 @@ export class TabbedSummary extends Component {
                     <p class={styles.summ2}>{this.state.active.description}</p>
                     </div>
                     <div class={styles.box} style={{marginTop: '25px'}}>
-                        <button class={styles.submit} onClick={() => { this.props.doSomething(this.state.active.id); }} >Submit</button>
+                        <button class={styles.submit} onClick={() => { this.props.doSomething(this.state.active.id); }} >This one!</button>
                     </div>
                 </div>
         );
@@ -106,7 +107,7 @@ export  class TabbedContent extends Component {
         (
             <div class={styles.confined_viewport}>
                 <div >{tabbar}</div><br/>
-            <div >{this.state.active.content}</div>
+            <div class={styles.activecontent} >{this.state.active.content}</div>
             </div>
         );
         return content;

@@ -48,7 +48,7 @@ import cssstyles from './Styles/styles.module.css';
    let particle_content = (
      <div style={{ backgroundColor: styles.backgroundColor }}>{particle}</div>
    );
-   console.log("returning component with a min  width of " + styles.minWidth);
+  //  console.log("returning component with a min  width of " + styles.minWidth);
    let vcentered = params && valid_check(params.vertCenter);
    let hcentered = params && valid_check(params.horCenter);
    let view_h_centered = params && valid_check(params.centered);

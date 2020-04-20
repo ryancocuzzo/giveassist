@@ -11,7 +11,7 @@ import SignUp from './Views/Pages/SignUp/SignUp.js';
 import Login from './Views/Pages/Login/Login.js';
 import Navbar, {EmptyNavbar} from './Views/Modules/App/Nav/Navbar.js';
 import services from './Helper-Files/service';
-import { getUserInfo, logout } from './Helper-Files/Temp-DB-Utils.js';
+import { getUserInfo, logout, establishPersistence, setupFirebaseUserListener } from './Helper-Files/Temp-DB-Utils.js';
 import CheckoutForm from './Views/Modules/General/Payment/CheckoutForm.js';
 import { CSSTransition } from 'react-transition-group';
 // // import * as serviceWorker from './serviceWorker';
@@ -19,30 +19,7 @@ import { CSSTransition } from 'react-transition-group';
 services.createEvent('User');
 services.createEvent('Page-Changed');
 
-/*          <Switch>
-             <Route exact path="/" component={ComposerPage} />
-            <Route path="*" component={ComposerPage} />
-         </Switch>
-     ) : (
-         <Switch>
-            <Route exact path='/' component={IntroPage}/>
-            <Route path='/signup' component={SignUpPage}/>
-            <Route path='/login' component={LoginPage}/>
-            <Route path="*" component={IntroPage} />
-         </Switch>
-
-         const routes = [
-           { path: '/', name: 'One', Component: Home, parentRoutes: [], childRoutes: ['two'] },
-           { path: '/two', name: 'Two', Component: About, parentRoutes: ['/one'], childRoutes: ['/three']  },
-           { path: '/three', name: 'Three', Component: Contact, parentRoutes: ['/two'], childRoutes: []  },
-           { path: '*', name: 'Four', Component: Home, parentRoutes: ['/three'], childRoutes: []  },
-         ]
-
-*/
-
 /* Pages */
-
-let x = <UISensei/>
 
 const routes_loggedIn = [
     { path: '*', name: 'sensei', Component: UISensei, parentRoutes: ['login', 'signup'], childRoutes: ['intro'] },
@@ -74,33 +51,20 @@ class App extends React.Component {
     };
   }
 
-
   findUser = async () => {
       let user = await getUserInfo();
+      console.log('user: ' + user?.uid)
       // console.log('user -> ' + user ? JSON.stringify(user, null, 3) : 'null');
       // alert(user)
       this.setState({user: user, doneLooking: true, curr: user ? 'sensei' : 'intro'});
-      // Check for new user (state change)
-      // firebase.auth().onAuthStateChanged(function(user) {
-      //     this.setState({user: user, doneLooking: true});
-      //     console.log("Found user: " + user.displayName);
-      //     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-      //     .then(function() {
-      //     })
-      //     .catch(function(error) {
-      //       // Handle Errors here.
-      //       var errorCode = error.code;
-      //       var errorMessage = error.message;
-      //       alert(errorMessage);
-      //     });
-      // }.bind(this));
+      
   }
 
   componentDidMount() {
       this.findUser(); // check if one is present immediately
       // get user status updates
       services.listenEventWithId('User', 'index.js-listener', (user) => {
-          console.log('index.js retrieved user status!\n\tUser info: ' + (user ? JSON.stringify(user) : 'No user found!'));
+          console.log('index.js retrieved user status!\n\tUser info: ' + (user ? user.uid : 'No user found!'));
           this.setState({user: user, doneLooking: true, curr: user ? 'sensei' : 'intro'});
       });
       services.listenEventWithId('Page-Changed', 'index.js-listenere', (page_name) => {
@@ -110,13 +74,19 @@ class App extends React.Component {
             this.setState({curr: page_name});
           }
       });
+
+      establishPersistence();
+      
+      setupFirebaseUserListener();
+
+      
   }
 
   render() {
 
     let switched_page = this.state.user ?
         routes_loggedIn.map(({ path, name, Component }) => {
-            console.log(name + ' vs ' + this.state.curr);
+            // console.log(name + ' vs ' + this.state.curr);
             return <Route key={path} exact path={path}>
               {({ match }) => (
                 <CSSTransition
@@ -134,7 +104,7 @@ class App extends React.Component {
         })
          : /* else */
          routes_notLoggedIn.map(({ path, name, Component }) => {
-             console.log(name + ' vs ' + this.state.curr);
+            //  console.log(name + ' vs ' + this.state.curr);
              return <Route key={path} exact path={path}>
                {({ match }) => (
                  <CSSTransition
@@ -199,6 +169,27 @@ ReactDOM.render((
 //   { path: '*', name: 'Four', Component: Home, parentRoutes: ['/three'], childRoutes: []  },
 // ]
 
+
+/*          <Switch>
+             <Route exact path="/" component={ComposerPage} />
+            <Route path="*" component={ComposerPage} />
+         </Switch>
+     ) : (
+         <Switch>
+            <Route exact path='/' component={IntroPage}/>
+            <Route path='/signup' component={SignUpPage}/>
+            <Route path='/login' component={LoginPage}/>
+            <Route path="*" component={IntroPage} />
+         </Switch>
+
+         const routes = [
+           { path: '/', name: 'One', Component: Home, parentRoutes: [], childRoutes: ['two'] },
+           { path: '/two', name: 'Two', Component: About, parentRoutes: ['/one'], childRoutes: ['/three']  },
+           { path: '/three', name: 'Three', Component: Contact, parentRoutes: ['/two'], childRoutes: []  },
+           { path: '*', name: 'Four', Component: Home, parentRoutes: ['/three'], childRoutes: []  },
+         ]
+
+*/
 
 
 // If you want your app to work offline and load faster, you can change

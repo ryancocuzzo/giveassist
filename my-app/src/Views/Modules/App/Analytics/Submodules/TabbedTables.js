@@ -45,11 +45,12 @@ let TableCreator = (headers, visible_headers, data, classname) => {
                 <td>{event[headers[0]]}</td>
                 <td>{event[headers[1]]}</td>
             {headers[2] != null ? <td>{event[headers[2]]}</td> : null}
-                {headers[3] != null ? <td>{event[headers[3]]}</td> : null}
+                {headers[3] != null ? <td>{event[headers[3]] ? <div class={styles.receiptlink} onClick={() => window.open(event[headers[3]], '_blank')}>Here</div> : 'Pending..'}</td> : null}
             </tr>
         );
     })
     return (
+        <div class={styles.maxheightpinned}>
         <table class={classname}>
             <thead>
                 {heads}
@@ -58,6 +59,7 @@ let TableCreator = (headers, visible_headers, data, classname) => {
                 {body}
             </tbody>
         </table>
+        </div>
     );
 }
 

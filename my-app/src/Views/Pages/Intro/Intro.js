@@ -203,7 +203,7 @@ export default class IntroPage extends React.Component {
 
             <div class={styles.blueYellow}>
             { this._buffer(50,50,'transparent') }
-            <h1 class={styles.big} style={{color: 'white', marginLeft: this.state.width > 700 ? '50px' : '20px'}}>Subscriptions start at <span class={styles.offcolor}>$3.99/mo.</span></h1>
+            <h1 class={styles.big} style={{color: 'white', marginLeft: this.state.width > 700 ? '50px' : '20px'}}>Subscriptions start at <span class={styles.offcolor}>$2.99/mo.</span></h1>
                 { this._buffer(10,30,'transparent') }
             <div class={styles.mostlygridded }>
 
@@ -232,8 +232,8 @@ export default class IntroPage extends React.Component {
                 <h3>Follow us on our Socials</h3>
                 <div class={styles.socials}>
                     <div class={styles.insta} onClick={() => window.open('https://www.instagram.com/giveassist/', '_blank')}></div>
-                    <div class={styles.twitter}  onClick={() => window.open('https://www.instagram.com/giveassist/', '_blank')}></div>
-                    <div class={styles.fb}  onClick={() => window.open('https://twitter.com/give_assist', '_blank')}></div>
+                    <div class={styles.twitter}  onClick={() => window.open('https://twitter.com/give_assist/', '_blank')}></div>
+                    <div class={styles.fb}  onClick={() => window.open('https://www.facebook.com/give.assist', '_blank')}></div>
                 </div>
             </div>
         </div>

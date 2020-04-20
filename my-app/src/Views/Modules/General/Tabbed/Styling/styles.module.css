@@ -63,6 +63,8 @@ div.passive {
     overflow-y: hidden;
 }
 
+.activecontent {
+}
 
 .passive {
     font-weight: normal;
@@ -72,10 +74,9 @@ div.passive {
 }
 
 .in {
-    padding-left: 20px;
+    padding: 0px 10px;
     display: table-cell;
     text-align: left;
-
 }
 
 .in a {
@@ -117,6 +118,7 @@ p {
     margin-left: 10%;
     overflow-y: scroll;
     max-height: 220px;
+    min-height: 220px;
     padding-right: 3px;
 }
 

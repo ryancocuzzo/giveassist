@@ -43,7 +43,7 @@ export default class ColoredBarChart extends PureComponent {
         <Bar dataKey="total" stroke="teal">
             {
           	this.props.data.map((entry, index) => {
-                console.log(index);
+                // console.log(index);
             	return <Cell fill={gradient_color_chooser(index)} />;
             })
           }

@@ -1,6 +1,12 @@
 import React, {Component} from 'react';
-import {eventInfo, printSomething, chartData, userData, prevEventData, total_donated, current_donation} from '../Views-Test-Files/Test-Data/Data.js';
+import {eventInfo, printSomething, chartData, currEventJSON, userData, prevEventData, total_donated, current_donation} from '../Test-Files/Test-Data/Data.js';
 import service from './service.js';
+import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import utils from './utils';
+import vars, {PLANS} from './variables';
+import axios from 'axios';
+import Popup from 'react-popup';
+import {packaged} from './Error';
 /* For copy/paste reference
 
 { voted, changedInfo, newPaymentInfoSubmitted, newPlanSubmitted, deleteUserAccount, getVoteJSON, getChartData,
@@ -10,100 +16,189 @@ import service from './service.js';
 
 
 /* f(x)s - DO something */
+/* on = index of vote */
 export const voted = async (on) => {
-    // TODO: firebase implement
+    let curr_event = await utils.Event_active().fetch();
+    let authtoken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ false);
+    
+    let body = {
+        params: {
+            idToken: authtoken,
+            eventId: curr_event,
+            voteId: on
+        }
+    };
+    console.log('Casting vote: \n\tEID: ' +body.params.eventId + '\n\tOption: ' + body.params.voteId );
+    try {
+        let voted = await axios.post(vars.server_urls.castVote, body);
+        console.log(voted)
+        Popup.alert('Submitted vote');
+        return 'Submitted vote!';
+    } catch (error) {
+        if (error.response) {
+            console.log('Issue voting -> ' + error.response.data);
+            Popup.alert('Couldn\'t Submit Vote. ' + error.response.data);
+            console.log(error.response.status);
+            console.log(error.response.headers);
+          }
+    }
+    
 }
-export const changedInfo = async (to) => {
-    // TODO: firebase implement
+export const changedInfo = async (name, email) => {
+    return new Promise( async (res, rej) => {
+        let uid = firebase?.auth()?.currentUser?.uid;
+        if (!uid) { console.log('Cant get info. No user logged in.'); return; }
+        var updated_nam = false;
+        // TODO: firebase implement
+        if (name) {
+            await utils.User_info(uid).setChild('n', name);
+            updated_nam =  true;
+        }
+        if (email) {
+            try  {
+                console.log('trying -> ' + firebase.auth()?.currentUser?.uid)
+                let authdone = await firebase.auth().currentUser.updateEmail(email);
+                console.log('authdone')
+                let dbdone = await utils.User_info(uid).setChild('e', email);
+                console.log('dbdone')
+            } catch (e) {
+                console.log(e.message)
+                rej(updated_nam ? 'Updated name successfully, but not email. ' + e.message : e.message);
+            }
+        }
+        if (name || email) res('Information updated.');
+        else res('Information is already updated');
+    })
 }
-export const newPaymentInfoSubmitted = async (token) => {
-    console.log(token);
-    return 4;
-    // TODO: firebase implement
+export const newPaymentInfoSubmitted = async (paymentToken) => {
+    let authtoken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ false);
+    return await axios.post(vars.server_urls.changePaymentSource,{tokenId: authtoken, paymentToken: paymentToken  })
 }
 export const newPlanSubmitted = async (plan) => {
-    // TODO: firebase implement
+    console.log('attempting to submit plan ' + plan);
+    let authtoken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ false);
+    return await axios.post(vars.server_urls.change_plan,{idToken: authtoken, plan: plan  })
 }
 export const deleteUserAccount = async () => {
+    let authtoken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ false);
+    await axios.post(vars.server_urls.deleteUser, {idToken: authtoken});
+    await logout();
     // TODO: firebase implement
 }
 export const login = async (email, pass) => {
-    // TODO: firebase implement
-    return new Promise((resolve, reject) => {
-        // window.history.pushState(null, '', '/home');
-        let user = {name: 'John Wick', 'email': 'john@wick.go', uid: '123abc'};
-        service.triggerEvent('User', user)
-        resolve(user);
-    });
+    let user = await firebase.auth().signInWithEmailAndPassword(email, pass);
+    service.triggerEvent('User', user);
+    return user;
+}
+
+export const userBasicInfo = async () => {
+    let uid = firebase?.auth()?.currentUser?.uid;
+    if (!uid) { console.log('Cant get info. No user logged in.'); return; }
+    let info = await utils.User_info(uid).fetch();
+    return { name: info.n, email: info.e };
 }
 
 export const signup = async (name, email, password, phone, plan, payToken) => {
-    // TODO: firebase implement
-    return new Promise((resolve, reject) => {
-
-        let body = {
-            pw: password,
-            paymentToken: payToken,
-            n: name,
-            e: email,
-            p: plan,
-            z: phone
-        }
-
-        console.log(JSON.stringify('Sending Signup POST with body: \n' + body,null,2));
-
-        let user = {name: 'John Wick', 'email': 'john@wick.go', uid: '123abc'};
-        service.triggerEvent('User', user)
-        resolve(user);
-    });
+    let body = {
+        pw: password,
+        paymentToken: payToken,
+        n: name,
+        e: email,
+        p: plan,
+        z: phone
+    }
+    try {
+        return await axios.post(vars.server_urls.initiate_new_user, {params: { n: body.n, e: body.e,
+            p: body.p, z: body.z, pw: body.pw, paymentToken: body.paymentToken }})
+    } catch (e) {
+        // let msg = re.response.data.message.message;
+        console.log('Found signup error' + e?.response?.data?.message?.message || e.toString());
+        throw 'Signup Error.';
+    }
 }
 
 export const logout = async () => {
     // TODO: firebase implement
-    // window.history.pushState(null, '', '/welcome')
-    return new Promise((resolve, reject) => {
-        service.triggerEvent('User', null)
-        resolve('logged out.');
-    });
+    await firebase.auth().signOut();
+    service.triggerEvent('User', null)
+    return 'logged out';
 }
 /* f(x)s - GET something */
 export async function getVoteJSON() {
+
+    let curr_event_id = await utils.Event_active().fetch(); 
+    // console.log(curr_event_id);
+    let info = await utils.Event_info(curr_event_id).fetch();
+    // console.log(info);
+    // if (!info) throw 'no event found!';
+    let options = Object.keys(info.o).map((choice, index) => ({title: info.o[choice].t, description: info.o[choice].s, id: index}));
+    options.pop();
+    console.log(options)
     // TODO: firebase retrieval
     let queried_result = {
-        section_title: "Sample Section Title",
-        section_summary: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        section_events_info: eventInfo,
+        section_title: info.t,
+        section_summary: info.s,
+        section_events_info: options,
         voted_callback: voted
     }
     return {
         title: 'Vote',
         queried_result: queried_result
     };
+    
 }
 
 export async function getChartData() {
-    // TODO: firebase implement
-    return chartData;
+    return (await utils.Event_allEvents().limitedFetchChildren(5)).map((event) => ({ title: event.t, total: event.ttl }));
 }
+
 export async function getUserData() {
-    // TODO: firebase implement
-    return userData;
+    var ttl_data = await Promise.all(PLANS.map(async plan =>  ({'amount': plan.cost || 'Custom', 'users': await utils.Plan_totalCount(plan.title).promiseBoxedFetch() })));
+    console.log(JSON.stringify(ttl_data));
+    var sum = 0;
+    ttl_data.forEach((row) => sum += row.users);
+    let perc_data = ttl_data.map((row) => ({'amount': row.amount, 'percent_users':   round(row.users/sum, 4)}));
+    return perc_data;
 }
 export async function getPrevEventData() {
-    // TODO: firebase implement
-    return prevEventData;
+    let events = await utils.Event_allEvents().limitedFetchChildren(5);
+    let reciepts = await Promise.all(events.map(async ({id}) => await utils.Reciept_forEvent(id).fetch()));
+    let formatted_event_mapping = events.map((event, index) => (
+        { date: event.t, num_users: event.tu, total_rev: event.ttl, receipt: reciepts[index] }
+    ))
+    return formatted_event_mapping;
 }
 export async function getTotalDonated() {
-    // TODO: firebase implement -> This is done, I think
-    return total_donated;
+    var uid = firebase.auth().currentUser?.uid;
+    return utils.User_totalDonated(uid).fetch();
 }
 export async function getCurrentDonation() {
-    // TODO: firebase implement -> This is done, I think
-    return current_donation;
+    var uid = firebase?.auth()?.currentUser?.uid;
+    let uinfo = await utils.User_info(uid).fetch();
+    let plan_parts = uinfo.p?.split(',');
+    return parseFloat(plan_parts ? plan_parts[1] : 0);
 }
 export async function getUserInfo() {
-    // TODO: firebase implement -> This is done, I think
-    let info = {name: 'John Wick', 'email': 'john@wick.go'};
-    info = null;
-    return info;
+    return firebase?.auth()?.currentUser;
 }
+
+/*  Pesistence helper */
+export const establishPersistence = async () => {
+    try {
+        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        console.log('Established Local data persistence.')
+    } catch (e) {
+        console.error('Issue establishing persistence');
+    }
+}
+
+export const setupFirebaseUserListener = () => {
+    firebase.auth().onAuthStateChanged((user) => service.triggerEvent('User', user));
+}
+
+/* other */
+function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+
+var str = (x) => JSON.stringify(x,null,3);

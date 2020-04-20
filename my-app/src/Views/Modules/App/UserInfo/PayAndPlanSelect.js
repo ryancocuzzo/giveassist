@@ -3,9 +3,9 @@ import styles from './Styling/style.module.css';
 import CheckoutForm from '../../General/Payment/CheckoutForm.js';
 import {Elements, StripeProvider} from 'react-stripe-elements';
 import imgs from '../../../../Helper-Files/ImgFactory.js';
-import variables, {PLANS} from '../../../../Helper-Files/variables.js';
+import variables, {PLANS, priceForPlanWithTitle} from '../../../../Helper-Files/variables.js';
 import {InputComponent} from '../../General/Form/InputComponent.js';
-import {validateMoney} from '../../../../Views-Test-Files/Test-Data/Data';
+import {validateMoney} from '../../General/Form/FormUtils.js';;
 let urls = variables.local_urls;
 let stripe_api_key = variables.stripe_api_key;
 
@@ -36,6 +36,12 @@ export default class PayAndPlanSelect extends Component {
             this.props.customAmountChanged(amt);
     }
 
+    handle_submit_plan = () => {
+        let plan = this.state.current + (priceForPlanWithTitle(this.state.current) || this.state.customAmount);
+        if (this.props.onSubmitPlan)
+            this.props.onSubmitPlan(plan);
+    }
+
     render() {
         return (
             <div class={styles.gridded_centered}>
@@ -55,7 +61,7 @@ export default class PayAndPlanSelect extends Component {
                                     <li key={plan.title}>
                                         <input type="radio"  onClick={this.setActive} id={plan.title} name="prem" value={plan.title}/>
                                         <div class={styles.woah}></div>
-                                        <label for={plan.title} >{plan.title !== 'PZ' ? ('$' + plan.cost) : 'Other' }</label><br/>
+                                    <label htmlFor={plan.title} >{plan.title !== 'PZ' ? ('$' + plan.cost) : 'Other' }</label><br/>
                                     </li>
                                 ))}
 
@@ -70,7 +76,7 @@ export default class PayAndPlanSelect extends Component {
                         </div>
 
                         <div style={{marginTop: '15px'}}>
-                            <button style={{display: this.props.notSubmittable ? 'none' : 'block'}} class={styles.submit} onClick={this.props.onSubmitPlan}>Update</button>
+                            <button style={{display: this.props.notSubmittable ? 'none' : 'block'}} class={styles.submit} onClick={this.handle_submit_plan}>Update</button>
                         </div>
 
                     </div>

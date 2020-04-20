@@ -1,9 +1,9 @@
 
-import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import firebase, { auth, provider } from './firebase.js';
 import axios from 'axios';
-import vars from '../Helper-Files/variables.js';
-import moment from 'moment';
-import DBLinks from '../Helper-Files/utils.js';
+import vars from './variables.js';
+// import moment from 'moment';
+import DB from './utils.js';
 var server_urls = vars.server_urls;
 
 /* Indepedent functions */
@@ -12,22 +12,11 @@ var server_urls = vars.server_urls;
  * Gets the active event id
  * @return {[String]} the active event id
  */
-export const getActiveEventId = async () => {
-
-  let event_ref = firebase.database().ref('/db/active_event');
-
-  return new Promise( function (resolve, reject) {
-
-    event_ref.once('value').then(function(snapshot) {
-      resolve(snapshot.val());
-    }).catch(function(err) {
-      reject(err.message);
-    });
-  })
-
-}
+export const getActiveEventId = async () => DB.Event_active().fetch();
 
 export const get_all_EventIdAndName_sets = async () => {
+  let recent_events = await DB.Event_allEvents().limitedFetchChildren(10);
+
     let ref = firebase.database().ref('/db/events')
     return new Promise( function (resolve, reject) {
       ref.once('value').then(function(snapshot, err) {

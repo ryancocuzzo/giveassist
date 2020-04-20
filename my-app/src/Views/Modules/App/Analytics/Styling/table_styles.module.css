@@ -5,13 +5,26 @@ table.darkTable {
   /* border: 2px solid #000000; */
   background-color: #242424;
   width: 100%;
-  max-height: 300px;
+  max-height: 200px;
   text-align: center;
   border-collapse: collapse;
   overflow-y: scroll;
   border-radius:10px;
 -moz-border-radius:10px;
 }
+.maxheightpinned {
+  height: 250px;
+  max-height: 250px;
+  overflow: auto;
+}
+.maxheightpinned::-webkit-scrollbar { -webkit-appearance: none; }
+.maxheightpinned::-webkit-scrollbar:vertical { width: 13px; }
+.maxheightpinned::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 2px solid white; /* should match background, can't be transparent */
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
 table.darkTable td, table.darkTable th {
   /* border: 1px solid #4A4A4A; */
   padding: 3px 2px;
@@ -52,6 +65,15 @@ table.darkTable tfoot td {
   border-radius: 10px;
 }
 
+
+
+@media only screen and (max-width: 700px) {
+  .maxheightpinned {
+    height: 150px;
+    max-height: 150px;
+    overflow: auto;
+  }
+}
 
 @media only screen and (max-width: 500px) {
 

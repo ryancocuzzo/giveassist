@@ -24,7 +24,7 @@ export default class InputForm extends Component{
      */
     constructor(props) {
         super(props);
-        if (props.fields == null || props.submit == null) throw 'InputForm Error: invalid params. Either fields or submit is NULL.';
+        if (props.fields == null || (!props.notSubmittable && props.submit == null)) throw 'InputForm Error: invalid params. Either fields or submit is NULL.';
         this.state = {
             fields: props.fields,
             isSequential: props.isSequential,

@@ -98,8 +98,19 @@ export function planExists(title) {
     if (title === plan.title)
       ret = true;
   });
-  
+
   return ret;
+}
+
+/* @param planname will arrive as a string (i.e PX)
+    @param customAmt will arrive as a num or null (i.e 3.99)
+    @return a db-usable plan format (i.e PX,3.99 or PY,4.99 or PZ,12(whole #))   */
+export const formatPlan = (planname, customAmt) => {
+    // ensure it's a floating point number
+    if (typeof planname !== 'string' || customAmt === undefined) throw 'formatPlan params error';
+    let found_price = priceForPlanWithTitle(planname);
+    let price = found_price ? found_price : customAmt;
+    return planname+ ',' + String(price);
 }
 
 var variables = {

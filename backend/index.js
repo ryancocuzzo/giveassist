@@ -46,7 +46,7 @@ function log_group_begin(text) {console.group('\n-- -- ' + text + ' -- --\n');}
 
 function log_group_end() { console.groupEnd(); console.log('\n-- -- \n'); }
 
-let DBLinks = utils.DBLinks;
+let DB = utils.DB;
 let PLAN = utils.PLAN;
 
 function Customer(cid, amt_contributed) {
@@ -128,11 +128,20 @@ var randstring = (l) => {
   return result;
 }
 
+var check_string = (s) => {
+  let res = s && typeof s === 'string' && s.length > 0 && s.length < 50;
+  // log('CHECK STRING: ' + s + ' = ' + res);
+  return res;
+}
 app.post('/initiate_new_user', async (req, res) => {
-  if (req.body == null || req.body.params == null) { res.send('Error');return; }
-
+  var send_status = (e) =>  res.status(571).send({ message: e });
+  if (req.body == null || req.body.params == null) { send_status('Error: invalid params.');return; }
+  let params = req.body.params;
   var password = req.body.params.pw; // note pw, not password
   var paymentToken = req.body.params.paymentToken;
+  // run checks -> NOTE: plan & token check should be better.
+  if (!(check_string(params.n) && check_string(params.e) && check_string(params.p)
+        && check_string(params.z) && check_string(params.pw) && paymentToken)) { send_status('Error: invalid params.');return; }
 
   var usr = {
     n: req.body.params.n,                           // name
@@ -142,15 +151,37 @@ app.post('/initiate_new_user', async (req, res) => {
     j: utils.getToday(),                            // timestamp
     z: req.body.params.z                            // phone number
   };
+
+  console.log('attempting to Init User with \n\tName: ' + usr.n
+      + ' \n\tEmail: ' + usr.e
+      + ' \n\tPass: ' + password
+      + ' \n\tPhone: ' + usr.z
+      + ' \n\tPlan: ' + usr.p
+      + ' \n\tDisp Name: ' + usr.dn
+      + ' \n\tToken: ' + paymentToken
+      + ' \n\W/ Stamp: ' + usr.j
+      );
+
   try {
     let result = await utils.initiate_new_user(usr.e, password, usr, paymentToken);
     res.send(result);
   } catch (e) {
     err_log('RESOLVE-> ' + e);
-    res.status(571).send({
-      message: e
-   });
-  }
+    if (e !== 'USER_EXISTS') { // created account, we should delete the created acct
+
+        admin.auth().getUserByEmail(req.body.params.e)
+          .then( (userRecord) => {
+                  utils.deleteUser(userRecord.uid).then(() => send_status(e))
+                    .catch(() => send_status(e));
+            })
+          .catch((error) => {
+               console.log('Error fetching user data:', error);
+               send_status(e);
+           });
+
+       };
+    }
+
 });
 
 // Get the priveledges of a user
@@ -236,7 +267,7 @@ app.post('/event_log', async function(request, response) {
       let cust_id = object.customer;
       try {
         let uid = await utils.getFirebaseUserFromCustomerId(cust_id);
-        DBLinks.prevChargeStatus(uid).setValue('FAILED');
+        DB.User_prevChargeStatus(uid).set('FAILED');
         response.send('ok - failed.')
       } catch (e) {
         err_log('Could not find customer');
@@ -250,37 +281,50 @@ app.post('/event_log', async function(request, response) {
 });
 
 
-app.get('/changePaymentSource', async (req,res) => {
+app.post('/changePaymentSource', async (req,res) => {
     console.log('Changing stripe user source payment...')
-    var idToken = req.query.idToken;
-    var paymentToken = req.query.paymentToken;
+    if (!req.body ) { err_log('Invalid inputs.'); res.status(571).send('Invalid params.'); return; }
+
+    var idToken = req.body.tokenId;
+    var paymentToken = req.body.paymentToken;
+
+    if (!idToken || !paymentToken ) { err_log('Invalid inputs.'); res.status(571).send('Invalid params.'); return; }
+
+    ok_log('Valid inputs.')
 
     try {
 
         // Get decoded token
         let decodedToken = await utils.get_decoded_token(idToken);
 
+        ok_log('Decoded auth token.')
+
         var uid = decodedToken.uid;
-        var cust_id = await getStripeCustomerId(uid);
+        var cust_id = await utils.getStripeCustomerId(uid);
+
+        ok_log('Got stripe customer id.');
 
 
           let x = await stripe.customers.createSource(cust_id, {
             source: paymentToken
           });
 
+          ok_log('created source with pay token.');
+
           // Perform update
           stripe.customers.update(cust_id, {
             default_source: x.id
           }, function(err, resp) {
                 if (resp) {
-                    log(resp)
+                    ok_log('Successfully updated pay source'); 
                     res.send(resp)
                 } else {
-                    log(err)
+                    err_log(err)
                     res.send(err)
                 }
           });
     } catch(e) {
+      err_log(e);
         res.send('Server error: ' + e);
     }
 
@@ -299,12 +343,17 @@ var getUserSubscriptionId = async (uid) => {
     })
 }
 
-app.get('/change_plan', async (req,res) => {
+app.post('/change_plan', async (req,res) => {
+    log_group_begin('Plan Change');
 
-    var idToken = req.query.idToken;
-    var planName = req.query.plan;
+    if (!req.body ) { res.status(571).send('Invalid params.'); log_group_end(); return; }
 
-    var planId = planIDForNameAndAmt(planName);
+    var idToken = req.body.idToken;
+    var planName = req.body.plan;
+
+    if (!idToken || !planName ) { res.status(571).send('Invalid params.'); log_group_end(); return; }
+
+    var planId = utils.planIDForNameAndAmt(planName);
 
     try {
 
@@ -326,29 +375,34 @@ app.get('/change_plan', async (req,res) => {
         }, function(err, subscription) {
               if (subscription) {
 
-                log('Got subscription!')
+                ok_log('Got subscription!')
                 root.ref('/users/' + uid + '/sub').set(subscription.id);
 
                 root.ref('/users/' + uid + '/i/p/').set(planName);
                 root.ref('/queriable/' + uid + '/p').set(planName);
 
 
+                ok_log('Plan Change complete!')
                 res.send(subscription)
+                log_group_end();
+                
               } else {
                   err_log(err);
                   res.send(err);
+                  log_group_end();
               }
               });
 
     } catch(e) {
         res.send('Server error: ' + e);
+        log_group_end();
     }
 
 })
 
-app.get('/deleteUser', async (req,res) => {
+app.post('/deleteUser', async (req,res) => {
 
-  var idToken = req.query.idToken;
+  var idToken = req.body.idToken;
 
   log_group_begin('POST Delete User..');
   try {
@@ -376,39 +430,27 @@ app.get('/deleteUser', async (req,res) => {
 
 
 var userHasAlreadyVoted = async (eventId, userId) => {
-    return new Promise( async function(resolve, reject) {
-        log('checking if user ' + userId + ' has voted..')
-        try {
-
-            let event_ref = root.ref('/users/' + userId + '/v/' + eventId + '/c');
-            event_ref.once('value').then(function(snapshot, err) {
-                if (err) { resolve(false) }
-                if (snapshot && snapshot.val()) {
-                    resolve(true)
-                } else {
-                    resolve(false)
-                }
-            });
-
-        } catch (e) {
-            reject(e);
-        }
-    })
+   return ((await utils.DB.User_choiceForEvent(userId, eventId).fetch()) !== null);
 }
 
-var castVote = async (eventId, voteId, userId) => {
+var castVote = async (eventId, optionIndex, userId) => {
   return new Promise( async function(resolve, reject) {
 
       try {
 
+          let ev = await DB.Event_info(eventId).fetch();
+          let voteId = Object.keys(ev.o)[optionIndex];
+
+          ok_log('Parsed option index into event option');
+
           let hasVoted = await userHasAlreadyVoted(eventId, userId);
           if (hasVoted == true) { err_log('User has already voted!'); reject('It seens you have already voted!'); return; }
-          ok_log('(User hasn\'t voted yet')
+          ok_log('User hasn\'t voted yet')
           let user_payment_succeeded = await utils.getPrevChargeStatus(userId);
           ok_log('User payment clean')
 
-          DBLinks.eventVoters(eventId, voteId).pushValue(userId)
-          DBLinks.userVoteChoice(userId, eventId).setValue(voteId);
+          DB.Event_votersForOption(eventId, voteId).push(userId)
+          DB.User_choiceForEvent(userId, eventId).set(voteId);
 
           ok_log('User payment clean')
 
@@ -416,24 +458,24 @@ var castVote = async (eventId, voteId, userId) => {
 
           /*  Cast vote to the place  */
 
-          let event_option_votes = await utils.DBLinks.eventOptionTotalVotes(eventId, voteId).fetch();
+          let event_option_votes = await utils.DB.Event_optionTotalVotes(eventId, voteId).fetch();
 
           ok_log('got total option votes -> ' + event_option_votes)
 
           event_option_votes = Number(event_option_votes) + 1;
-          DBLinks.eventOptionTotalVotes(eventId, voteId).setValue(event_option_votes);
+          DB.Event_optionTotalVotes(eventId, voteId).set(event_option_votes);
 
           ok_log('updated total option votes -> ' + event_option_votes)
 
           /*  Update event's total as well  */
 
-          let event_total_votes = await utils.DBLinks.eventOverallTotalVotes(eventId).fetch();
+          let event_total_votes = await utils.DB.Event_overallTotalVotes(eventId).fetch();
 
           ok_log('got total event votes')
 
           event_total_votes = Number(event_total_votes);
           event_total_votes++;
-          DBLinks.eventOverallTotalVotes(eventId).setValue(event_total_votes);
+          DB.Event_overallTotalVotes(eventId).set(event_total_votes);
 
           ok_log('updated total event votes')
 
@@ -449,11 +491,16 @@ var castVote = async (eventId, voteId, userId) => {
   })
 }
 
-app.get('/castVote', async (req,res) => {
+let MAX_N_OPTIONS = 3;
+app.post('/castVote', async (req,res) => {
+    if (!(req && req.body && req.body.params)) { res.status(571).send({message: 'invalid params'}); return; }
+    
+    var idToken = req.body.params.idToken;
+    var voteId = req.body.params.voteId;
+    var eventId = req.body.params.eventId;
 
-    var idToken = req.query.idToken;
-    var voteId = req.query.voteId;
-    var eventId = req.query.eventId;
+    if (!check_string(eventId) || typeof voteId !== 'number' || voteId >= MAX_N_OPTIONS || !idToken)  { res.status(571).send({message: 'invalid params'}); return; }
+    
 
     try {
 
@@ -462,8 +509,8 @@ app.get('/castVote', async (req,res) => {
       res.send(castedVote);
 
     } catch(e) {
-        err_log(e.message);
-        res.send('Could not cast your vote!');
+        err_log(e);
+        res.send(572, 'Already voted')
     }
 })
 
