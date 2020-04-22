@@ -1,1517 +1,643 @@
-var admin = require("firebase-admin");
-var prod_serviceAccountKey = require("./prod_serviceAccountKey");
-var dev_serviceAccountKey = require("./dev_serviceAccountKey");
-var clc = require("cli-color");
 var moment = require('moment');
+var projinfo = require("./ProjectInfo.js");
+var plansjs = require("./plans.js");
+var logging = require('./logging.js');
+var DBLinks = require('./DBLinks.js');
+var sms = require('./SMS.js');
+var helpers = require('./helpers.js');
 
-String.prototype.replaceAll = function(search, replacement) {
-  var target = this + '';
-  return target.split(search).join(replacement);
-};
+let admin = projinfo.admin;
+let root = projinfo.root;
+let stripe = projinfo.stripe;
+let STRIPE_ACCT_ID = projinfo.STRIPE_ACCT_ID;
 
-var production_app = {
-  credential: admin.credential.cert(prod_serviceAccountKey),
-  databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",
-  storageBucket: "donate-rcocuzzo-17387568.appspot.com"
-}
-
-
-var dev_sandbox_app = {
-    credential: admin.credential.cert(dev_serviceAccountKey),
-    databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
-};
-
-const accountSid = '[REDACTED]';
-const authToken = '[REDACTED]';
-const client = require('twilio')(accountSid, authToken);
-const twilio_phoneNumber = '+19083049973';
-
-// xxxxxxxxxxxxxxxxxxxxxxxx
-                       // x
-let TEST_MODE = true;  // x
-                       // x
-// xxxxxxxxxxxxxxxxxxxxxxxx
-
-
-var stripe;
-
-if (TEST_MODE == true) {
-  stripe = require("stripe")("[REDACTED]");
-  admin.initializeApp(dev_sandbox_app);
- } else {
-   stripe = require("stripe")("[REDACTED]");
-   admin.initializeApp(production_app);
-}
-
-// /*
-//   TEST: [REDACTED]
-//   LIVE: [REDACTED]
-// */
-// // var stripe = require("stripe")("[REDACTED]"); // test
-// var stripe = require("stripe")("[REDACTED]"); // live
-// Get a reference to the root of the Database
-var root = admin.database();
-
-let PRICE_PREM_X = 4.99;
-let PRICE_PREM_Y = 2.99;
-let PRICE_PREM_Z = 1.00;
-
-let PLAN = {
-  premiumX: 'PX',
-  premiumY: 'PY',
-  premiumZ: 'PZ',
-}
-
-class Link {
-  constructor(base_ref, single_val) {
-    this.base_ref = root.ref(base_ref);
-    this.single_val = single_val;
-  }
-
-  shortRef() { return this.base_ref;  }
-  longRef() { return this.single_val ? this.base_ref.child(this.single_val) : this.base_ref;  }
-
-  async fetch(){
-    let snap = await this.longRef().once('value')//.val();
-    let val = (this.single_val && snap) ? snap[this.single_val].val() : snap.val();
-    // console.log('fetched ' + JSON.stringify(val));
-    return val;
-  }
-
-  /* USE CASE: data not arriving when it should? try this */
-  async promiseBoxedFetch(){
-    let snap = await this.longRef().once('value')//.val();
-    let val = (this.single_val && snap) ? snap[this.single_val].val() : snap.val();
-    // console.log('fetched ' + JSON.stringify(val));
-    return Promise.resolve(val);
-  }
-
-  async fetchChildren(){
-    let snap = await this.longRef().once('value');
-    var children = [];
-    snap.forEach((child) => { children.push(child.val()); })
-    return children;
-  }
-
-  async limitedFetch(n_results) {
-    let snap = await this.longRef().limitToLast(n_results).once('value')//?.val();
-    return this.single_val && snap ? snap[this.single_val] : snap;
-  }
-
-  async limitedFetchChildren(n_results){
-    let snap = await this.longRef().limitToLast(n_results).once('value');
-    var children = [];
-    snap.forEach((child) => { children.push(child.val()); })
-    return children;
-  }
-  async set(to) { this.longRef().set(to); }
-  async push(val) { this.longRef().push(val); }
-}
-
-var DBLinky =(path, val) => new Link(path, val);
-
-let UserLink =(uid, path) => DBLinky('/users/' + uid + path);
-let EventLink =(eid, path) => DBLinky('/db/events/' + eid + path);
-let PlanLink =(plan, path) => DBLinky('/db/plans/' + plan + path);
-let UserEventLink =(uid, eid, path) => DBLinky('/users/' + uid + '/v/' + eid + path);
-let ReceiptLink =(path)   => DBLinky('/reciepts/' + path);
-
-
-let DB = {
-
-    User_totalDonated:       (uid) =>         UserLink(uid, '/d/t'),
-    User_prevChargeStatus:   (uid) =>         UserLink(uid, '/st/pcs'),
-    User_donationEventList:  (uid) =>         UserLink(uid, '/v'),
-    User_info:               (uid) =>         UserLink(uid, '/i'),
-    User_donationForEvent:   (uid, eid) =>    UserEventLink(uid, eid, "/don"),
-    User_choiceForEvent:     (uid, eid) =>    UserEventLink(uid, eid, "/x"),
-    
-    Event_active:            () =>            DBLinky('/db/active_event'),
-    Event_allEvents:         () =>            EventLink('',''),
-    Event_totalDonated:      (eid) =>         EventLink(eid, '/ttl'),
-    Event_info:              (eid) =>         EventLink(eid, ''),
-    Event_totalUsers:        (eid) =>         EventLink(eid, '/tu'),
-    Event_overallTotalVotes: (eid) =>         EventLink(eid, '/o/ttl'),
-    Event_votersForOption:   (eid, optid) =>  EventLink(eid, '/o/' + optid +'/vrs/'),
-    Event_optionTotalVotes:  (eid, optid) =>  EventLink(eid, '/o/' + optid + '/ttl'),
-    
-    Plan_totalCount:         (plan) =>        PlanLink(plan, '/ttl') ,
-    Plan_allPlanInfo:        () =>            PlanLink('', '') ,
-    Plan_mostRecent:         (plan) =>        PlanLink(plan, '/mr'),
-
-    Reciept_forEvent:        (eid) =>         ReceiptLink(eid),    
-    Reciept_total:           () =>            ReceiptLink('')      
-};
-
+let PLANS = plansjs.PLANS;
+let DB = DBLinks.DB;
+var log = logging.log;
+var err_log = logging.err_log;
+var ok_log = logging.ok_log;
+var table_log = logging.table_log;
+var group_begin = logging.log_group_begin;
+var group_end = logging.log_group_end;
+var prettify = logging.prettify;
 
 // ____________________________________________________________________________________________________________________________________________
 // ____________________________________________________________________________________________________________________________________________
 
-function log(output) {
-  console.log(output)
+var get_plan_total_counts       = async ()              => await Promise.all(PLANS.map(async plan =>  ({'title': plan.title, 'users': await DB.Plan_totalCount(plan.title).promiseBoxedFetch() })));
+var get_plan_most_recents       = async ()              => await Promise.all(PLANS.map(async plan =>  ({'title': plan.title, 'users': await DB.Plan_mostRecent(plan.title).promiseBoxedFetch() })));
+var mostRecentlyAddedEvent      = async ()              => await DB.Event_allEvents().limitedFetchChildren(1);
+var getActiveEventId            = async ()              => await DB.Event_active().fetch();
+var getStripeCustomerId         = async (uid)           => await DB.User_stripeCustId(uid).fetch()
+var canPostEvents               = async (uid)           => await DB.Admin_checkUser(uid).fetch() // may need to check this logic
+var getTotalDonated             = async (uid)           => await DB.User_totalDonated(uid).fetch();
+var getPrevChargeStatus         = async (uid)           => await DB.User_prevChargeStatus(uid).fetch();
+var getUserInfo                 = async (uid)           => await DB.User_info(uid).fetch();
+var userExists                  = async (uid)           => {
+    try {
+        let x = await admin.auth().getUser(uid);
+        return x;
+    } catch (e) { return null; }
 }
-function logn(output) {
-  console.log('\n' + output)
-}
-
-
-function err_log(output) {
-  logn(clc.red.bold('Error ') + output);
-}
-
-function ok_log(output) {
-  logn(clc.green.bold('OK ') + output);
-}
-
-function table_log(output)  {
-  console.table(output);
-}
-
-function log_group_begin(text) {console.group('\n-- -- ' + text + ' -- --\n');}
-
-function log_group_end() { console.groupEnd(); console.log('\n-- -- \n'); }
-
-function User(name, email, password, plan, displayName, joined,  phoneNumber) {
-  this.Name = name;
-  this.Email = email;
-  this.Password = password;
-  this.Plan = plan;
-  this.DisplayName = displayName;
-  this.Joined = joined;
-  this.PhoneNumber = phoneNumber;
-}
-
-rNumber = () => {
-  var length = 3;
-  var result           = '';
-  var characters       = '0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-      result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-  }
-
-  var extractPhoneNumber = (uncleaned) => {
-    var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
-    return cleaned;
-  }
-
-  var comparePhoneNumbers  = (a, b) => {
-    var same_10 = (extractPhoneNumber(a).slice(-10) == extractPhoneNumber(b).slice(-10));
-    return same_10; // no country compare yet
-  }
-
-
-
-var getProfilePictureFilename = async (uid) => {
-  return new Promise( function(resolve, reject) {
-      root.ref('/users/' + uid + '/img/p').once('value').then (function(snap) {
-          if (snap && snap.val())
-              resolve(snap.val())
-          else
-              reject('No stripe customer id!')
-      })
-  })
-}
-
-
-
-
-/**
- * Gets the active event id
- * @return {[String]} the active event id
- */
-var getTotalIncomeForEvent = async (eventId) => {
-
-  let event_ref = root.ref('/db/events/' + eventId + '/ttl');
-
-  return new Promise( function (resolve, reject) {
-
-    event_ref.once('value').then(function(snapshot) {
-      resolve(snapshot.val());
-    }).catch(function(err) {
-      reject(err.message);
-    });
-  })
-
-}
-
-function unformalized_new_test_event() {
-    let json = {
-        "id" : "-eid" + randstring(10),
-        "o" : {
-          "a" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "b" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "c" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "ttl" : 0
-        },
-        "s" : randstring(100),
-        "t" : "Test 2019",
-        "ttl" : 0,
-        "tu" : 777
-    };
-    let new_json = {
-        "id": json.id,
-        "gen_summary": json.s,
-        "gen_title": json.t,
-        "gen_num_users": json.tu,
-        "gen_revenue_generated": json.ttl,
-        "a_title": json.o.a.t,
-        "b_title": json.o.b.t,
-        "c_title": json.o.c.t,
-        "a_org": json.o.a.org,
-        "b_org": json.o.b.org,
-        "c_org": json.o.c.org,
-        "a_link": json.o.a.link,
-        "b_link": json.o.b.link,
-        "c_link": json.o.c.link,
-        "a_summary": json.o.a.s,
-        "b_summary": json.o.b.s,
-        "c_summary": json.o.c.s,
-    };
-    return new_json;
-}
-
-function prettify(json) { return JSON.stringify(json, null, 2); }
-
-async function new_event_result(body) {
-    // log("Recieved JSON: " + JSON.stringify(body, null, 3));
-    if (body.a_link && body.a_org && body.a_title && body.a_summary && body.b_link && body.b_org && body.b_title && body.b_summary  && body.c_link && body.c_org && body.c_title && body.c_summary )
-        ok_log("New event passes option requirements.");
-    else {
-        err_log("New event failed option requirements.");
-        return null;
-    }
-    // log("Gen Rev: " +  body.gen_revenue_generated + " -> Null ? " + body.gen_revenue_generated != null);
-    // log("Users: " +  body.gen_num_users + " -> Null ? " + body.gen_num_users != null);
-    if (body.gen_summary && body.gen_title)
-        ok_log("New event passes general requirements.");
-    else {
-        err_log("New event failed general requirements.");
-        return null;
-    }
-
-    if (body.gen_revenue_generated == null || body.gen_num_users == null || body.gen_revenue_generated == "" || body.gen_num_users == "") {
-          let info = await user_info();
-          if (!body.gen_revenue_generated)
-            body.gen_revenue_generated = info.revenue;
-          if (!body.gen_num_users)
-                 body.gen_num_users = info.total;
-    }
-
-    return {
-        "id" : "eid" + randstring(5),
-        "o" : {
-          "a" : {
-            "link" : body.a_link,
-            "org" : body.a_org,
-            "s" : body.a_summary,
-            "t" : body.a_title,
-            "ttl" : 0,
-          },
-          "b" : {
-            "link" : body.b_link,
-            "org" : body.b_org,
-            "s" : body.b_summary,
-            "t" : body.b_title,
-            "ttl" : 0,
-          },
-          "c" : {
-            "link" : body.c_link,
-            "org" : body.c_org,
-            "s" : body.c_summary,
-            "t" : body.c_title,
-            "ttl" : 0,
-          },
-          "ttl" : 0
-        },
-        "s" : body.gen_summary,
-        "t" : body.gen_title,
-        "ttl" : body.gen_revenue_generated,
-        "tu" : body.gen_num_users
-    };
-
-}
-const sleep = (milliseconds) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
-var create_new_event = async (req_body, is_preexisting) => {
-    return new Promise( async function(resolve, reject) {
-        // make json
-        let new_event_json = await new_event_result(req_body);
-        if (!new_event_json) reject("Invalid Input");
-        let event_id = new_event_json.id;
-        ok_log("Attempting to inject new event with id " + event_id);
-        // if it is old data we're inserting after-the-fact *special case*
-        if (is_preexisting) {
-            let list = await usersList();
-            for (let user_id of list) {
-                getUserInfo(user_id).then((info) => {
-                    var parts = info.p.split(',', 2);
-                    var current_payment_amt  = parts[1];
-                    DB.User_donationForEvent(user_id, event_id).set(current_payment_amt);
-                });
-            }
-        } else {
-            log("Not preexisting ..");
-        }
-        let dbstring = '/db/events/'+event_id;
-        log('Attempting to set ' + dbstring + ' to ' + prettify(new_event_json));
-        let re = root.ref(dbstring);
-        if (is_preexisting) sleep(5000).then(re.set(new_event_json)).then(() => resolve(event_id));
-        else re.set(new_event_json).then(() => resolve(event_id));
-    });
-}
-
-
-
-
-
-
-function make_test_event() {
-    return {
-        "id" : "-LUZFB34" + randstring(10),
-        "o" : {
-          "a" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "b" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "c" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "ttl" : 0
-        },
-        "s" : randstring(100),
-        "t" : "Test 2019",
-        "ttl" : 0,
-        "tu" : 999
-    }
-}
-
-
-var getStripeCustomerId = async (uid) => {
-  return new Promise( function(resolve, reject) {
-      root.ref('/users/' + uid + '/st/id').once('value').then (function(snap) {
-          if (snap && snap.val())
-              resolve(snap.val())
-          else
-              reject('No stripe customer id!')
-      })
-  })
-}
-
+var getUserSubscriptionId       = async (uid)           => await DB.User_stripeSubId(uid).fetch();
+var eventSnapshot               = async (eventId)       => await DB.Event_info(eventId).fetch()
+var getTotalUsersForEvent       = async (eventId)       => await DB.Event_totalUsers(eventId).fetch();
+var getTotalIncomeForEvent      = async (eventId)       => await DB.Event_totalDonated(eventId).fetch();
+var userHasAlreadyVoted         = async (eid, uid)      => (await DB.User_choiceForEvent(uid, eid).fetch()) !== null;
+var getPremiumPlanTotalCount    = async (plan)          => await DB.Plan_totalCount(plan).fetch();
+var getPremiumPlanMostRecent    = async (plan)          => await DB.Plan_mostRecent(plan).fetch();
+var get_decoded_token           = async (idToken)       => await admin.auth().verifyIdToken(idToken);
 
 var getWinningOptionForEvent = async (active_event_id) => {
-  return new Promise ( async function(resolve, reject) {
-   try {
-       let snap = await eventSnapshot(active_event_id);
-       log('got snap');
-       let event = {
-          title: snap["t"],
-          summary: snap["s"],
-          options: snap["o"],
-          id: snap['id']
-        }
+    try {
+        let options = await eventSnapshot(active_event_id);
+        options = options.o;
+        // console.log(prettify(options));
+        var winner = { votes: null, id: null };
 
-        var winner = {
-            votes: null,
-            id: null
-        };
-        if (event) {
-
-            Object.keys(event.options).forEach(function(key) {
-                if (event.options[key].vrs != null) { // option had voters
-                  var votes = event.options[key].ttl;
-                  if (votes > winner.votes) {
-                      log('setting winner to ' + key + ' at ' + votes + ' votes');
-                      winner.votes = votes;
-                      winner.id = key;
-                  } else if (votes == winner.votes) {
-                      // Randomly determine winner
-                      if (Math.random() > 0.5) {
-                          winner.votes = votes;
-                          winner.id = key;
-                      };
-                  }
+        Object.keys(options).forEach((key) => {
+            if (options[key].vrs != null) { // option had voters
+                var votes = options[key].ttl;
+                if (votes > winner.votes) { // set new winner
+                    winner.votes = votes;
+                    winner.id = key;
+                } else if (votes == winner.votes) {
+                    // Randomly determine winner
+                    if (Math.random() > 0.5) {
+                        winner.votes = votes;
+                        winner.id = key;
+                    };
                 }
-
-
-            });
-        }
-
-       resolve(winner);
-
-   } catch (e) {
-       reject(e);
-   }
-  })
-}
-
-
-/**
- * Gets the snapshot for an event
- * @param  {[String]} eventId [event id]
- * @return {[Object]} snapshot
- */
-var eventSnapshot = async (eventId) => {
-
-  // ref
-  let event_ref = root.ref('/db/events/' + eventId);
-
-  return new Promise( async function (resolve, reject) {
-
-    event_ref.once('value').then( async function(snapshot, err) {
-      if (err) {
-        console.log(err);
-        reject(err.message);
-    } else {
-        if (snapshot.val()) {
-          let event = snapshot.val();
-          event['id'] = eventId;
-          resolve(event)
-        } else {
-          resolve(snapshot.val());
-        }
-
-
-      }
-    });
-  })
-}
-
-
-function send_text_message(pn, body) {
-  if (pn == null) { log('Warning: Could not send text to empty number!'); return; }
-  log('Sending message to ' + pn + '..');
-  client.messages
-  .create({
-     body: body,
-     from: twilio_phoneNumber,
-     to: ('' + pn)
-   }).then(message => console.log(message.sid)).catch(function(err) {log('ERR: ' + err)});
-}
-
-function groupText(pn_list, body) {
-  log('Group texting ' + body );
-  pn_list.forEach(function(pn) {  send_text_message(pn, body); } );
-}
-
-
-// listen for new event change
-async function notifyPeople() {
-  try {
-    var user_phoneNumbers  = await get_all_user_phoneNumbers();
-    if (user_phoneNumbers == null) { log('No user phone numbers!'); return; }
-    let voting_options = await getOptionsDispersion();
-    if (voting_options == null) { log('No voting options!'); return; }
-    var resp = 'Hi there, this is the team at GiveAssist letting you know the voting window is open! Feel free to reply with the digit of your selected option of the month! ';
-    var index = 1;
-    voting_options.forEach(function(opt) {
-      // let option = voting_options[index-1];
-      // log('Options: ' + JSON.stringify(opt));
-      if ((opt['name'] != null && opt['summary'] != null)) {
-        resp += ('\n\n' + index + '. ');
-          let option_string = opt['name'] + '\n' + (opt['summary'].length < 70 ? opt.summary : (opt.summary.substring(0, 70) + '.. [Read more on our site!]'));
-          // log('Option string: ' + option_string);
-          resp += option_string;
-          index++;
-      }
-    })
-    resp += '\n\nhttps://giveassist.org/vote'
-
-    groupText(user_phoneNumbers, resp);
-    // groupText(user_phoneNumbers, 'https://giveassist.org/vote');
-  } catch (e)   {
-    log('active event val change error: ' +e );
-  }
- }
-
-
-var get_all_user_phoneNumbers = async () => {
-  return new Promise( function(resolve, reject) {
-    var numbers = [];
-      let ref = root.ref('/users/');
-      ref.once('value', function(snap) {
-        snap.forEach((child) => {
-          // console.log(child.key, child.val());
-          var user = child.val();
-          var user_id = child.key;
-          if (user['i'] != null) {
-            var user_phone  = user['i']['z'];
-            if (user_phone != null) {
-              numbers.push(user_phone);
             }
-          }
         });
-      })
-      resolve(numbers);
-  })
-}
 
-let group  =  ['9086420950', '9086420949', '9086421391'];
-// groupText(group, 'hello - Ryan');
+        return winner;
 
-var spamChecker = {};
-function updateSpamChecker(phone) {
-  if (spamChecker[phone] == null) {
-    spamChecker[phone] = 1;
-  } else {
-    spamChecker[phone] = Number(spamChecker[phone]) + 1;
-  }
-
-  if (spamChecker[phone] > 8) {
-    send_text_message('9086421391', 'GIVEASSIST SERVER AUTO MSG: WE ARE GETTING SPAMMED FROM ' + phone);
-  }
-
-}
-
-
-var canPostEvents = async (uid) => {
-
-  var event_ref = root.ref('/admins/' + uid + '/');
-  return new Promise( function (resolve, reject) {
-    event_ref.once('value').then(function(snapshot, err) {
-      if (err) {
-        reject(err.message);
-      } else {
-        resolve(snapshot.val());
-      }
-    });
-  })
-}
-
-
-var getOptionsDispersion = async () => {
-  return new Promise ( async function(resolve, reject) {
-   try {
-       let active_event_id = await getActiveEventId();
-
-       let snap = await eventSnapshot(active_event_id);
-       let event = {
-          title: snap["t"],
-          summary: snap["s"],
-          options: snap["o"],
-          id: snap['id']
-        };
-        var objArray = [];
-        if (event) {
-
-            Object.keys(event.options).forEach(function(key) {
-              let op_snap = event.options[key];
-
-              // this is the stuff we're using
-                var opt = {
-                    name: op_snap['t'],
-                    summary: op_snap['s'],
-                    link: op_snap['link'],
-                    id: key,
-                };
-                objArray.push(opt);
-            });
-        }
-
-       resolve(objArray);
-
-   } catch (e) {
-       reject(e);
-   }
-  })
+    } catch (e) {
+        err_log('Get winning opt error: ' + e);
+        throw 'Could not get winning option';
+        return null;
+    }
 }
 
 var haveProcessedUserPaymentForEvent = async (uid, eventId) => {
-  let event_ref = root.ref('/users/' + uid + '/v/' + eventId + '/don');
-  return new Promise( async function (resolve, reject) {
-    event_ref.once('value').then(async function(snapshot, err) {
-      if (err || !snapshot.val()) {
-        resolve('ok');
-        } else {
-          reject('Already Voted!');
-        }
-    });
-  })
-}
-
-
-
-function Customer(cid, amt_contributed) {
-  this.CustomerId = cid;
-  this.AmountContributed = '$' + amt_contributed;
-}
-
-
-async function process_charged_customer_info(cust_id, amountContributed) {
-    log_group_begin('Processing Customer info');
-
-    let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated, totalEventUsers, planTotalCount;
-    let p_incomeForEvent, p_totalDonated, p_totalEventUsers, p_planTotalCount;
-
-    /* Phase 1 - Firebase UID from Stripe Customer Id */
-
-    try {   uid = await getFirebaseUserFromCustomerId(cust_id);            } catch (e) { err_log('Could not find firebase user for stripe user!'); reject('Could not find firebase user for stripe user! -> ' + e); log_group_end(); return null; }
-
-    ok_log(' (1/8) Found uid -> ' + uid);
-
-    /* Phase 2 - Get Active Event */
-
-    try {   active_event = await getActiveEventId();           } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
-
-    ok_log(' (2/8) Found active event -> ' + active_event);
-
-    /* Phase 3 - Check that we are not processing an already-processed user */
-
-    let ap_string = 'We have already processed this user! -> ';
-
-    try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(ap_string + e); reject(e); log_group_end(); return null; }
-
-    ok_log(' (3/8) we have not yet processed user payment for this month');
-
-    /* Phase 4 - Get total amount the contributed to this event & raise it by the amount the user contributed (parameter) */
-
-    try {   p_incomeForEvent = await getTotalIncomeForEvent(active_event); p_incomeForEvent = Number(p_incomeForEvent);            } catch (e) { err_log(e); reject(e);  log_group_end();return null; }
-
-    incomeForEvent = p_incomeForEvent + amountContributed;
-
-    ok_log(' (4/8) got and incremented income');
-
-    /* Phase 5 - Get total amount the user has donated & raise it by the amount the user contributed to this specific event (parameter) */
-
-    try {   p_totalDonated = await getTotalDonated(uid); p_totalDonated = Number(p_totalDonated);             } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
-
-    totalDonated = p_totalDonated + amountContributed;
-
-    ok_log(' (5/8) got amount donated and incremented -> ' + totalDonated + ' (contributed ' + amountContributed + ')');
-
-    /* Phase 6 - Get and increment the total # of users contributing to this event */
-
-    try {  p_totalEventUsers = await getTotalUsersForEvent(active_event);  p_totalEventUsers =  Number(p_totalEventUsers);            } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
-
-    totalEventUsers = p_totalEventUsers+1;
-
-    ok_log(' (6/8) got total event users and incremented');
-
-    /* Phase 7 - Get user's plan. This is done by first getting their info, then manipulating the string result. */
-
-
-    try {  user_plan = await getUserInfo(uid); ok_log('got userinfo'); log(JSON.stringify(user_plan)); user_plan = user_plan['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
-
-    ok_log(' (7/8) got user plan -> ' + user_plan);
-
-    /* Phase 8 - Get and increment the total amount that premium users have contributed (to this event, I believe) */
-
-    try {  p_planTotalCount = await getPremiumPlanTotalCount(user_plan); p_planTotalCount = Number(p_planTotalCount);            } catch (e) { err_log(e); reject(e);  log_group_end(); return null; }
-
-    planTotalCount = p_planTotalCount + 1;
-
-    ok_log(' (8/8) got plan total count -> ' + planTotalCount);
-
-    ok_log('completed db requests');
-
-    let result_json = {
-        "uid": uid,
-        "active_event": active_event,
-        "amountContributed": amountContributed,
-        "p_totalDonated": p_totalDonated,
-        "totalDonated": totalDonated,
-        "p_incomeForEvent": p_incomeForEvent,
-        "incomeForEvent": Math.round(incomeForEvent, 3),
-        "user_plan": user_plan,
-        "p_totalEventUsers": p_totalEventUsers,
-        "totalEventUsers": totalEventUsers,
-        "p_planTotalCount": p_planTotalCount,
-        "planTotalCount": planTotalCount,
-        "formatted_time": moment().format('LL'),
-    };
-
-
-    return result_json;
-
-
-}
-
-async function customer_charged_successfully (cust_id, amountContributed) {
-  return new Promise(async function(resolve, reject) {
-
-    let processed_info = await process_charged_customer_info(cust_id, amountContributed);
-    if (processed_info == null) { reject("We could not properly process user info. "); return; }
-
-    DB.User_donationForEvent(processed_info.uid,processed_info.active_event).set(amountContributed);
-
-    DB.User_totalDonated(processed_info.uid).set(processed_info.totalDonated);
-
-    DB.Event_totalDonated(processed_info.active_event).set(processed_info.incomeForEvent);
-
-    DB.Event_totalUsers(processed_info.active_event).set(processed_info.totalEventUsers);
-
-    DB.Plan_totalCount(processed_info.user_plan).set(processed_info.planTotalCount);
-    DB.Plan_mostRecent(processed_info.user_plan).set(processed_info.formatted_time);
-    DB.User_prevChargeStatus(processed_info.uid).set('OK');
-
-    ok_log('Finished processing charge!');
-    log_group_end();
-
-    resolve(processed_info);
-    return processed_info;
-  })
-}
-
-
-/**
- * Gets the total amt donated
- * @return {[String]} the user id
- */
-var getTotalDonated = async (uid) => {
-  return new Promise ( function(resolve, reject) { DB.User_totalDonated(uid).fetch().then((res) => resolve(res)).catch((err) => reject(err)); });
-}
-
-
-
-var getPrevChargeStatus = async (uid) => {
-  return new Promise ( function(resolve, reject) { DB.User_prevChargeStatus(uid).fetch().then((res) => {(res != 'FAILED') ? resolve(res) :  reject('Please update your payment info, then hop back to submit that vote!')}).catch((err) => reject('Please update your payment info, then hop back to submit that vote!')); });
-}
-
-
-/**
- * Gets the total users for an event
- * @return {[String]} the active event id
- */
-var getTotalUsersForEvent = async (eventId) => {
-  return new Promise ( function(resolve, reject) { DB.Event_totalUsers(eventId).fetch().then((res) => resolve(res)).catch((err) => reject(err)); });
-}
-
-
-
-var getUserInfo = async (uid) => {
-  return new Promise ( function(resolve, reject) { DB.User_info(uid).fetch().then((res) => resolve(res)).catch((err) => reject(err)); });
-}
-
-var mostRecentlyAddedEvent = async () => {
-  return new Promise ( function(resolve, reject) {
-    var events_ref = root.ref('/db/events/').limitToLast(1);
-    events_ref.once('value').then (function(snap) {
-        console.log('Snapback & unload');
-        if (snap && snap.val())
-            resolve(snap.val())
-        else
-            reject('Ay carumba!!!')
+    let event_ref = root.ref('/users/' + uid + '/v/' + eventId + '/don');
+    return new Promise( async function (resolve, reject) {
+        event_ref.once('value').then(async function(snapshot, err) {
+            if (err || !snapshot.val()) {
+                resolve('ok');
+            } else {
+                reject('Already Voted!');
+            }
+        });
     })
-  })
 }
 
+var process_charged_customer_info = async (cust_id, amountContributed) => {
+    return new Promise(async function(resolve, reject) {
+        group_begin('Processing Customer info');
 
-function cast_texted_vote(user_vote, msg_from) {
-  return new Promise(async (resolve, reject) => {
-    updateSpamChecker(msg_from);
+        let uid, active_event, alreadyProcessed, incomeForEvent, totalDonated, totalEventUsers, planTotalCount;
+        let p_incomeForEvent, p_totalDonated, p_totalEventUsers, p_planTotalCount;
 
-    let user_id = await idFromNumber(msg_from);
-    log('got user id ' + user_id);
-    if (user_id != null) {
-      log('Got user id (non-null)..');
-      let active_event = await getActiveEventId();
-      let voting_options = await getOptionsDispersion();
-      log('Got active event & voting options..');
+        /* Phase 1 - Firebase UID from Stripe Customer Id */
 
-      // check text is a number
-      if(isNaN(user_vote)){
-        // it's NOT a number
-        reject('User text was not a number');
-      } else {
-        //  it's a number
-        if (voting_options.length > Number(user_vote))  {
-          // can vote this..  VOTE
-          let voteId = voting_options[Number(user_vote)-1 /* we give them 1..n not 0..n */ ].id;
-          log('Got vote id.. casting vote with: \n EventId: '+active_event +'\n VoteId: ' + voteId + '\n UID: ' + user_id);
-          let casted_vote = await castVote(active_event,voteId, user_id);
+        try {   uid = await getFirebaseUserFromCustomerId(cust_id);           } catch (e) { err_log('Could not find firebase user for stripe user!'); reject('Could not find firebase user for stripe user! -> ' + e); group_end(); return null; }
 
-          resolve(casted_vote);
+        ok_log(' (1/8) Found uid -> ' + uid);
 
-          } else {
-          //can't vote this
-          reject('User text was not a valid vote index');
+        /* Phase 2 - Get Active Event */
+
+        try {   active_event = await getActiveEventId();           } catch (e) { err_log(e); reject(e);  group_end(); return null; }
+
+        ok_log(' (2/8) Found active event -> ' + active_event);
+
+        /* Phase 3 - Check that we are not processing an already-processed user */
+
+        let ap_string = 'We have already processed this user! -> ';
+
+        try {  alreadyProcessed = await haveProcessedUserPaymentForEvent(uid, active_event);              } catch (e) { err_log(ap_string + e); reject(e); group_end(); return null; }
+
+        ok_log(' (3/8) we have not yet processed user payment for this month');
+
+        /* Phase 4 - Get total amount the contributed to this event & raise it by the amount the user contributed (parameter) */
+
+        try {   p_incomeForEvent = await getTotalIncomeForEvent(active_event); p_incomeForEvent = Number(p_incomeForEvent);            } catch (e) { err_log(e); reject(e);  group_end();return null; }
+
+        incomeForEvent = p_incomeForEvent + amountContributed;
+
+        ok_log(' (4/8) got and incremented income');
+
+        /* Phase 5 - Get total amount the user has donated & raise it by the amount the user contributed to this specific event (parameter) */
+
+        try {   p_totalDonated = await getTotalDonated(uid); p_totalDonated = Number(p_totalDonated);             } catch (e) { err_log(e); reject(e);  group_end(); return null; }
+
+        totalDonated = p_totalDonated + amountContributed;
+
+        ok_log(' (5/8) got amount donated and incremented -> ' + totalDonated + ' (contributed ' + amountContributed + ')');
+
+        /* Phase 6 - Get and increment the total # of users contributing to this event */
+
+        try {  p_totalEventUsers = await getTotalUsersForEvent(active_event);  p_totalEventUsers =  Number(p_totalEventUsers);            } catch (e) { err_log(e); reject(e);  group_end(); return null; }
+
+        totalEventUsers = p_totalEventUsers+1;
+
+        ok_log(' (6/8) got total event users and incremented -> uid is ' + uid);
+
+        /* Phase 7 - Get user's plan. This is done by first getting their info, then manipulating the string result. */
+
+        try {  user_plan = await getUserInfo(uid); ok_log('got userinfo'); user_plan = user_plan['p'].split(',')[0];                                       } catch (e) { err_log(e); reject(e);  group_end(); return null; }
+
+        ok_log(' (7/8) got user plan -> ' + user_plan);
+
+        /* Phase 8 - Get and increment the total amount that premium users have contributed (to this event, I believe) */
+
+        try {  p_planTotalCount = await getPremiumPlanTotalCount(user_plan); p_planTotalCount = Number(p_planTotalCount);            } catch (e) { err_log(e); reject(e);  group_end(); return null; }
+
+        planTotalCount = p_planTotalCount + 1;
+
+        ok_log(' (8/8) got plan total count -> ' + planTotalCount);
+
+        ok_log('completed db requests');
+
+        let result_json = {
+            "uid": uid,
+            "active_event": active_event,
+            "amountContributed": amountContributed,
+            "p_totalDonated": p_totalDonated,
+            "totalDonated": totalDonated,
+            "p_incomeForEvent": p_incomeForEvent,
+            "incomeForEvent": Math.round(incomeForEvent, 3),
+            "user_plan": user_plan,
+            "p_totalEventUsers": p_totalEventUsers,
+            "totalEventUsers": totalEventUsers,
+            "p_planTotalCount": p_planTotalCount,
+            "planTotalCount": planTotalCount,
+            "formatted_time": moment().format('LL'),
+        };
+
+        resolve( result_json );
+    })
+}
+
+var customer_charged_successfully = async (cust_id, amountContributed) => {
+    group_begin('customer charged successfully');
+    return new Promise(async function(resolve, reject) {
+        var processed_info;
+        try {
+            processed_info = await process_charged_customer_info(cust_id, amountContributed);
+            ok_log('processed charged customer info.')
+        } catch (e) {
+            err_log(e);
+            reject("We could not properly process user info. ");
+            return;
         }
-      }
-      } else {
-        reject('User has no phone number');
-      }
-  })
-}
 
+        if (processed_info == null) { reject("We could not properly process user info. "); return; }
+
+        DB.User_donationForEvent(processed_info.uid,processed_info.active_event).set(amountContributed);
+
+        DB.User_totalDonated(processed_info.uid).set(processed_info.totalDonated);
+
+        DB.Event_totalDonated(processed_info.active_event).set(processed_info.incomeForEvent);
+
+        DB.Event_totalUsers(processed_info.active_event).set(processed_info.totalEventUsers);
+
+        DB.Plan_totalCount(processed_info.user_plan).set(processed_info.planTotalCount);
+        DB.Plan_mostRecent(processed_info.user_plan).set(processed_info.formatted_time);
+        DB.User_prevChargeStatus(processed_info.uid).set('OK');
+
+        ok_log('Finished processing charge!');
+        group_end();
+
+        resolve(processed_info);
+        return processed_info;
+    })
+}
 
 var performMonthlyRollover = () => {
-  return new Promise ( async function (resolve, reject) {
-    log_group_begin('Monthly Rollover');
-    try {
+    return new Promise ( async function (resolve, reject) {
+        group_begin('Monthly Rollover');
+        try {
 
-      log('Payout created');
-      let active_event = await getActiveEventId();
-      let winningOption = await getWinningOptionForEvent(active_event);
+            log('Payout created');
+            let active_event = await getActiveEventId();
+            let winningOption = await getWinningOptionForEvent(active_event);
 
-      let ref_string = '/db/events/' + active_event + '/w';
+            let ref_string = '/db/events/' + active_event + '/w';
 
-      log('Got options.. now ref string is => ' + ref_string);
-      log('winning op was: ' + JSON.stringify(winningOption));
+            log('Got options.. now ref string is => ' + ref_string);
+            log('winning op was: ' + (winningOption));
 
-      let nextEvent = await mostRecentlyAddedEvent();
+            let nextEvent = (await mostRecentlyAddedEvent())[0];
 
-      nextEvent = Object.keys(nextEvent) != null ? Object.keys(nextEvent)[0] : null;
+            // console.log(JSON.stringify(nextEvent, null, 3));
 
-      log('ne => ' + nextEvent);
+            log('Next event id => ' + nextEvent.id + ' (from ' + active_event + ')');
 
-      if (nextEvent == null) { throw('Cannot find a next event!'); }
-
-      root.ref(ref_string).set(winningOption);
-
-      // ------- UPATE WINNING OPTION AS WINNING OPTION ------- //
-
-      root.ref('/db/active_event/').set(nextEvent);
-
-      notifyPeople();
-
-      resolve('Good!');
-  } catch (e) {
-
-    err_log(e);
-    reject(e);
-  }
-  log_group_end();
-  });
-}
-
-
-
-
-var validateEmail = (email) => {
-  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email).toLowerCase());
-}
-
-var validatePhone = (phone) => {
-   var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-   return re.test(String(phone));
-}
-
-var extractPhoneNumber = (uncleaned) => {
-  var cleaned = String(uncleaned).replaceAll('(','').replaceAll(')','').replaceAll('+','').replaceAll('-','');
-  return cleaned;
-}
-
-var makeid = () => {
-  var length = 6;
-  var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-var randstring = (l) => {
-  var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < l; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-
-
-// trim the 'remium ' out of each option (for space)
-var untrimSelectedOptionName = (opt) =>  {
-  opt = opt + '';
-  return opt.split(',')[0];
-}
-
-// trim the 'remium ' out of each option (for space)
-var untrimSelectedOptionAmount = (opt) =>  {
-  opt = opt + '';
-  let spl = opt.split(',');
-  // log(spl);
-  return opt.split(',')[1];
-}
-
-
-
-
-var usersList = async () => {
-    return new Promise( async function(resolve, reject) {
-      var list = [];
-      let ref = root.ref('/users/');
-      ref.once('value',  function(snap) {
-        snap.forEach((child) => {
-          var user_id = child.key;
-         list.push(user_id);
-        });
-              resolve(list);
-      })
-  })
-}
-
-/*
-    Format:
-    {
-        total: total # of users
-        revenue: total revenue
-    }
- */
-var user_info = async () => {
-    return new Promise( async function(resolve, reject) {
-      let ref = root.ref('/users/');
-      // get all users
-      ref.once('value',  function(snap) {
-            var num_users = 0;
-            var total_rev = 0;
-            snap.forEach((child) => {
-                  let val = child.val();
-                  if (val && val['i']) {
-                        // get their don amt as a # (base 10)
-                        let amt = parseFloat(untrimSelectedOptionAmount(val['i']['p']), 10);
-                        num_users++;
-                        total_rev+=amt;
-                  }
-            });
-            resolve({'total': num_users, 'revenue': total_rev});
-      })
-  })
-}
-
-var idFromNumber = async (phone) => {
-  return new Promise( function(resolve, reject) {
-      let ref = root.ref('/users/');
-      ref.once('value', function(snap) {
-        snap.forEach((child) => {
-          // console.log(child.key, child.val());
-          var user = child.val();
-          var user_id = child.key;
-          if (user['i'] != null) {
-            // log('found user info!: ' + JSON.stringify(user['i']));
-            var user_phone  = user['i']['z'];
-            if (user_phone != null) {
-
-              // log('found user phone!: ' + extractPhoneNumber(user_phone) + ' (v. ' + extractPhoneNumber(phone) + ' => ' + (user_phone == phone ? 'TRUE' : 'FALSE') + ' )');
-              // match
-              if (comparePhoneNumbers(user_phone, phone)){
-                // log('resolving id-from-number');
-                  resolve(user_id);
-              }
+            if (nextEvent.id === active_event) { // nowhere to rollover to
+                // PROBLEM: Text Ryan
+                sms.send_text_message('9086421391', 'Yo, problem!! There is nowhere for GA to rollover to. Need to add it in via form & call sms.notifyPeople()');
+                err_log('Missing a next month to rollover to!');
+                resolve('Good');
+                return;
             }
-          }
 
-        });
-        log('rejecting id-from-number');
-        reject(null);
-      })
+            ok_log('Rolling Over');
 
-  })
+            root.ref(ref_string).set(winningOption);
+
+            // ------- UPATE WINNING OPTION AS WINNING OPTION ------- //
+
+            root.ref('/db/active_event/').set(nextEvent.id);
+
+            sms.notifyPeople();
+
+            resolve('Good!');
+        } catch (e) {
+
+            err_log(e);
+            reject(e);
+        }
+        group_end();
+    });
 }
 
 var planIDForNameAndAmt = (untrimmed_nameAndAmt) => {
-  let name = untrimSelectedOptionName(untrimmed_nameAndAmt);
-  if (name != 'PX' && name != 'PY' && name != 'PZ' ) {
-    // console.log('Inavlid plan param (' +name+'): not one of options!')
-    return new Error('Invalid planIDForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
-  }
-  if (name == 'PX') {
-      return 'plan_FOXcPq3uHNqx4X';
-  }
-  else if (name == 'PY') {
-      return 'plan_FOXdWHDyLP44tO';
-  }
-  else if (name == 'PZ') {
-    return 'plan_FNDp8ntFqUpWgO';
-  }
-  else return null;
+    let plan_title = untrimmed_nameAndAmt.split(',')[0];
+    return plansjs.idForPlanWithTitle(plan_title);
 }
-
 
 var quantityForNameAndAmt = (untrimmed_nameAndAmt) => {
-    // log('Quantity for name and amt.. IN: ' + untrimmed_nameAndAmt)
-  let name = untrimSelectedOptionName(untrimmed_nameAndAmt);
-  // log('name is ' + name);
-
-  let amt = Number(parseFloat(untrimSelectedOptionAmount(untrimmed_nameAndAmt)));
-  // log('amt is ' + amt);
-  if (amt == null || name == null || isNaN(amt)) {
-    return new Error('Invalid quantityForNameAndAmt parameter! (' + untrimmed_nameAndAmt + ')');
-  }
-  amt = Number(amt);
-  if (name == 'PX') {
-      let q = Math.round(amt.toFixed(2) / PRICE_PREM_X.toFixed(2));
-      // log('User buying '  + q + ' units of ' + name + '..');
-      return q;
-  }
-  else if (name == 'PY') {
-    let q = Math.round(amt.toFixed(2) / PRICE_PREM_Y.toFixed(2));
-    // log('User buying '  + q + ' units of ' + name + '..');
-    return q;
+    let split = untrimmed_nameAndAmt.split(',');
+    let plan_title = split[0];
+    let money_being_spent = parseFloat(split[1]);
+    if (typeof money_being_spent !== 'number' ) throw 'Quantity error: must be a number';
+    let price = plansjs.priceForPlanWithTitle(plan_title) || 1.0; // def is 1.0
+    if (price === 1) { // custom
+        if (money_being_spent % 1 !== 0) throw 'Quantity error: must be whole number';
+        if (money_being_spent < plansjs.lowestPlanCost()) throw 'Quantity error: must be higher than lowest plan.';
     }
-  else if (name == 'PZ') {
-    let q = Math.round(amt.toFixed(2) / PRICE_PREM_Z.toFixed(2));
-    // log('User buying '  + q + ' units of ' + name + '..');
-    return q;
-    }
-  else return null;
+    return price !== 1.0 ? 1 : money_being_spent; // they get mbs units if they go custom
 }
-
-
-
-async function get_decoded_token(idToken)  {
-  return new Promise(async function(resolve, reject) {
-    admin.auth().verifyIdToken(idToken).then(function(tkn) {
-      ok_log('Found token');
-      if (tkn != null) {resolve(tkn); } else { reject(tkn); }
-    }).catch(function(err) {
-      err_log('Finding token -> ' + err);
-      reject(err);
-    })
-  })
-}
-
 
 var getFirebaseUserFromCustomerId = async (cust_id) => {
-    return new Promise( function(resolve, reject) {
-        let ref = root.ref('/stripe_ids/' + cust_id + '/uid/');
-        ref.once('value', function(snap) {
-            if (snap && snap.val())
-                resolve(snap.val())
-            else
-                reject(new Error('Snap.val() did not exist!'))
-        })
-    })
+    let uid = await DB.Stripe_uidForCustomer(cust_id).fetch();
+    if (!uid) throw 'Could not find uid';
+    return uid;
 }
-
-/**
- * Gets the active event id
- * @return {[String]} the active event id
- */
-var getActiveEventId = async () => {
-
-  let event_ref = root.ref('/db/active_event');
-
-  return new Promise( function (resolve, reject) {
-
-    event_ref.once('value').then(function(snapshot) {
-      resolve(snapshot.val());
-    }).catch(function(err) {
-      reject(err.message);
-    });
-  })
-
-}
-
-const getToday = () => {
-  var today = new Date();
-  var dd = today.getDate();
-  var mm = today.getMonth() + 1; //January is 0!
-
-  var yyyy = today.getFullYear();
-  if (dd < 10) {
-    dd = '0' + dd;
-  }
-  if (mm < 10) {
-    mm = '0' + mm;
-  }
-  var td = mm + '/' + dd + '/' + yyyy;
-  return td;
-}
-
-
-
-var getPremiumPlanTotalCount = async (plan) => {
-  return new Promise ( function(resolve, reject) { DB.Plan_totalCount(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
-}
-var getPremiumPlanMostRecent = async (plan) => {
-  return new Promise ( function(resolve, reject) { DB.Plan_mostRecent(plan).fetch().then((res) => resolve(res)).catch((err) => reject(err)) });
-}
-
-var get_plan_total_counts = async () => {
-  return new Promise(async function(resolve, reject){
-    try {
-      let premx = await getPremiumPlanTotalCount(PLAN.premiumX); ok_log('got premx count  ->  '  + JSON.stringify(premx));
-      let premy = await getPremiumPlanTotalCount(PLAN.premiumY); ok_log('got premy count  ->  '  + premy);
-      let premz = await getPremiumPlanTotalCount(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz);
-      resolve( { x: premx, y: premy, z: premz } );
-    } catch (e) { err_log(e); reject(e); }
-  })
-}
-var get_plan_most_recents = async () => {
-  return new Promise(async function(resolve, reject){
-    try {
-      let premx = await getPremiumPlanMostRecent(PLAN.premiumX); ok_log('got premx count  ->  '  + premx);
-      let premy = await getPremiumPlanMostRecent(PLAN.premiumY); ok_log('got premy count  ->  '  + premy);
-      let premz = await getPremiumPlanMostRecent(PLAN.premiumZ); ok_log('got premz count  ->  '  + premz);
-      resolve( { x: premx, y: premy, z: premz } );
-    } catch (e) { err_log(e); reject(e); }
-  })
-}
-
-
 
 var get_plan_stats = async () => {
-  return new Promise(async function(resolve, reject){
-    try {
-      let counts =  await get_plan_total_counts();
-      let recents = await get_plan_most_recents();
-      resolve( {  counts: counts, recents: recents } )
-    } catch (e) { reject(e); };
-  })
+    let counts =  await get_plan_total_counts();
+    let recents = await get_plan_most_recents();
+    return {  counts: counts, recents: recents };
 };
 
 var user_info_problems = (userJson) => {
 
-  // Validate each property
-  let nameIsOk = userJson.n != null && userJson.n != '' && userJson.n.length > 4;
-  let emailIsOk = userJson.e != null && validateEmail(userJson.e);
-  let planIsOk = userJson.p != null && planIDForNameAndAmt(userJson.p) != null;
-  let phoneIsOk = userJson.z != null && validatePhone(userJson.z);
-  if (!nameIsOk)  {
-    return ('Please check your name, it doesn\'t\n appear to be valid!')
-  }  else if (!emailIsOk) {
-    return ('Please check your email, it doesn\'t\n appear to be valid!');s
-  } else if (!phoneIsOk) {
-    return ('Please check your phone number ('+ userJson.z+ '), it doesn\'t\n appear to be valid!')
-  } else if (!planIsOk) {
-    return ('Please check your plan, it doesn\'t\n appear to be selected!')
-  }
-  return null;
+    var check_string = (s, minlen, maxlen) => s && typeof s === 'string' && s.length > minlen && s.length < maxlen;
+
+    // Validate each property
+    let nameIsOk = check_string(userJson.n, 3, 50);
+    let emailIsOk = check_string(userJson.e, 3,100) && helpers.validateEmail(userJson.e);
+    let planIsOk = userJson.p != null && planIDForNameAndAmt(userJson.p) != null;
+    let phoneIsOk = userJson.z != null && helpers.validatePhone(userJson.z);
+    if (!nameIsOk)  {
+        return ('Please check your name, it doesn\'t\n appear to be valid!')
+    }  else if (!emailIsOk) {
+        return ('Please check your email, it doesn\'t\n appear to be valid!');s
+    } else if (!phoneIsOk) {
+        return ('Please check your phone number ('+ userJson.z+ '), it doesn\'t\n appear to be valid!')
+    } else if (!planIsOk) {
+        return ('Please check your plan, it doesn\'t\n appear to be selected!')
+    }
+    return null;
 }
 
 function postUserInfo (n,e,p,dn,z, uid) {
 
-  // All fields cleared
-  var userJson = {
-      n: n,                           // name
-      e: e,                           // email
-      p: p,                           // plan
-      dn: dn,                         // display name
-      j: getToday(),                  // timestamp
-      z: z                            // phone number
-  };
+    var userJson = {
+        n: n,                           // name
+        e: e,                           // email
+        p: p,                           // plan
+        dn: dn,                         // display name -> I created this earlier, so it's valid.
+        j: helpers.getToday(),                  // timestamp
+        z: z                            // phone number
+    };
 
-  let problems = user_info_problems(userJson);
+    let problems = user_info_problems(userJson);
 
-  if (problems == null) {
-      // log('Info post passed requirements..');
-      userJson['dn'] =  makeid();
-      // Set user info
-      root.ref('/users/'+(uid)+'/i/').set(userJson);
-      // set db stuff
-      root.ref('/queriable/'+uid+'/dn').set(userJson.dn);
-      root.ref('/users/' + uid + '/d/t').set(0);
-      // log('User info posted.');
-      return true;
-  } else {
-      return false;
-  }
+    if (problems == null) {
+        // Set user info
+        DB.User_info(uid).set(userJson);
+        // set db stuff
+        DB.User_totalDonated(uid).set(0);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 async function executeCreateSubscription (uid, planNameAndAmount) {
-  return new Promise( async function(resolve, reject) {
-      // log('Executing create sub of: ' + planNameAndAmount);
+    return new Promise(async (resolve, reject) => {
 
-      try {
+        try {
 
-          let customer_id = await getStripeCustomerId(uid);
+            let customer_id = await getStripeCustomerId(uid);
+            var plan = planIDForNameAndAmt(planNameAndAmount);
+            var amt = quantityForNameAndAmt(planNameAndAmount);
 
-          var plan = planIDForNameAndAmt(planNameAndAmount);
-          var amt = quantityForNameAndAmt(planNameAndAmount);
+            log('Plan: ' + plan + '  Amt: ' + amt);
 
-            // Create the user subscription
-            stripe.subscriptions.create({
-                customer: customer_id,
-                items: [
-                  {
-                    plan: plan,
-                    quantity: amt,
-                  },
-                ],
-              }, {
-                stripe_account: "[REDACTED]",
-              }, function(err, subscription) {
-                if (subscription) {
+            let subscription_params = { customer: customer_id, items: [ { plan: plan, quantity: amt } ]};
+            let ga_account_params = { stripe_account: STRIPE_ACCT_ID };
 
-                  // log('OK Generated subscription!')
-                  root.ref('/users/' + uid + '/sub/').set(subscription.id);
-                  root.ref('/queriable/'+uid+'/p').set(planNameAndAmount);
-                  resolve(subscription.id);
-                  return;
+            let callback = async (err, subscription) => {
+                if (subscription) { // sets should have await..then
+                    DB.User_stripeSubId(uid).set(subscription.id);
+                    root.ref('/queriable/'+uid+'/p').set(planNameAndAmount);
+                    ok_log('Created subscription');
+                    resolve(subscription.id);
                 } else {
-                  // log('BAD Did NOT Generate subscription! Error: ' + err);
-                  reject(err);
-                  return;
+                    err_log('Error in creating subscription: ' + err);
+                    throw 'Error in creating subscription: ' + err;
                 }
-              });
-      } catch (err) {
-        // logn('FUNCTION executeCreateSubscription Error: ' + err)
-      reject('Payment could not process! Failed with error: ' + err);
-      }
-  })
-
+            };
+            // Create the user subscription
+            stripe.subscriptions.create(subscription_params, ga_account_params, callback);
+        } catch (err) {
+            err_log('Payment could not process! Failed with error: ' + err);
+            reject('Payment could not process! Failed with error: ' + err);
+        }
+    });
 }
 
 async function createStripeUser (paymentToken, email, uid) {
-  return new Promise(async function (resolve, reject) {
+    if (!uid || !email || !paymentToken) throw 'Create Stripe User Err: Invalid inputs!';
     try {
-      // log('Creating stripe user with inputs: \ntkn: ' + JSON.stringify(paymentToken) + '\neml: ' + email);
         // Create a Customer:
         const customer = await stripe.customers.create({
-          source: paymentToken,
-          email: email,
+            source: paymentToken,
+            email: email,
         })
 
-        if (customer) {
-            let customer_id = customer.id;
-            if (uid && customer_id) {
-                // console.log('sUID: ' + uid)
-                // console.log('sCustomer ID: ' + customer_id)
-                root.ref('/users/' + uid + '/st/id/').set(customer_id)
-                root.ref('/stripe_ids/' + customer_id + '/uid/').set(uid);
-                // ok_log('we have a stripe customer id -> ' + customer_id);
-                resolve(customer_id);
-                return;
-            } else {
-                // log('Could not create stripe user!')
-                reject('Could not create payment-backed user!');
-                return;
-            }
-        } else {
-            reject('Could not create customer!');
-            return;
-        }
+        let customer_id = customer.id;
+        DB.User_stripeCustId(uid).set(customer_id);
+        DB.Stripe_uidForCustomer(customer_id).set(uid);
+
+        return customer_id;
+
     } catch (e) {
-      reject('Could not create customer! -> ' + e);
-      return;
+        err_log('Could not create customer! -> ' + e);
+        return null;
     }
-  })
 }
 
 async function deleteUser(uid) {
-  return new Promise(async function (resolve, reject) {
+    return new Promise(async (resolve, reject) => {
 
-    getStripeCustomerId(uid).then(function(cust_id){
+        let cust_id = await getStripeCustomerId(uid);
 
-      // log('OK Got stripe info..');
+        let callback = async (err, confirmation) => {
+            if (confirmation) {
 
-      stripe.customers.del(cust_id,
-        function(err, confirmation) {
-          if (confirmation) {
+                // Clear firebase references
+                root.ref('/users/' + uid + '/').set(null);
+                root.ref('/queriable/' + uid + '/').set(null);
+                root.ref('/stripe_ids/' + cust_id + '/').set(null);
 
-              // Clear firebase references
-              root.ref('/users/' + uid + '/').set(null);
-              root.ref('/queriable/' + uid + '/').set(null);
-              root.ref('/stripe_ids/' + cust_id + '/').set(null);
+                let del = await admin.auth().deleteUser(uid);
+                resolve("Successfully deleted user");
 
-              // Delete user from auth
-              admin.auth().deleteUser(uid)
-                .then(function() {
-                  // console.log("Successfully deleted user");
-                  resolve("Successfully deleted user");
-                  return;
-                })
-                .catch(function(error) {
-                  // console.log("Error deleting user: " + error);
-                  reject(error);
-                  return;
-                });
-          } else {
-              if (err) {
-                reject('Delete User confirmation error: ' + err);
-              } else {
-                reject('Unknown error result of delete user!');
-              }
-              return;
-          }
+            } else {
+                reject('Stripe customer del error: ' + err);
+            }
         }
-      );
 
-    }).catch(function(e) {
-      // Clear firebase references
-      root.ref('/users/' + uid + '/').set(null);
-      root.ref('/queriable/' + uid + '/').set(null);
+        stripe.customers.del(cust_id, callback);
 
-      // Delete user from auth
-      admin.auth().deleteUser(uid)
-        .then(function() {
-          // console.log("Successfully deleted user");
-          resolve("Successfully deleted user");
-          return;
-        })
-        .catch(function(error) {
-          // console.log("Error deleting user:", error);
-          reject(error);
-          return;
-        });
+    })
+}
+
+async function initiate_new_user (email, password, usr, paymentToken) {
+    return new Promise(async function(resolve,  reject)  {
+
+        let unclean_user_info = user_info_problems(usr);
+        if (unclean_user_info) { reject(unclean_user_info); return; }
+
+        let new_user = new helpers.User(usr.n,email, password, usr.p, usr.dn, usr.j, usr.z);
+
+        if (new_user.PhoneNumber.charAt(0) != '+' || new_user.PhoneNumber.length == 10)
+        new_user.PhoneNumber = '+1' + new_user.PhoneNumber;
+
+        table_log([new_user]);
+        var user_record;
+        try {
+            // create user
+            user_record = await admin.auth().createUser({
+                email: new_user.Email,
+                emailVerified: false,
+                phoneNumber: new_user.PhoneNumber,
+                password: new_user.Password,
+                displayName: new_user.DisplayName
+            });
+        } catch (e) {
+            reject('USER_EXISTS');
+            return;
+        }
+
+        ok_log('created user');
+
+        let uid = user_record.uid;
+
+        // post user info & handle fail
+        if (!postUserInfo(new_user.Name, new_user.Email, new_user.Plan, new_user.DisplayName, new_user.PhoneNumber, uid)) { deleteUser(uid);err_log('Weirdly rejected while posting user info');reject('Invalid info'); return; }
+
+        ok_log('posted user info')
+
+        var stripe_user;
+        try { stripe_user = await createStripeUser(paymentToken, email, uid); } catch (e) { deleteUser(uid);err_log('while creating stripe user -> ' + e); reject('Could not create stripe user'); return; }
+
+        ok_log('created stripe user ');
+
+        var init_payments;
+        try { init_payments = await executeCreateSubscription(uid, new_user.Plan) } catch (e) { deleteUser(uid);err_log('while initializing payments (creating subscription) -> ' + e); reject('Could not initialize stripe payments'); return; }
+
+        ok_log('init. payments')
+
+        DB.User_totalDonated(uid).set(0);
+
+        ok_log('init. total donated for uid -> ' + uid);
+
+        ok_log('Completed User Initialization.')
+
+        resolve(uid);
+
     });
-  })
+}
 
+var castVote = async (eventId, optionIndex, userId) => {
+    return new Promise( async function(resolve, reject) {
+
+        try {
+
+            let ev = await DB.Event_info(eventId).fetch();
+            let voteId = Object.keys(ev.o)[optionIndex];
+
+            ok_log('Parsed option index into event option');
+
+            let hasVoted = await userHasAlreadyVoted(eventId, userId);
+            if (hasVoted == true) { err_log('User has already voted!'); reject('It seens you have already voted!'); return; }
+            ok_log('User hasn\'t voted yet')
+            let user_payment_succeeded = await getPrevChargeStatus(userId);
+            ok_log('User payment clean')
+
+            DB.Event_votersForOption(eventId, voteId).push(userId)
+            DB.User_choiceForEvent(userId, eventId).set(voteId);
+
+            ok_log('User payment clean')
+
+            /*  Cast vote to the place  */
+
+            let event_option_votes = await DB.Event_optionTotalVotes(eventId, voteId).fetch();
+
+            ok_log('got total option votes -> ' + event_option_votes)
+
+            event_option_votes = Number(event_option_votes) + 1;
+            DB.Event_optionTotalVotes(eventId, voteId).set(event_option_votes);
+
+            ok_log('updated total option votes -> ' + event_option_votes)
+
+            /*  Update event's total as well  */
+
+            let event_total_votes = await DB.Event_overallTotalVotes(eventId).fetch();
+
+            ok_log('got total event votes')
+
+            event_total_votes = Number(event_total_votes);
+            event_total_votes++;
+            DB.Event_overallTotalVotes(eventId).set(event_total_votes);
+
+            ok_log('updated total event votes')
+
+            ok_log('Casted vote for user -> ' + userId);
+
+            resolve('ok');
+
+        } catch (e) {
+            err_log(e);
+            reject(e);
+        }
+
+    })
+}
+
+var update_plan = (idToken, planNameAndAmt, adminOverrideToken ) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+
+            var planId = planIDForNameAndAmt(planNameAndAmt);
+            if (!planId) throw 'Invalid plan name/amt specified';
+
+            // Get decoded token
+            let tkn = adminOverrideToken  || await get_decoded_token(idToken);
+            if (!tkn) throw 'Invalid id token specified';
+            let uid = tkn.uid;
+
+            var sub_id = await getUserSubscriptionId(uid);
+            // log(uid + ' -> ' + JSON.stringify(sub_id));
+            const subscription = await stripe.subscriptions.retrieve(sub_id);
+
+            let amt = quantityForNameAndAmt(planNameAndAmt);
+
+            let params = { cancel_at_period_end: false, items: [{ id: subscription.items.data[0].id, plan: planId, quantity: amt }] };
+
+            let callback = (err, subscription) => {
+                if (subscription) {
+                    ok_log('Got subscription!')
+                    root.ref('/users/' + uid + '/sub').set(subscription.id);
+                    root.ref('/users/' + uid + '/i/p/').set(planNameAndAmt);
+                    root.ref('/queriable/' + uid + '/p').set(planNameAndAmt);
+
+                    ok_log('Plan Change complete!')
+                    resolve(subscription);
+                    group_end();
+                } else { err_log(err); reject(err); console.groupEnd(); console.log('\n-- -- \n'); }
+            }
+
+            stripe.subscriptions.update(sub_id, params, callback);
+
+        } catch (e) { err_log(e); reject(e); group_end(); }
+    })
+}
+
+
+async function cast_texted_vote(user_vote, msg_from) {
+    return new Promise(async (resolve, reject) => {
+        sms.updateSpamChecker(msg_from);
+
+        let user_id = await sms.idFromNumber(msg_from);
+        log('got user id ' + user_id);
+        if (user_id !== null) {
+            let active_event = await getActiveEventId();
+            let voting_options = await sms.getOptionsDispersion();
+            log('Got active event & voting options..');
+
+            // check text is a number
+            if(isNaN(user_vote)){
+                // it's NOT a number
+                reject('User text was not a number');
+            } else {
+                user_vote = typeof user_vote === 'string' ? parseFloat(user_vote) : Number(user_vote);
+                //  it's a number
+                if (voting_options.length > user_vote)  {
+                    // can vote this..  VOTE
+                    // let voteId = voting_options[Number(user_vote)-1 /* we give them 1..n not 0..n */ ].id;
+                    let voteId = user_vote-1;
+                    log('Got vote id.. casting vote with: \n EventId: '+active_event +'\n VoteId: ' + voteId + '\n UID: ' + user_id);
+                    let casted_vote = await castVote(active_event,voteId, user_id);
+                    ok_log('Casted vote');
+                    resolve(casted_vote);
+
+                } else {
+                    //can't vote this
+                    reject('User text was not a valid vote index');
+                }
+            }
+        } else {
+            reject('User has no phone number');
+        }
+    })
 }
 
 // ____________________________________________________________________________________________________________________________________________
 // ____________________________________________________________________________________________________________________________________________
 
-module.exports = {
-  usersList: async function() { return await usersList(); },
-  create_new_event: async function (req_body, is_preexisting) { return await create_new_event(req_body, is_preexisting); },
-  getWinningOptionForEvent: async function (active_event_id) { return getWinningOptionForEvent(active_event_id); },
-  updateSpamChecker: function(num) { return updateSpamChecker(num); },
-  Customer: function(cid, amt_contributed) { return Customer(cid, amt_contributed); },
-  customer_charged_successfully: async function(cust_id, amountContributed) { return await customer_charged_successfully(cust_id, amountContributed); },
-  process_charged_customer_info: async function(cust_id, amountContributed) { return await process_charged_customer_info(cust_id, amountContributed); },
-  cast_texted_vote: async function (user_vote, msg_from){ return await cast_texted_vote(user_vote, msg_from); },
-  getTotalDonated: async function(uid) { return await getTotalDonated(uid); },
-  canPostEvents: async function(uid) { return await canPostEvents(uid); },
-  getUserInfo: async function(uid) { return await getUserInfo(uid); },
-  getPrevChargeStatus: async function(uid) { return await getPrevChargeStatus(uid); },
-  getTotalUsersForEvent: async function(eventId) { return await getTotalUsersForEvent(eventId); },
-  getOptionsDispersion: async function() { return await getOptionsDispersion(); },
-  performMonthlyRollover: async function() { return await performMonthlyRollover(); },
-  get_decoded_token: async function(tkn) { return await get_decoded_token(tkn); },
-  getActiveEventId: async function() { return await getActiveEventId(); },
-  getPremiumPlanMostRecent: async function(plan) { return await getPremiumPlanMostRecent(plan); },
-  getPremiumPlanTotalCount: async function(plan) { return await getPremiumPlanTotalCount(plan); },
-  get_plan_total_counts: async function() { return await get_plan_total_counts(); },
-  idFromNumber: async function(ph) { return await idFromNumber(ph); },
-  getFirebaseUserFromCustomerId: async function(i) { return await getFirebaseUserFromCustomerId(i); },
-  make_test_event: function() { return make_test_event(); },
-  getStripeCustomerId: async function(uid) { return await getStripeCustomerId(uid); },
-    TEST_MODE: TEST_MODE,
-    root: root,
-    stripe: stripe,
-    PLAN: PLAN,
-    DB: DB,
-    Link: Link,
+
+module.exports = { root: root, getWinningOptionForEvent: getWinningOptionForEvent, customer_charged_successfully: customer_charged_successfully, process_charged_customer_info: process_charged_customer_info, getTotalDonated: getTotalDonated,
+    canPostEvents: canPostEvents,
+    getUserInfo: getUserInfo,
+    getPrevChargeStatus: getPrevChargeStatus,
+    getTotalUsersForEvent: getTotalUsersForEvent,
+    performMonthlyRollover: performMonthlyRollover,
+    get_decoded_token: get_decoded_token,
+    getActiveEventId: getActiveEventId,
     planIDForNameAndAmt: planIDForNameAndAmt,
-    randomNumber: function() {return rNumber(); },
-    user_info_problems: function(json) { return user_info_problems(json); },
-    postUserInfo: function (n,e,p,dn,z, uid) {
-        return postUserInfo(n,e,p,dn,z,uid);
-    },
-
-    get_plan_stats: async () => { return new Promise(function(resolve, reject) { get_plan_stats().then((res) => resolve(res)).catch((err) => reject(err)) })},
-    getPremiumPlanTotalCount: async (plan) => { return new Promise(function(resolve, reject) { getPremiumPlanTotalCount(plan).then((res) => resolve(res)).catch((err) => reject(err)) })},
-    getPremiumPlanMostRecent: async (plan) => { return new Promise(function(resolve, reject) { getPremiumPlanMostRecent(plan).then((res) => resolve(res)).catch((err) => reject(err)) })},
-    deleteUser: async function (uid) {
-      return new Promise( function(resolve, reject) {
-        deleteUser(uid).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); });
-      })
-    },
-    createStripeUser: async function (paymentToken, email, uid) {
-      return new Promise( function(resolve, reject) {
-        createStripeUser(paymentToken,email,uid).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); })
-      })
-    },
-    executeCreateSubscription: async function (uid, planNameAndAmount) {
-      return new Promise( function(resolve, reject) {
-        executeCreateSubscription(uid, planNameAndAmount).then(function(resp) {resolve(resp); }).catch(function(err) { reject(err); })
-      })
-    },
-  //   getUserInfo:  async function (uid) {
-  //     return new Promise( function(resolve, reject) {
-  //       let ref = root.ref('/users/' + uid + '/i/');
-  //         ref.once('value').then (function(snap) {
-  //             if (snap && snap.val())
-  //                 resolve(snap.val())
-  //             else
-  //                 resolve(null)
-  //         })
-  //     })
-  // },
-  userExists: async function (uid) {
-    return new Promise( function(resolve, reject) {
-        admin.auth().getUser(uid).then(function(userRecord) { resolve(userRecord);}).catch(function(error) {resolve(null);});
-    })
-  },
-  initiate_new_user: async function (email, password, usr, paymentToken) {
-    return new Promise(async function(resolve,  reject)  {
-
-        log()
-
-      let unclean_user_info = user_info_problems(usr);
-      if (unclean_user_info) { reject(unclean_user_info); return; }
-
-      let new_user = new User(usr.n,email, password, usr.p, usr.dn, usr.j, usr.z);
-
-      if (new_user.PhoneNumber.charAt(0) != '+' || new_user.PhoneNumber.length == 10)
-        new_user.PhoneNumber = '+1' + new_user.PhoneNumber;
-
-      table_log([new_user]);
-      var user_record;
-      try {
-      // create user
-      user_record = await admin.auth().createUser({
-        email: new_user.Email,
-        emailVerified: false,
-        phoneNumber: new_user.PhoneNumber,
-        password: new_user.Password,
-        displayName: new_user.DisplayName
-      });
-      } catch (e) {
-        reject('USER_EXISTS');
-        return;
-      }
-
-      ok_log('created user');
-
-      let uid = user_record.uid;
-
-      // post user info & handle fail
-      if (!postUserInfo(new_user.Name, new_user.Email, new_user.Plan, new_user.DisplayName, new_user.PhoneNumber, uid)) { deleteUser(uid);err_log('Weirdly rejected while posting user info');reject('Invalid info'); return; }
-
-      ok_log('posted user info')
-
-      var stripe_user;
-      try { stripe_user = await createStripeUser(paymentToken, email, uid); } catch (e) { deleteUser(uid);err_log('while creating stripe user -> ' + e); reject('Could not create stripe user'); return; }
-
-      ok_log('created stripe user ');
-
-      var init_payments;
-      try { init_payments = await executeCreateSubscription(uid, new_user.Plan) } catch (e) { deleteUser(uid);err_log('while initializing payments (creating subscription) -> ' + e); reject('Could not initialize stripe payments'); return; }
-
-      ok_log('init. payments')
-      
-      DB.User_totalDonated(uid).set(0);
-
-      ok_log('init. total donated for uid -> ' + uid);
-
-      ok_log('Completed User Initialization.')
-
-      resolve(uid);
-
-    });
-},
-getToday: getToday
-
+    user_info_problems: user_info_problems,
+    postUserInfo: postUserInfo,
+    initiate_new_user: initiate_new_user,
+    deleteUser: deleteUser,
+    createStripeUser: createStripeUser,
+    executeCreateSubscription: executeCreateSubscription,
+    getStripeCustomerId: getStripeCustomerId,
+    getPremiumPlanMostRecent: getPremiumPlanMostRecent,
+    getPremiumPlanTotalCount: getPremiumPlanTotalCount,
+    get_plan_stats: get_plan_stats,
+    get_plan_total_counts: get_plan_total_counts,
+    getFirebaseUserFromCustomerId: getFirebaseUserFromCustomerId,
+    castVote: castVote,
+    update_plan: update_plan,
+    userExists: userExists,
+    eventSnapshot: eventSnapshot,
+    cast_texted_vote: cast_texted_vote
 };

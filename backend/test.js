@@ -4,9 +4,19 @@ var admin = require("firebase-admin");
 var utils = require('./util.js');
 let chai = require('chai');
 var clc = require("cli-color");
+var logging = require('./logging.js');
+var helpers = require('./helpers.js');
+var sms = require('./SMS.js');
+var createvent = require('./CreateEvent.js');
+let plansjs = require('./plans.js');
+var testdata = require('./testdata.js');
 var stripe = utils.stripe;
 var assert = chai.assert;
 var expect = chai.expect;
+
+// get rid of "unhandled" description
+// process.on('unhandledRejection', () => {});
+
 
 if (utils.TEST_MODE == false) { throw new Error("Hey we gotta run in test mode!"); }
 
@@ -14,157 +24,48 @@ if (utils.TEST_MODE == false) { throw new Error("Hey we gotta run in test mode!"
 // Get a reference to the root of the Database
 var root = utils.root;
 
-function log(output) {
-  console.log(output)
-}
-function logn(output) {
-  console.log('\n' + output)
-}
-
-function err_log(output) {
-logn(clc.red.bold('Error ') + output);
-}
+var log = logging.log;
+var err_log = logging.err_log;
+var ok_log = logging.ok_log;
+var table_log = logging.table_log;
+var group_begin = logging.log_group_begin;
+var group_end = logging.log_group_end;
+var prettify = logging.prettify;
 
 
-var randstring = (l) => {
-  var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < l; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-}
-function unformalized_new_test_event() {
-    let json = {
-        "id" : "-LUZFB34" + randstring(10),
-        "o" : {
-          "a" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "b" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "c" : {
-            "link" : "https://" +randstring(10) + '.com',
-            "org" : "Random org",
-            "s" : randstring(100),
-            "t" : "Test test",
-            "ttl" : 0,
-          },
-          "ttl" : 0
-        },
-        "s" : randstring(100),
-        "t" : "Test 2019",
-        "ttl" : null,
-        "tu" : null
-    };
-    let new_json = {
-        "id": json.id,
-        "gen_summary": json.s,
-        "gen_title": json.t,
-        "gen_num_users": json.tu,
-        "gen_revenue_generated": json.ttl,
-        "a_link": json.o.a.link,
-        "b_link": json.o.b.link,
-        "c_link": json.o.c.link,
-        "a_org": json.o.a.org,
-        "b_org": json.o.b.org,
-        "c_org": json.o.c.org,
-        "a_title": json.o.a.t,
-        "b_title": json.o.b.t,
-        "c_title": json.o.c.t,
-        "a_summary": json.o.a.s,
-        "b_summary": json.o.b.s,
-        "c_summary": json.o.c.s,
-    };
-    return new_json;
-}
-
-
-
-function delay(interval)
-{
-   return it('should delay', done =>
-   {
-      setTimeout(() => done(), interval)
-
-   }).timeout(interval + 100) // The extra 100ms should guarantee the test will not fail due to exceeded timeout
-}
+// function delay(interval)
+// {
+//    return it('should delay', done =>
+//    {
+//       setTimeout(() => done(), interval)
+//
+//    }).timeout(interval + 100) // The extra 100ms should guarantee the test will not fail due to exceeded timeout
+// }
+//
+//
+// const sleep = (milliseconds) => {
+//   return new Promise(resolve => setTimeout(resolve, milliseconds))
+// }
 
 
 // set up initial values
 
 let name = 'John Userson';
-let email = 'johnUserson' + randomSnippet() + '@gmail.com';
-let phoneNumber = '+11234567' + utils.randomNumber(); // 6 + r(3)
+let email = 'johnUserson' + helpers.randstring(3) + '@gmail.com';
+let phoneNumber = '+11234567' + helpers.rNumber(); // 6 + r(3)
 let password = 'Password123';
 let displayName = 'TEST John Userson 123';
-let plan = 'PZ,9.03';
+let plan = 'PZ,9.0';
 
-    /*   1    */
+/*   1    */
 
 var user_record = null;
 
-var visit = async (dbstring) => {
-    return new Promise(async function(resolve, reject) {
-        root.ref(dbstring).once('value', function(snap) {
-        if (snap && snap.val()) {
-            console.log('\Visited JSON: ' + JSON.stringify(snap.val()));
-            console.log(snap.ref.toString())
-            resolve(snap.val())
-        } else
-            reject(new Error('Path ' + dbstring + ' does not exist in the database.'))
-        })
-    })
-}
 
-const sleep = (milliseconds) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
 
 function prettify(json) { return JSON.stringify(json, null, 2); }
 
 
-describe('Process Customer Charge Test Suite',  function() {
-    this.timeout(0);                                                                                                                                  log('\n');                                                                                                                                 log('\n');
-    let sample_user_uid = "cATSYis1ldZvRT4L5geR6Q0Vcym1";
-    let sample_amount_donated = 20; // USD
-    var result_id;
-    
-        it('gets the customer\'s stripe id', async function() {
-           try {
-              result_id = await utils.getStripeCustomerId(sample_user_uid);
-              let test_value = result_id != null;
-              expect(test_value).to.be.true;
-              return 'ok';
-           } catch (e) {
-               assert.fail(e);
-               return 'oh';
-           }
-       });
-
-      it('gets the user\'s charged info', async function() {
-          try {
-              let resp = await utils.customer_charged_successfully(result_id, sample_amount_donated);
-                  console.log(prettify(resp));
-              let test_value = resp != null;
-              expect(test_value).to.be.true;
-              return 'ok';
-          } catch (e) {
-              assert.fail(e);
-              return 'oh';
-          }
-      });
-});
 
 
 
@@ -173,174 +74,314 @@ describe('Process Customer Charge Test Suite',  function() {
 
 
 
-
+let result_uid;
 
 
 describe('Sign Up Flow Test Suite', async function() {                                                                                                                                      log('\n');
 
-  this.timeout(0);
+this.timeout(0);
 
 
-    /*   1    */
+/*   1    */
 
-    var card_token;
+// var card_token;
+var card_token = { id: 'tok_visa' };
 
-      it('creates the stripe payment token', function() {
-        return new Promise(async function (resolve, reject) {
-          try {
-              card_token = await stripe.tokens.create({
-                card: {
-                  number: '4242424242424242',
-                  exp_month: 12,
-                  exp_year: 2020,
-                  cvc: '123'
-                }
-              })
-                let test_value = card_token != null;
-                expect(test_value).to.be.true;
-                resolve(card_token);
-          } catch (e) {
-            assert.fail('ISSUE: ' + e);
-            reject(e);
-          }
-        })
-      });
+// it('creates the stripe payment token', function() {
+//   return new Promise(async function (resolve, reject) {
+//     try {
+//         card_token = await stripe.tokens.create({
+//           card: {
+//             number: '4242424242424242',
+//             exp_month: 12,
+//             exp_year: 2020,
+//             cvc: '123'
+//           }
+//         })
+//           let test_value = card_token != null;
+//           expect(test_value).to.be.true;
+//           resolve(card_token);
+//     } catch (e) {
+//       assert.fail('ISSUE: ' + e);
+//       reject(e);
+//     }
+//   })
+// });
 
-   /*   2    */
+/*   2    */
 
-   let result_uid;
 
-  it('initializes a new fully-capable user', async function() {
-      return new Promise(async function (resolve, reject) {
+it('initializes a new fully-capable user', async function() {
+    return new Promise(async function (resolve, reject) {
         try {
 
-          var usr = {
-            n: name,                                 // name
-            e: email,                                // email
-            p: plan,                                 // plan
-            dn: displayName,                         // display name
-            z: phoneNumber                           // phone number
-          };
+            var usr = {
+                n: name,                                 // name
+                e: email,                                // email
+                p: plan,                                 // plan
+                dn: displayName,                         // display name
+                z: phoneNumber                           // phone number
+            };
 
+            // create user
+            result_uid = await utils.initiate_new_user(email,password,usr,card_token.id);
+            let test_value = result_uid != null;
+            expect(test_value).to.be.true;
+            resolve(user_record);
 
-          // create user
-          result_uid = await utils.initiate_new_user(email,password,usr,card_token.id);
-          // log(result_uid);
-          let test_value = result_uid != null;
-          expect(test_value).to.be.true;
-          resolve(user_record);
         } catch (e) {
-          assert.fail('Did not create user -> ' + e);
-          reject(e);
+            assert.fail('Did not create user -> ' + e);
+            reject(e);
         }
     })
-  });
+});
 
-  it('deletes the test user\'s data', async function() {
+
+});
+
+describe('Functions Test Suite', async function() {                                                                                                                                      log('\n');
+
+this.timeout(0);
+
+    it('submits a vote for the user', async function() {
+        return new Promise(async function (resolve, reject) {
+            let ev_id, snap, opt_index;
+
+
+            try {
+
+                ev_id = await utils.getActiveEventId();
+                snap = await utils.eventSnapshot(ev_id);
+                opt_index = 0;
+                // let opt = Object.keys(snap.o)[opt_index]; // m
+                ok_log('got voting option ' + opt_index);
+                // cast vote
+                let casted = await utils.cast_texted_vote(2, phoneNumber);
+                let test_value = casted !== null;
+                expect(test_value).to.be.true;
+                resolve(test_value);
+
+            } catch (e) {
+                err_log(e);
+                assert.fail('Did not submit vote -> ' + e);
+                reject(e);
+            }
+
+            try {
+                // cast vote
+                let casted = await utils.castVote(ev_id, opt_index, result_uid);
+                let test_value = casted === null;
+                expect(test_value).to.be.true;
+                resolve(test_value);
+
+            } catch (e) {
+                ok_log('Did not over-vote -> ' + e);
+                resolve('Did not over-vote');
+            }
+
+        })
+    });
+
+    it('grabs plan stats?', async function() { return new Promise(async function (resolve, reject) {
+
+       try {
+           console.log('yo')
+          let stats = await utils.get_plan_stats();
+          let test_value = stats !== null;
+          expect(test_value).to.be.true;
+          resolve('Got plans')
+          return 'ok';
+       } catch (e) {
+           err_log(e);
+           assert.fail(e);
+           reject('Did not get plans')
+           return 'oh';
+       }
+    })})
+
+    it('updates the plan', async function() { return new Promise(async function (resolve, reject) {
+
+       try {
+          let new_plan = 'PZ,41';
+          let plan = await utils.update_plan(null, new_plan, {uid: result_uid});
+          ok_log('updated plan to ' + plan);
+          let test_value = plan !== null;
+          expect(test_value).to.be.true;
+          // resolve('Updated plans')
+          // return 'ok';
+       } catch (e) {
+           err_log(e);
+           assert.fail(e);
+           reject('Did not update plan')
+           return 'oh';
+       }
+       try {
+          let new_plan = 'PZ,1';
+          let plan = await utils.update_plan(null, new_plan, {uid: result_uid});
+          err_log('should have blocked plan')
+          let test_value = plan !== null;
+          assert.fail('should have blocked bad plan input')
+          reject('Updated plans')
+          return 'oh';
+       } catch (e) {
+           ok_log(e);
+           assert.isOk('Blocked bad custom value');
+           resolve('Blocked bad custom value')
+           return 'ok';
+       }
+    })})
+
     this.timeout(0);
-    return new Promise(async function (resolve, reject) {
 
-      if (result_uid == null) { resolve('Could not delete -> no user info to delete'); return; }
+        it('performs the monthly rollover', function() {
+          return new Promise(async function (resolve, reject) {
+            try {
+                let rollover_response = await utils.performMonthlyRollover();
+                  let test_value = rollover_response != null;
+                  expect(test_value).to.be.true;
+                  resolve(test_value);
+            } catch (e) {
+              err_log(e);
+              assert.fail('ISSUE: ' + e);
+              reject(e);
+            }
+          })
+        });
 
-      try {
+        this.timeout(0);                                                                                                                                  log('\n');                                                                                                                                 log('\n');
+        let sample_amount_donated = 20; // USD
+        var custid;
 
-        // delete user
-        await utils.deleteUser(result_uid);
-        // log('Delete executed.');
+        it('gets the customer\'s stripe id', async function() {
+               try {
+                  custid = await utils.getStripeCustomerId(result_uid);
+                  ok_log('set custid to ' + custid)
+                  let test_value = custid != null;
+                  expect(test_value).to.be.true;
+                  return 'ok';
+               } catch (e) {
+                   assert.fail(e);
+                   return 'oh';
+               }
+           });
 
-      } catch (e) {
-        // log('Could not find a user to delete!');
-        assert.fail('Could not find a user to delete! -> ' + e);
-        reject(e);
-      }
+          it('gets the user\'s charged info', async function() {
+              try {
+                  ok_log('custid = ' + custid)
+                  let resp = await utils.customer_charged_successfully(custid, sample_amount_donated);
+                      // console.log(prettify(resp));
+                  let test_value = resp != null;
+                  expect(test_value).to.be.true;
+                  return 'ok';
+              } catch (e) {
+                  assert.fail(e);
+                  return 'oh';
+              }
+          });
 
-      try {
 
-        // verify user's deleted - auth
-        let user_exists = await utils.userExists(result_uid);
-        if (user_exists == null)
-          assert.ok('User auth has been successfully deleted');
-        else
-          assert.fail('ISSUE: User auth Still exists.');
-      } catch (e) {
-        assert.fail('ISSUE: User auth Still exists. -> ' + e);
-      }
 
-      try {
+          this.timeout(0);                                                                                                                                  log('\n');                                                                                                                                 log('\n');
 
-        // verify user's deleted - db
-        let user_info_fetched = await utils.getUserInfo(result_uid);
-        if (user_info_fetched == null) {
-           assert.ok('User info has been successfully deleted');
-           resolve('User info has been successfully deleted');
-        }
-        else {
-          console.table(user_info_fetched);
-          assert.fail('ISSUE: User info Still exists.');
-          reject('ISSUE: User info Still exists.');
-        }
-      } catch {
-        assert.ok('User info has been successfully deleted');
-        resolve('User info has been successfully deleted');
-      }
-      });
-  });
+
+        it('deletes the test user\'s data', async function() {
+            return new Promise(async function (resolve, reject) {
+                if (result_uid == null) { resolve('Could not delete -> no user info to delete'); return; }
+
+                try {
+                    let ex = await utils.userExists(result_uid);
+                    console.log('User exists: ' + (ex !== null));
+                } catch (e) {
+                    err_log(e);
+                }
+
+
+                try {
+                    // delete user
+                    let x = await utils.deleteUser(result_uid);
+                    ok_log('delete user complete.');
+                } catch (e) {
+                    err_log(e);
+                    assert.fail('Could not find a user to delete! -> ' + e);
+                    reject(e);
+                }
+
+                try {
+                    let ex = await utils.userExists(result_uid);
+                    if (ex === null) ok_log('User auth has been successfully deleted');
+                    else {  err_log('User info still exists'); reject('Err'); }
+                } catch (e) {
+                    err_log('User info still exists'); reject('Err');
+                }
+
+                try {
+                    let ex = await utils.getUserInfo(result_uid);
+                    if (ex === null) ok_log('User info has been successfully deleted');
+                    else {  err_log('User info still exists'); reject('Err'); }
+                } catch (e) {
+                    err_log('User info still exists'); reject('Err');
+                }
+                resolve('success');
+                assert.isOk('everything', 'evverything is ok');
+
+            });
+        });
 
 
 });
 
 
 describe('Utility Function tester', async function() {                                                                                                                                      log('\n');
-
   this.timeout(0);
 
-      it('finds the plan stats', function() {
+      it('tests the error in getWinningOptionForEvent', function() {
         return new Promise(async function (resolve, reject) {
           try {
-              let plan_stats = await utils.get_plan_stats();
-                let test_value = plan_stats != null && plan_stats.counts != null  && plan_stats.recents != null;
-                expect(test_value).to.be.true;
-                resolve(plan_stats);
+            let eid = 0;
+              let plan_stats = await utils.getWinningOptionForEvent(eid);
+              assert.fail('should have failed');
+                reject(plan_stats);
           } catch (e) {
-            err_log(e);
-            assert.fail('ISSUE: ' + e);
-            reject(e);
+            ok_log(e);
+            assert.isOk('Get Winning Option For Event doesnt break upon ' + e);
+            resolve('');
           }
         })
       });
 
 });
 
-
-describe('Monthly rollover test', async function() {                                                                                                                                      log('\n');
-
-  this.timeout(0);
-
-      it('performs the monthly rollover', function() {
-        return new Promise(async function (resolve, reject) {
-          try {
-              let rollover_response = await utils.performMonthlyRollover();
-                let test_value = rollover_response != null;
-                expect(test_value).to.be.true;
-                resolve(test_value);
-          } catch (e) {
-            err_log(e);
-            assert.fail('ISSUE: ' + e);
-            reject(e);
-          }
-        })
-      });
-
+describe('SMS Test Suite', () => {
+    let group = ['9086421391', '9086421391'];
+    it('sends a group text', async function() {
+        sms.groupText(group, 'Casual Hello from GiveAssist.');
+        assert.isOk('sent group text');
+    })
 });
 
+describe('Plans.js Test Suite', () => {
+    it('sends a group text', async function() {
+        let amt1 = 449.99;
+        expect(plansjs.formatPlan('PX',amt1)).to.equal('PX,4.99')
+        expect(plansjs.formatPlan('PZ',amt1)).to.equal('PZ,449.99')
+        expect(plansjs.formatPlan('PZ',-2.32)).to.equal('PZ,-2.32')
+        expect(plansjs.planExists('PZ')).to.be.true;
+        expect(plansjs.planExists('PW')).to.be.false;
+        expect(plansjs.titleOfPlanWithCost(4.99)).to.equal('PX')
+        expect(plansjs.titleOfPlanWithCost(4.49)).to.equal('PZ')
+        expect(plansjs.priceForPlanWithTitle('PY')).to.equal(2.99)
+        expect(plansjs.priceForPlanWithTitle('PX')).to.equal(4.99)
+        expect(plansjs.priceForPlanWithTitle('PZ')).to.be.null
+        expect(plansjs.lowestPlanCost()).to.equal(2.99)
+    })
+});
 
 describe('Create New Event Test Suite',  function() {
     this.timeout(0);                                                                                                                                  log('\n');                                                                                                                                 log('\n');
-    let new_event_req_body = unformalized_new_test_event();
-    let is_preexisting = false;
+    let new_event_req_body = testdata.unformalized_new_test_event();
        it('creates a new event', async function() {
            try {
-               let res = await utils.create_new_event(new_event_req_body, is_preexisting); // ISSUE. Remove line & it posts the data (but never terminates test)
+               let res = await createvent.create_new_event(new_event_req_body, false); // ISSUE. Remove line & it posts the data (but never terminates test)
                assert.isOk('Ok','Ok');
                return 'ok';
            } catch (e) {
@@ -352,7 +393,7 @@ describe('Create New Event Test Suite',  function() {
 
       it('creates a pre-existing event', async function() {
           try {
-              let res = await utils.create_new_event(new_event_req_body, true); // ISSUE. Remove line & it posts the data (but never terminates test)
+              let res = await createvent.create_new_event(new_event_req_body, true); // ISSUE. Remove line & it posts the data (but never terminates test)
               assert.isOk('Ok','Ok');
               return 'ok';
           } catch (e) {
