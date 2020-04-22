@@ -11,7 +11,7 @@ export default function Vote (page_title, section_title, summary, topics, doSome
                 <h2>{section_title}</h2>
             </div>
             <div >
-            <p class={styles.summ}>{summary}</p>
+            <div class={styles.summ}><p >{summary}</p></div>
             </div>
             <div style={{marginTop: '25px'}}>
                 <TabbedSummary topics={topics} doSomething={doSomething} />

@@ -45,9 +45,10 @@ export default class Composer extends Component {
 
         let height;
         // depends on width this time
-        if (window.innerWidth > 1100 ) height = '1575px';
-        else if (window.innerWidth > 900 ) height = '1625px';
-        else if (window.innerWidth > 800 ) height = '1725px';
+        if (window.innerWidth > 1100 ) height = '1600px';
+        else if (window.innerWidth > 900 ) height = '1650px';
+        else if (window.innerWidth > 800 ) height = '1750px';
+        else if (window.innerWidth > 650 ) height = '2850px';
         else if (window.innerWidth > 500 ) height = '2775px';
         else height = '2825px';
 

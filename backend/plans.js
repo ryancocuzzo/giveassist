@@ -17,7 +17,7 @@ function lowestPlanCost() {
 
 /* Ex input - PX */
 function priceForPlanWithTitle (title) {
-  if (!title || typeof title !== 'string' || title.length > 2) throw 'priceForPlanWithTitle params issue: incorrect or wrong-formatted title.';
+  if (!title || typeof title !== 'string' || title.length > 2) throw 'priceForPlanWithTitle params issue: incorrect or wrong-formatted title. Got ' + title;
   var cost = null;
   PLANS.forEach((plan) => {
     if (title === plan.title)
@@ -27,7 +27,7 @@ function priceForPlanWithTitle (title) {
 }
 
 function idForPlanWithTitle (title) {
-  if (!title || typeof title !== 'string' || title.length > 2) throw 'idForPlanWithTitle params issue: incorrect or wrong-formatted title.';
+  if (!title || typeof title !== 'string' || title.length > 2) throw 'idForPlanWithTitle params issue: incorrect or wrong-formatted title. Got ' + title;
   var id = null;
   PLANS.forEach((plan) => {
     if (title === plan.title)

@@ -27,6 +27,7 @@ p {
     margin-top: 20px;
     margin-bottom: 20px;
     line-height: 1.4;
+    word-wrap:break-word;
 }
 
 a {

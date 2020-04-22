@@ -265,6 +265,7 @@ var performMonthlyRollover = () => {
 
 var planIDForNameAndAmt = (untrimmed_nameAndAmt) => {
     let plan_title = untrimmed_nameAndAmt.split(',')[0];
+    console.log('planid for ' + untrimmed_nameAndAmt);
     return plansjs.idForPlanWithTitle(plan_title);
 }
 
@@ -544,11 +545,18 @@ var update_plan = (idToken, planNameAndAmt, adminOverrideToken ) => {
             if (!tkn) throw 'Invalid id token specified';
             let uid = tkn.uid;
 
+            ok_log('update plan status: passed param check')
+
             var sub_id = await getUserSubscriptionId(uid);
             // log(uid + ' -> ' + JSON.stringify(sub_id));
             const subscription = await stripe.subscriptions.retrieve(sub_id);
 
+            ok_log('update plan status: got user sub info -> ' + sub_id)
+
+
             let amt = quantityForNameAndAmt(planNameAndAmt);
+
+            ok_log('update plan status: got user amt requested -> ' + amt );
 
             let params = { cancel_at_period_end: false, items: [{ id: subscription.items.data[0].id, plan: planId, quantity: amt }] };
 
@@ -562,12 +570,12 @@ var update_plan = (idToken, planNameAndAmt, adminOverrideToken ) => {
                     ok_log('Plan Change complete!')
                     resolve(subscription);
                     group_end();
-                } else { err_log(err); reject(err); console.groupEnd(); console.log('\n-- -- \n'); }
+                } else { err_log('callback err' + err); reject(err); console.groupEnd(); console.log('\n-- -- \n'); }
             }
 
             stripe.subscriptions.update(sub_id, params, callback);
 
-        } catch (e) { err_log(e); reject(e); group_end(); }
+        } catch (e) { err_log('update plan err: ' + e); reject(e); group_end(); }
     })
 }
 

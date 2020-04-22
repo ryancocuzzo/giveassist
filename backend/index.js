@@ -15,7 +15,7 @@ var sms = require('./SMS.js');
 let projinfo = require('./ProjectInfo.js');
 var admin = projinfo.admin;
 var root =  projinfo.root;
-var stripe = utils.stripe;
+var stripe = projinfo.stripe;
 
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 
@@ -281,24 +281,24 @@ app.post('/changePaymentSource', async (req,res) => {
 })
 
 app.post('/change_plan', async (req,res) => {
-    log_group_begin('Plan Change');
+    group_begin('Plan Change');
 
-    if (!req.body ) { res.status(571).send('Invalid params.'); log_group_end(); return; }
+    if (!req.body ) { res.status(571).send('Invalid params.'); group_end(); return; }
 
     var idToken = req.body.idToken;
     var planNameAndAmt = req.body.plan;
 
-    if (!idToken || !planNameAndAmt ) { res.status(571).send('Invalid params.'); log_group_end(); return; }
+    if (!idToken || !planNameAndAmt ) { res.status(571).send('Invalid params.'); group_end(); return; }
 
     try {
-        let subid = utils.updatePlan(idToken, planNameAndAmt);
-        err_log('Sending back plan change result.');
+        let subid = await utils.update_plan(idToken, planNameAndAmt);
+        ok_log('Successfully performed plan update.');
         res.send(subid);
-        log_group_end();
+        group_end();
     } catch(e) {
         err_log(e);
         res.status(571).send('Server error: ' + e);
-        log_group_end();
+        group_end();
     }
 
 })
@@ -307,7 +307,7 @@ app.post('/deleteUser', async (req,res) => {
 
     var idToken = req.body.idToken;
 
-    log_group_begin('POST Delete User..');
+    group_begin('POST Delete User..');
     try {
         // Get decoded token
         let decodedToken = await utils.get_decoded_token(idToken);
@@ -321,12 +321,12 @@ app.post('/deleteUser', async (req,res) => {
         ok_log('Successfully deleted user');
 
         res.send('Done');
-        log_group_end();
+        group_end();
 
     } catch (e) {
         err_log('Could not delete user -> ' + e);
         res.send(e);
-        log_group_end();
+        group_end();
     }
 
 })

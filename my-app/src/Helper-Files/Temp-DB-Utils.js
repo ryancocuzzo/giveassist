@@ -20,7 +20,7 @@ import {packaged} from './Error';
 export const voted = async (on) => {
     let curr_event = await utils.Event_active().fetch();
     let authtoken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ false);
-    
+
     let body = {
         params: {
             idToken: authtoken,
@@ -42,7 +42,7 @@ export const voted = async (on) => {
             console.log(error.response.headers);
           }
     }
-    
+
 }
 export const changedInfo = async (name, email) => {
     return new Promise( async (res, rej) => {
@@ -75,7 +75,6 @@ export const newPaymentInfoSubmitted = async (paymentToken) => {
     return await axios.post(vars.server_urls.changePaymentSource,{tokenId: authtoken, paymentToken: paymentToken  })
 }
 export const newPlanSubmitted = async (plan) => {
-    console.log('attempting to submit plan ' + plan);
     let authtoken = await firebase.auth().currentUser.getIdToken(/* forceRefresh */ false);
     return await axios.post(vars.server_urls.change_plan,{idToken: authtoken, plan: plan  })
 }
@@ -126,7 +125,7 @@ export const logout = async () => {
 /* f(x)s - GET something */
 export async function getVoteJSON() {
 
-    let curr_event_id = await utils.Event_active().fetch(); 
+    let curr_event_id = await utils.Event_active().fetch();
     // console.log(curr_event_id);
     let info = await utils.Event_info(curr_event_id).fetch();
     // console.log(info);
@@ -145,7 +144,7 @@ export async function getVoteJSON() {
         title: 'Vote',
         queried_result: queried_result
     };
-    
+
 }
 
 export async function getChartData() {

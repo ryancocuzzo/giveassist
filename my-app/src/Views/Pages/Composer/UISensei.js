@@ -27,7 +27,7 @@ export default class UISensei extends Component {
     }
 
     handle_payinfo_update = (paymentToken) => {
-        newPaymentInfoSubmitted(paymentToken).then(ok => Popup.alert(ok)).catch(err  => Popup.alert(err));
+        newPaymentInfoSubmitted(paymentToken).then(ok => Popup.alert('Successfully updated payment info.')).catch(err  => Popup.alert(err));
     }
 
     handle_plan_update = (plan) => {
@@ -41,7 +41,7 @@ export default class UISensei extends Component {
             buttons: {
                 left: [{
                     text: 'Cancel',
-                    action: async function () {        
+                    action: async function () {
                         Popup.close();
                     }
                 }],
@@ -57,9 +57,9 @@ export default class UISensei extends Component {
                 }]
             }
         });
-        
+
     }
-    deleteUserAccount
+
 
     getSensei = async () => {
 
@@ -118,6 +118,6 @@ export default class UISensei extends Component {
                             />
                 </div>
             );
-        else return <div>Sensei is in hiding..</div>
+        else return <div style={{height: '1000px'}}></div>
     }
 }

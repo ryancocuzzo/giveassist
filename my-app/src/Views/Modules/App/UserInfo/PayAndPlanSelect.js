@@ -37,7 +37,7 @@ export default class PayAndPlanSelect extends Component {
     }
 
     handle_submit_plan = () => {
-        let plan = this.state.current + (priceForPlanWithTitle(this.state.current) || this.state.customAmount);
+        let plan = this.state.current + ',' + (priceForPlanWithTitle(this.state.current) || this.state.customAmount);
         if (this.props.onSubmitPlan)
             this.props.onSubmitPlan(plan);
     }
