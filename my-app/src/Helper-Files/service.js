@@ -1,5 +1,5 @@
 /** eventsService */
-module.exports = {
+export default {
   callbacks: {},
 
   createEvent(eventName) {

@@ -46,7 +46,7 @@ export default class IntroPage extends React.Component {
 
         let content =
         (<div class={styles.contentcontainer}>
-            <h1 class={styles.big}><span class={styles.offcolor}>Donation</span> for everone.</h1>
+            <h1 class={styles.big}><span class={styles.offcolor}>Donation</span> for everyone.</h1>
             <p class={styles.whitepar}>We are a simple, inexpensive, subscription-based donation platform that serves as a dynamic link between you and those who need your help. </p>
             <div class={styles.buttonsview}>
             <Link to="/signup"><button class={styles.join}>join</button></Link>
