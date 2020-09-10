@@ -21,7 +21,7 @@ const STRIPE_ACCT_ID = '[REDACTED]';
 
 // xxxxxxxxxxxxxxxxxxxxxxxx
                         // x
-let TEST_MODE = true;   // x
+let TEST_MODE = false;   // x
                         // x
 // xxxxxxxxxxxxxxxxxxxxxxxx
 
