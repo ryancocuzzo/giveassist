@@ -7,8 +7,8 @@ import {emailField, passwordField, TEST_emailField, TEST_passwordField} from '..
 import { Link, withRouter} from 'react-router-dom';
 import { login } from '../../../Helper-Files/Temp-DB-Utils.js';
 import Popup from 'react-popup';
-// let inputs = [ emailField, passwordField ];
-let inputs = [ TEST_emailField, TEST_passwordField ];
+let inputs = [ emailField, passwordField ];
+// let inputs = [ TEST_emailField, TEST_passwordField ];
 
 function handle_login(field_results){
     let email = field_results[0].value;

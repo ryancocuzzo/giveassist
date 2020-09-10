@@ -6,15 +6,15 @@ import styles from './Styles/styles.module.css';
 import { Link, withRouter} from 'react-router-dom';
 import {emailField, passwordField, confirmPasswordField, phoneField, nameField, extractPhoneNumber, validateMoney
 , TEST_emailField, TEST_passwordField, TEST_confirmPasswordField,
-TEST_phoneField, TEST_nameField  
+TEST_phoneField, TEST_nameField
 } from '../../Modules/General/Form/FormUtils.js';
 import { signup, login } from '../../../Helper-Files/Temp-DB-Utils.js';
 import Popup from 'react-popup';
 import {planExists, lowestPlanCost, formatPlan} from '../../../Helper-Files/variables';
 
-// let inputs = [ nameField, emailField, passwordField, confirmPasswordField, phoneField ];
-let inputs = [TEST_nameField, TEST_emailField, TEST_passwordField, TEST_confirmPasswordField,
-    TEST_phoneField ];
+let inputs = [ nameField, emailField, passwordField, confirmPasswordField, phoneField ];
+// let inputs = [TEST_nameField, TEST_emailField, TEST_passwordField, TEST_confirmPasswordField,
+//     TEST_phoneField ];
 
     /* Sign Up Component */
 
@@ -101,11 +101,11 @@ export default class SignUp extends React.Component {
         try {
             let signed_up = await signup(name, email, pass, phone, plan, token);
         } catch (e) { Popup.alert('Sorry, we could not create your account at this time!'); return; }
-        
+
         try {
             let logged_in = await login(email,pass);
         } catch (e) { Popup.alert('You\'re all set! Please log in to continue!'); return; }
-        
+
         Popup.alert('Welcome!');
     }
 
