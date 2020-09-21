@@ -359,7 +359,7 @@ app.post('/create_event', async (req, res) => {
         if (req.body.ADMIN_KEY == 'hi_ryan_here'  && req.body.is_preexisting != null && req.body.is_preexisting != '') {
             var pre = (req.body.is_preexisting == 'true' || req.body.is_preexisting == true);
             pre = !pre; // Naming on form is inverted
-            log('Got ' + req.body.is_preexisting + ' -> pre = ' + pre);
+            console.log('Got ' + req.body.is_preexisting + ' -> pre = ' + pre);
             try {
                 let created = await CreateEvent.create_new_event(req.body, pre);
                 res.status(200).send(created);
