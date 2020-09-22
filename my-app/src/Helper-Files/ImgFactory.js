@@ -1,4 +1,4 @@
-import hands_in from '../images/hands_in.jpg';
+import hands_in from '../images/hands_in\ 4.jpg';
 import dollarB from '../images/dollarB.png';
 import dollarW from '../images/dollarW.png';
 import clockB from '../images/clockB.png';

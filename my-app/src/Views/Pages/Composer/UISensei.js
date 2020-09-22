@@ -49,7 +49,7 @@ export default class UISensei extends Component {
                     text: 'DELETE',
                     className: 'danger',
                     action: async function () {
-                        Popup.alert('Deleting..');
+                        Popup.alert('Sorry to see you go! Your account has been deleted.');
                         await deleteUserAccount();
                         /** Close this popup. Close will always close the current visible one, if one is visible */
                         Popup.close();

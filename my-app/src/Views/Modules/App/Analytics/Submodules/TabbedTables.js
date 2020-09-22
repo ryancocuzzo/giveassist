@@ -21,7 +21,7 @@ let event_history_component = (event)  => {
     <tr>
         <td>{event.t}</td>
         <td>{event.tu}</td>
-      <td>{rnd2((event.ttl  * 0.91))}</td>
+      <td>{rnd2((event.ttl))}</td>
       <td>{event.receipt ? (<button onclick={() => window.open(event.receipt)}>Receipt</button>) : 'Not available'}</td>
     </tr>
   );

@@ -156,7 +156,7 @@ export async function getUserData() {
     console.log(JSON.stringify(ttl_data));
     var sum = 0;
     ttl_data.forEach((row) => sum += row.users);
-    let perc_data = ttl_data.map((row) => ({'amount': row.amount, 'percent_users':   round(row.users/sum, 4)}));
+    let perc_data = ttl_data.map((row) => ({'amount': row.amount, 'percent_users':   round(row.users/sum, 2)*100}));
     return perc_data;
 }
 export async function getPrevEventData() {

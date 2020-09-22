@@ -65,7 +65,7 @@
     margin-top: -350px; /*  should match height of bg-text */
 
     /* The image used */
-    background-image: url("../../../../images/hands_in.jpg");
+    background-image: url("../../../../images/hands_in\ 4.jpg");
 
     /* Add the blur effect */
     /* filter: blur(8px); */
@@ -134,6 +134,11 @@
     align-items: center;
     align-content: center;
     justify-items: center;
+}
+
+.socials > *:hover {
+    cursor: pointer;
+    
 }
 
 

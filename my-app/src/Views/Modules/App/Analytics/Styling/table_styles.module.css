@@ -25,6 +25,10 @@ table.darkTable {
     background-color: rgba(0, 0, 0, 0.4);
 }
 
+.receiptlink:hover {
+  cursor: pointer;
+}
+
 table.darkTable td, table.darkTable th {
   /* border: 1px solid #4A4A4A; */
   padding: 3px 2px;

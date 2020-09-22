@@ -193,8 +193,7 @@ export default class IntroPage extends React.Component {
                     { this._buffer(10,5,'var(--quartiary)') }
                     <p class={styles.whitepar}>
                     We are a nonprofit organization, therefore we only withold operating expenses from direct donation.
-                    Collectively, we guarantee that 91% of your money goes directly to its intended recipient.
-                    We intend on raising this percentage as we scale.
+                    100% of proceeds will go to it's intended recipient.
                     </p>
                 </div>
             </div>

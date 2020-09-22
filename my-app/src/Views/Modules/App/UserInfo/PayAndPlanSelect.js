@@ -59,8 +59,10 @@ export default class PayAndPlanSelect extends Component {
                             <ul>
                                 {PLANS.map((plan) => (
                                     <li key={plan.title}>
-                                        <input type="radio"  onClick={this.setActive} id={plan.title} name="prem" value={plan.title}/>
-                                        <div class={styles.woah}></div>
+                                        <input type="radio" checked={this.state.current === plan.title} onClick={this.setActive} id={plan.title} name="prem" value={plan.title}/>
+                                        <div class={styles.woah} onClick={() => {
+                                            this.setActive({target: {value: plan.title}});
+                                        }}></div>
                                     <label htmlFor={plan.title} >{plan.title !== 'PZ' ? ('$' + plan.cost) : 'Other' }</label><br/>
                                     </li>
                                 ))}

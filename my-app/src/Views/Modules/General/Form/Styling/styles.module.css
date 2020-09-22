@@ -52,9 +52,9 @@
   margin-left: 10px;
 
   animation-name: sil;
-  animation-duration: 0.6s;
+  animation-duration: 0.5s;
   -webkit-animation-name: sil;
-  -webkit-animation-duration: 0.6s;
+  -webkit-animation-duration: 0.5s;
 }
 
 .expanded_label {
@@ -63,25 +63,25 @@
   margin-left: 20px;
   line-height: 45px;
   animation-name: expand_input_label;
-  animation-duration: 0.6s;
+  animation-duration: 0.5s;
   -webkit-animation-name: expand_input_label;
-  -webkit-animation-duration: 0.6s;
+  -webkit-animation-duration: 0.5s;
 }
 
 .passing_input {
   color: black;
   animation-name: r2b;
-  animation-duration: 0.6s;
+  animation-duration: 0.5s;
   -webkit-animation-name: r2b;
-  -webkit-animation-duration: 0.6s;
+  -webkit-animation-duration: 0.5s;
 }
 
 .failing_input {
   color: red;
   animation-name: b2r;
-  animation-duration: 0.6s;
+  animation-duration: 0.5s;
   -webkit-animation-name: b2r;
-  -webkit-animation-duration: 0.6s;
+  -webkit-animation-duration: 0.5s;
 }
 
 @keyframes expand_input_label {
@@ -226,7 +226,7 @@ input[type="number"]::-webkit-inner-spin-button {
   font-size: 17px;
   line-height: 17px;
   animation-name: tolife;
-  animation-duration: 1s;
+  animation-duration: 0.9s;
 }
 
 @keyframes tolife {
@@ -251,7 +251,7 @@ input[type="number"]::-webkit-inner-spin-button {
   margin-bottom: 10px;
   font-style: bold;
   animation-name: tolife;
-  animation-duration: 1s;
+  animation-duration: 0.9s;
 }
 
 .outside {
