@@ -206,7 +206,7 @@ app.post('/event_log', async function(request, response) {
         } catch (e) { err_log(e); response.send(e); return; }
     } else if (event_json.type == 'payout.created') {
 
-        utils.performMonthlyRollover().then(function(out) { res.send(out); }).catch(function(e) {res.status(571).send(e);});
+        utils.performMonthlyRollover().then(function(out) { response.send(out); }).catch(function(e) {response.status(571).send(e);});
 
     } else if (event_json.type == 'charge.failed') {
 

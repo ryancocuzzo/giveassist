@@ -73,6 +73,7 @@ let DB = {
     Event_totalDonated:      (eid) =>         EventLink(eid, '/ttl'),
     Event_info:              (eid) =>         EventLink(eid, ''),
     Event_totalUsers:        (eid) =>         EventLink(eid, '/tu'),
+    Event_used:              (eid) =>         EventLink(eid, '/used'),
     Event_overallTotalVotes: (eid) =>         EventLink(eid, '/o/ttl'),
     Event_votersForOption:   (eid, optid) =>  EventLink(eid, '/o/' + optid +'/vrs/'),
     Event_optionTotalVotes:  (eid, optid) =>  EventLink(eid, '/o/' + optid + '/ttl'),

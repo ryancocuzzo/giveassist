@@ -16,6 +16,7 @@ var expect = chai.expect;
 
 // get rid of "unhandled" description
 // process.on('unhandledRejection', () => {});
+//
 
 
 if (utils.TEST_MODE == false) { throw new Error("Hey we gotta run in test mode!"); }
@@ -31,21 +32,6 @@ var table_log = logging.table_log;
 var group_begin = logging.log_group_begin;
 var group_end = logging.log_group_end;
 var prettify = logging.prettify;
-
-
-// function delay(interval)
-// {
-//    return it('should delay', done =>
-//    {
-//       setTimeout(() => done(), interval)
-//
-//    }).timeout(interval + 100) // The extra 100ms should guarantee the test will not fail due to exceeded timeout
-// }
-//
-//
-// const sleep = (milliseconds) => {
-//   return new Promise(resolve => setTimeout(resolve, milliseconds))
-// }
 
 
 // set up initial values

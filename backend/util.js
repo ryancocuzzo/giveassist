@@ -27,6 +27,7 @@ var prettify = logging.prettify;
 var get_plan_total_counts       = async ()              => await Promise.all(PLANS.map(async plan =>  ({'title': plan.title, 'users': await DB.Plan_totalCount(plan.title).promiseBoxedFetch() })));
 var get_plan_most_recents       = async ()              => await Promise.all(PLANS.map(async plan =>  ({'title': plan.title, 'users': await DB.Plan_mostRecent(plan.title).promiseBoxedFetch() })));
 var mostRecentlyAddedEvent      = async ()              => await DB.Event_allEvents().limitedFetchChildren(1);
+var get_all_events              = async ()              => await DB.Event_allEvents().fetchChildren();
 var getActiveEventId            = async ()              => await DB.Event_active().fetch();
 var getStripeCustomerId         = async (uid)           => await DB.User_stripeCustId(uid).fetch()
 var canPostEvents               = async (uid)           => await DB.Admin_checkUser(uid).fetch() // may need to check this logic
@@ -47,6 +48,17 @@ var userHasAlreadyVoted         = async (eid, uid)      => (await DB.User_choice
 var getPremiumPlanTotalCount    = async (plan)          => await DB.Plan_totalCount(plan).fetch();
 var getPremiumPlanMostRecent    = async (plan)          => await DB.Plan_mostRecent(plan).fetch();
 var get_decoded_token           = async (idToken)       => await admin.auth().verifyIdToken(idToken);
+
+
+var get_most_recent_ev  =  async () => {
+    let evs = await get_all_events();
+    for (i = 0; i < evs.length; i++) {
+      let used = evs[i].used;
+      if (!used)
+          return evs[i]
+    }
+    return null;
+}
 
 var getWinningOptionForEvent = async (active_event_id) => {
     try {
@@ -229,7 +241,9 @@ var performMonthlyRollover = () => {
             log('Got options.. now ref string is => ' + ref_string);
             log('winning op was: ' + (winningOption));
 
-            let nextEvent = (await mostRecentlyAddedEvent())[0];
+            let nextEvent = await get_most_recent_ev();
+
+            root.ref('/db/events/' + active_event + '/used').set(true)
 
             // console.log(JSON.stringify(nextEvent, null, 3));
 
@@ -647,5 +661,6 @@ module.exports = { root: root, getWinningOptionForEvent: getWinningOptionForEven
     update_plan: update_plan,
     userExists: userExists,
     eventSnapshot: eventSnapshot,
-    cast_texted_vote: cast_texted_vote
+    cast_texted_vote: cast_texted_vote,
+    get_most_recent_ev: get_most_recent_ev
 };
