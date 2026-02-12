@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import {eventInfo, printSomething, chartData, currEventJSON, userData, prevEventData, total_donated, current_donation} from '../Test-Files/Test-Data/Data.js';
 import service from './service.js';
-import firebase, { auth, provider } from '../Helper-Files/firebase.js';
-import utils from './utils';
-import vars, {PLANS} from './variables';
+import firebase, { auth, provider } from './firebase.js';
+import utils from './utils.js';
+import vars, {PLANS} from './variables.js';
 import axios from 'axios';
 import Popup from 'react-popup';
-import {packaged} from './Error';
+import {packaged} from './Error.js';
 /* For copy/paste reference
 
 { voted, changedInfo, newPaymentInfoSubmitted, newPlanSubmitted, deleteUserAccount, getVoteJSON, getChartData,

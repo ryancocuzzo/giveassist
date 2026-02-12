@@ -1,4 +1,4 @@
-import firebase, { auth, provider } from '../Helper-Files/firebase.js';
+import firebase, { auth, provider } from './firebase.js';
 
 class Link {
   constructor(base_ref, single_val) {
