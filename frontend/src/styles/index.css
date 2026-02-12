@@ -1,38 +1,115 @@
 /*
-    Colors:
-    Primary: var(--primary)
-    Secondary: var(--secondary)
-    Tertiary: var(--tertiary)
+    Modern Design System
+    Updated color palette with contemporary tones
  */
 
- @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
- /* define variables */
+ @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Quicksand:wght@400;600;700&display=swap');
+ 
 :root {
-    --primary: rgba(51, 101, 138, 1);
-    --secondary: rgba(134, 187, 216, 1);
-    --tertiary: rgba(47, 72, 88, 1);
-    --quartiary: rgba(246, 174, 45, 1);
-    --quinciary: rgba(242, 100, 25, 1);
-    --font1: Quicksand;
-    --font2: Quicksand;
+    /* Modern Color Palette */
+    --primary: #2D5A7B;
+    --primary-light: #4A7B9D;
+    --primary-dark: #1E3A4F;
+    --secondary: #7BA7BC;
+    --tertiary: #1C3344;
+    --accent: #FF8C42;
+    --accent-light: #FFB67A;
+    --accent-gradient: linear-gradient(135deg, #FF8C42 0%, #FF6B35 100%);
+    
+    /* Neutrals */
+    --gray-50: #FAFBFC;
+    --gray-100: #F4F6F8;
+    --gray-200: #E8ECF0;
+    --gray-300: #D1D8DD;
+    --gray-400: #9BA5B0;
+    --gray-500: #6B7684;
+    --gray-600: #4A5360;
+    --gray-700: #343A42;
+    --gray-800: #1F2429;
+    --gray-900: #0F1215;
+    
+    /* Semantic Colors */
+    --success: #10B981;
+    --warning: #F59E0B;
+    --error: #EF4444;
+    --info: #3B82F6;
+    
+    /* Background & Surface */
+    --bg-primary: #FFFFFF;
+    --bg-secondary: var(--gray-50);
+    --bg-tertiary: var(--gray-100);
+    --surface: #FFFFFF;
+    --surface-elevated: #FFFFFF;
+    
+    /* Typography */
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Quicksand', sans-serif;
+    
+    /* Shadows - elevation system */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    
+    /* Border Radius Scale */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+    
+    /* Spacing Scale */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Responsive breakpoints (use in media queries: @media (min-width: var(--bp-sm))) */
+    /* Responsive breakpoints */
     --bp-xs: 350px;
     --bp-sm: 500px;
     --bp-md: 700px;
     --bp-lg: 900px;
     --bp-xl: 1100px;
     --bp-xxl: 1300px;
+    
+    /* Legacy support - map old to new */
+    --quartiary: var(--accent);
+    --quinciary: #FF6B35;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 * {
-    font-family: var(--font2);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
+    background: linear-gradient(180deg, var(--gray-50) 0%, var(--bg-primary) 100%);
+    color: var(--gray-800);
+    line-height: 1.6;
 }
 
 .loading {
@@ -40,54 +117,103 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    font-size: 24px;
+    font-size: 20px;
     color: var(--primary);
-    font-weight: 600;
+    font-weight: 500;
+    font-family: var(--font-body);
 }
 
 p {
-    font-size: 20px;
-    text-indent: 40px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    line-height: 1.4;
-    word-wrap:break-word;
+    font-size: 16px;
+    text-indent: 0;
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-4);
+    line-height: 1.7;
+    word-wrap: break-word;
+    color: var(--gray-700);
 }
 
 a {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: inherit;
+    font-weight: 500;
+    color: var(--primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-light);
+    text-decoration: none;
+}
+
+a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
 }
 
 input {
     background-color: transparent;
+    font-family: var(--font-body);
 }
 
 button {
-    background-color: var(--tertiary);
-    border-radius: 5px;
-    padding: 4px 10px 4px 10px;
-    margin-top: 10px;
-    box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+    /* Base button styles */
+    position: relative;
+    background: var(--primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-6);
+    margin-top: var(--space-3);
+    box-shadow: var(--shadow-sm);
     text-decoration: none;
-    text-transform: uppercase;
-    padding: 0 14px;
+    text-transform: none;
     color: white;
-    border-radius: 4px;
     font-size: 15px;
     font-weight: 600;
-    letter-spacing: 0.095em;
+    letter-spacing: 0.025em;
     white-space: nowrap;
     border: 0;
     outline: 0;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    overflow: hidden;
+    font-family: var(--font-body);
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
 }
 
 button:hover {
-  cursor: pointer;
-  background:linear-gradient(to bottom, var(--quartiary) 0%, var(--quinciary) 100%);
-  font-weight: 900;
-  transform: translateY(-2px);
-  box-shadow: 0 7px 14px rgba(50, 50, 93, .10), 0 3px 6px rgba(0, 0, 0, .08);
+    cursor: pointer;
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+}
+
+button:hover::before {
+    opacity: 1;
+}
+
+button:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 /* Demo banner height - must match DemoBanner.jsx (padding + font) */
@@ -96,16 +222,17 @@ button:hover {
 }
 
 .nav {
-    border-bottom: 2px solid whitesmoke;
-    background-color: white;
+    border-bottom: 1px solid var(--gray-200);
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     position: sticky;
     top: 0;
     left: 0;
     z-index: 9;
-    padding-top: 0px;
-    margin-top: 0px;
-    padding-left: 20px;
-    padding-right: 10px;
+    padding: 0 var(--space-6);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
 }
 
 /* When demo banner is shown: reserve space and make nav stick below it */
@@ -121,38 +248,80 @@ button:hover {
   padding-top: 8px;
 }
 
-h1 { font-weight: 600; padding: 10px; margin-top: 10px; padding-left: 5px; }
-h2 { font-weight: 500;}
+h1 { 
+    font-family: var(--font-display);
+    font-weight: 700; 
+    font-size: 2.5rem;
+    padding: var(--space-3);
+    margin-top: var(--space-3); 
+    padding-left: var(--space-2);
+    color: var(--gray-900);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+
+h2 { 
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.875rem;
+    color: var(--gray-800);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--gray-800);
+    line-height: 1.4;
+}
+
+h4 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--gray-700);
+}
+
+h5 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--gray-700);
+}
 
 .footer {
-    background-color: var(--tertiary);
+    background: linear-gradient(135deg, var(--tertiary) 0%, var(--primary-dark) 100%);
     color: white;
-    padding: 10px;
+    padding: var(--space-10) var(--space-6);
     text-align: center;
     display: flex;
     align-items: center;
     align-content: center;
     justify-content: center;
     justify-items: center;
+    margin-top: var(--space-20);
+    position: relative;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 50%, rgba(255, 140, 66, 0.1) 0%, transparent 50%);
 }
 
 .footer h5 {
-    font-family: Quicksand;
-    font-size: 22px;
-    font-weight: 900;
-    background-image: linear-gradient(0deg, var(--tertiary) 0%, var(--tertiary) 100%),
-    linear-gradient(0deg, var(--quartiary) 0%, var(--primary) 100%),
-    linear-gradient(0deg, var(--quartiary) 0%, var(--primary) 100%),
-    linear-gradient(0deg, var(--primary) 0%, var(--quartiary) 100%),
-    linear-gradient(0deg, var(--primary) 0%, var(--quartiary) 100%);
-
-    border: 2px solid transparent;
-    background-origin: padding-box, border-box, border-box, border-box, border-box;
-    background-repeat: no-repeat;
-    background-size: 100% 100%, 9px 9px, 9px 9px, 9px 9px, 9px 9px;
-    background-position: top left, top left, top right, bottom left, bottom right;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--gray-300);
     max-width: 400px;
-    padding: 12px;
+    padding: 0;
+    margin: 0;
+    letter-spacing: 0.02em;
+    position: relative;
 }
 
 @media only screen (max-width: 499px)  {

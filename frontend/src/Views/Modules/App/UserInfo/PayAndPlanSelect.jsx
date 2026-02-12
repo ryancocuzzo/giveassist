@@ -41,37 +41,72 @@ export default class PayAndPlanSelect extends Component {
 
     render() {
         return (
-            <div className={styles.gridded_centered}>
-                <div className={styles.infoView}>
+            <div className={styles.settingsCard}>
+                <div className={styles.settingsHeader}>
+                    <h2>{this.props.payInfoText || 'Payment & Plan'}</h2>
+                    <span className="material-icons">credit_card</span>
+                </div>
+                
+                <div className={styles.settingsForm}>
+                    <div className={styles.subsection}>
+                        <h3 className={styles.subsectionTitle}>Payment Method</h3>
+                        <CheckoutForm 
+                            onTokenChange={this.props.onTokenChange ? this.props.onTokenChange : null} 
+                            onSubmit={this.props.onSubmitPayment} 
+                            notSubmittable={this.props.notSubmittable} 
+                            style={{width: '100%'}}
+                        />
+                    </div>
 
-                    <h1>{this.props.payInfoText || 'Update Payment Info'}</h1>
-                    <CheckoutForm onTokenChange={this.props.onTokenChange ? this.props.onTokenChange : null} onSubmit={this.props.onSubmitPayment} notSubmittable={this.props.notSubmittable} style={{width: '100%'}}/>
-
-                    <h1 style={{marginTop: '35px'}}>{this.props.planSelectText || "Change Plan"}</h1>
-                    <div className={styles.restrictedPayView}>
-                        <div className={styles.payment}>
-                            <ul>
-                                {PLANS.map((plan) => (
-                                    <li key={plan.title}>
-                                        <input type="radio" checked={this.state.current === plan.title} onChange={this.setActive} id={plan.title} name="prem" value={plan.title}/>
-                                        <div className={styles.woah} onClick={() => {
-                                            this.setActive({target: {value: plan.title}});
-                                        }}></div>
-                                        <label htmlFor={plan.title}>{plan.title !== 'PZ' ? ('$' + plan.cost) : 'Other'}</label><br/>
-                                    </li>
-                                ))}
-                            </ul>
+                    <div className={styles.subsection} style={{marginTop: 'var(--space-8)'}}>
+                        <h3 className={styles.subsectionTitle}>{this.props.planSelectText || "Subscription Plan"}</h3>
+                        <div className={styles.planGrid}>
+                            {PLANS.map((plan) => (
+                                <label 
+                                    key={plan.title}
+                                    className={`${styles.planOption} ${this.state.current === plan.title ? styles.planOptionActive : ''}`}
+                                    onClick={() => this.setActive({target: {value: plan.title}})}
+                                >
+                                    <input 
+                                        type="radio" 
+                                        checked={this.state.current === plan.title} 
+                                        onChange={this.setActive} 
+                                        id={plan.title} 
+                                        name="prem" 
+                                        value={plan.title}
+                                        style={{display: 'none'}}
+                                    />
+                                    <div className={styles.planContent}>
+                                        <span className={styles.planPrice}>
+                                            {plan.title !== 'PZ' ? ('$' + plan.cost) : 'Custom'}
+                                        </span>
+                                        {plan.title !== 'PZ' && <span className={styles.planPeriod}>/mo</span>}
+                                    </div>
+                                    {this.state.current === plan.title && (
+                                        <span className={`material-icons ${styles.planCheck}`}>check_circle</span>
+                                    )}
+                                </label>
+                            ))}
                         </div>
-                    </div>
-                    <br/>
-                    <div className={styles.restrictedPayView2} style={{textAlign: 'left'}}>
-                        {this.state.current === "PZ" ? <div className={styles.restrictedInput} style={{minWidth: '250px'}}><InputComponent type="number" title="Custom Amount" pretext="$" validate={validateMoney} onChange={this.customAmountChanged} /></div> : ''}
+                        
+                        {this.state.current === "PZ" && (
+                            <div style={{marginTop: 'var(--space-4)'}}>
+                                <InputComponent 
+                                    type="number" 
+                                    title="Custom Amount" 
+                                    pretext="$" 
+                                    validate={validateMoney} 
+                                    onChange={this.customAmountChanged} 
+                                />
+                            </div>
+                        )}
                     </div>
 
-                    <div style={{marginTop: '15px'}}>
-                        <button style={{display: this.props.notSubmittable ? 'none' : 'block'}} className={styles.submit} onClick={this.handle_submit_plan}>Update</button>
-                    </div>
-
+                    {!this.props.notSubmittable && (
+                        <button className={styles.submit} onClick={this.handle_submit_plan}>
+                            Save Changes
+                        </button>
+                    )}
                 </div>
             </div>
         );

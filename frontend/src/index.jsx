@@ -56,11 +56,15 @@ class App extends React.Component {
     const { user, doneLooking, curr } = this.state;
 
     const signupOrLogin = curr === 'signup' || curr === 'login';
-    const navbar = signupOrLogin
-      ? EmptyNavbar('give', 'assist', '/')
-      : (user
-        ? Navbar('give', 'assist', 'logout', '/', logout)
-        : Navbar('give', 'assist', 'login', '/', '/login'));
+    
+    let navbar;
+    if (signupOrLogin) {
+      navbar = <EmptyNavbar titleClickHref="/" />;
+    } else if (user) {
+      navbar = <Navbar titleClickHref="/" buttonTitle="logout" buttonOnClick={logout} showDashboard={true} />;
+    } else {
+      navbar = <Navbar titleClickHref="/" buttonTitle="login" buttonOnClick="/login" showDashboard={false} />;
+    }
 
     const loading = <div className="loading">Loading..</div>;
 
@@ -73,12 +77,16 @@ class App extends React.Component {
     const content = doneLooking ? (
       <Routes>
         {user ? (
-          <Route path="*" element={<UISensei />} />
+          <>
+            <Route path="/" element={<Intro user={user} />} />
+            <Route path="/app" element={<UISensei />} />
+            <Route path="*" element={<Navigate to="/app" replace />} />
+          </>
         ) : (
           <>
             <Route path="/signup" element={<SignUp />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Intro />} />
+            <Route path="/" element={<Intro user={null} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>
         )}

@@ -1,99 +1,228 @@
-/*
-    Colors:
-    Primary: var(--primary)
-    Secondary: var(--secondary)
-    Tertiary: var(--tertiary)
- */
+.analyticsContainer {
+    text-align: left;
+}
+
+.analyticsHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+}
+
+.analyticsHeader h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.analyticsHeader .material-icons {
+    color: var(--primary);
+    font-size: 28px;
+}
+
+.statCards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.statCard {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+}
+
+.statCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.statIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.statIcon .material-icons {
+    font-size: 24px;
+    color: white;
+}
+
+.statContent {
+    flex: 1;
+}
+
+.statValue {
+    font-family: var(--font-display);
+    font-size: 1.875rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+    margin-bottom: var(--space-1);
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+}
+
+.chartSection {
+    margin-bottom: var(--space-8);
+}
+
+.tablesSection {
+    margin-top: var(--space-6);
+}
 
 .bar {
     display: flex;
+    gap: var(--space-2);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2);
 }
 
 .active {
-    font-weight: bold;
+    font-weight: 600;
     display: table;
     width: 100%;
-    table-layout: fixed;    /* For cells of equal size */
+    table-layout: fixed;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
 }
 
 div.active {
-    background-color: lightgrey;
+    background: var(--primary);
     width: 100%;
-    height: 5px;
+    height: 4px;
+    border-radius: var(--radius-full);
+    box-shadow: 0 2px 4px rgba(45, 90, 123, 0.3);
 }
+
 div.passive {
     background-color: transparent;
 }
+
 .in a {
-    padding-left:5px;
+    padding: var(--space-3) var(--space-4);
+    color: var(--gray-700);
+    transition: color var(--transition-fast);
 }
 
+.active .in a {
+    color: var(--primary);
+}
 
 .passive {
-    font-weight: normal;
+    font-weight: 500;
     display: table;
     width: 100%;
-    table-layout: fixed;    /* For cells of equal size */
+    table-layout: fixed;
+    transition: all var(--transition-base);
+}
+
+.passive:hover {
+    background: rgba(45, 90, 123, 0.05);
+    border-radius: var(--radius-md);
 }
 
 .in {
-    padding-left: 20px;
+    padding: 0 var(--space-4);
     display: table-cell;
     text-align: left;
 }
 
 p {
     text-align: left;
+    color: var(--gray-700);
+    line-height: 1.7;
 }
 
 .viewport {
     background-color: transparent;
-    width: 90%;
+    width: 94%;
+    margin: 0 auto;
     align-items: center;
     justify-content: center;
-    height: 400px;
+    min-height: 400px;
+    padding: var(--space-4);
 }
 
 .box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
 }
 
 .box p {
-  width:80%;
+    width: 85%;
+    max-width: 700px;
 }
 
 h1 {
-    /* margin: 20px; */
+    font-family: var(--font-display);
+    color: var(--gray-900);
 }
 
 section.centered_text p {
     text-align: center;
 }
+
 .ttl:last-child {
-    margin-bottom: 30px;
+    margin-bottom: var(--space-8);
 }
 
 
 
 @media only screen and (max-width: 1000px) {
     .ttl {
-        font-size: 18px;
+        font-size: 17px;
+    }
+    
+    .statCards {
+        grid-template-columns: 1fr;
     }
 }
 
 @media only screen and (max-width: 500px) {
+    .viewport {
+        padding: var(--space-3);
+        width: 96%;
+        margin: 0 auto;
+    }
 
+    .confined_viewport {
+        margin-bottom: var(--space-6);
+    }
     
-
-     .viewport {
-         padding-left: 0px;
-         width: 100%;
-         margin-left: 0px;
-     }
-
-     .confined_viewport {
-         margin-bottom: 20px;
-     }
+    .box p {
+        width: 95%;
+    }
+    
+    .statValue {
+        font-size: 1.5rem;
+    }
+    
+    .statIcon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .statIcon .material-icons {
+        font-size: 20px;
+    }
 }

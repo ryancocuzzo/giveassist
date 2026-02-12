@@ -1,11 +1,11 @@
 import React from 'react';
 import InputForm from '../../Modules/General/Form/InputForm.jsx';
-import ParticledContent from '../../Modules/General/Particle/ParticleBackground.jsx';
 import OptionSelection from '../../Modules/App/UserInfo/PayAndPlanSelect.jsx';
 import { Link } from 'react-router-dom';
 import { emailField, passwordField, confirmPasswordField, phoneField, nameField, extractPhoneNumber, validateMoney } from '../../Modules/General/Form/FormUtils.js';
 import { signup, login } from '../../../Helper-Files/Temp-DB-Utils.js';
 import { planExists, lowestPlanCost, formatPlan } from '../../../Helper-Files/variables';
+import styles from './styles.module.css';
 
 const inputs = [nameField, emailField, passwordField, confirmPasswordField, phoneField];
 
@@ -108,34 +108,87 @@ export default class SignUp extends React.Component {
       />
     );
 
-    const CombinedComponents = (
-      <div style={{ backgroundColor: 'whitesmoke', padding: '10px', margin: '10px', borderRadius: '10px' }}>
-        <h1>Sign Up</h1>
-        <br />
-        <InputForm
-          fields={inputs}
-          firstInvalidIndexUpdated={this.firstInvalidFieldChange}
-          fieldsChanged={this.fieldsChange}
-          isSequential={true}
-          notSubmittable={true}
-          confirmFields={[{ index: 3, confirmWithIndex: 2 }]}
-        />
-        <br />
-        {OptionSelect}
-        <button className="submit" onClick={this.handle_signup}>Sign Up</button>
-        <h4 style={{ textAlign: 'center', marginTop: '15px' }}>
-          Already a user? <Link to="/login">Login Here</Link>
-        </h4>
-        <br />
-      </div>
-    );
-
-    const content_style = { height: 'min(100vh, 1400px)', minHeight: '800px', backgroundColor: 'var(--primary)' };
-    const params = { vertCenter: false, horCenter: true, centered: true, particleMargin: '0px' };
-
     return (
-      <div>
-        {ParticledContent(CombinedComponents, content_style, params)}
+      <div className={styles.signupContainer}>
+        <div className={styles.signupLeft}>
+          <div className={styles.brandSection}>
+            <h2>Start making <span className={styles.highlight}>real impact</span> today</h2>
+            <p>A simple, affordable way to give back. Vote on causes monthly and track where your contributions go.</p>
+            
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statNumber}>Monthly</div>
+                <div className={styles.statLabel}>Curated causes</div>
+              </div>
+              
+              <div className={styles.statCard}>
+                <div className={styles.statNumber}>$2.99</div>
+                <div className={styles.statLabel}>Starting price</div>
+              </div>
+              
+              <div className={styles.statCard}>
+                <div className={styles.statNumber}>99.5%</div>
+                <div className={styles.statLabel}>Goes to causes</div>
+              </div>
+              
+              <div className={styles.statCard}>
+                <div className={styles.statNumber}>Easy</div>
+                <div className={styles.statLabel}>Cancel anytime</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className={styles.signupRight}>
+          <div className={styles.signupCard}>
+            <h1>Create your account</h1>
+            <p className={styles.subtitle}>Get started with GiveAssist in just a few minutes</p>
+            
+            <div className={styles.signupForm}>
+              <div className={styles.formSection}>
+                <div className={styles.sectionTitle}>
+                  <span className={styles.stepNumber}>1</span>
+                  Personal Information
+                </div>
+                <InputForm
+                  fields={inputs}
+                  firstInvalidIndexUpdated={this.firstInvalidFieldChange}
+                  fieldsChanged={this.fieldsChange}
+                  isSequential={true}
+                  notSubmittable={true}
+                  confirmFields={[{ index: 3, confirmWithIndex: 2 }]}
+                />
+              </div>
+              
+              <div className={styles.formSection}>
+                <div className={styles.sectionTitle}>
+                  <span className={styles.stepNumber}>2</span>
+                  Choose Your Plan
+                </div>
+                {OptionSelect}
+              </div>
+              
+              <button className="submit" onClick={this.handle_signup}>
+                Create Account
+              </button>
+            </div>
+            
+            <div className={styles.trustBadges}>
+              <div className={styles.trustBadge}>
+                <span className="material-icons">verified_user</span>
+                <span>Secure payments</span>
+              </div>
+              <div className={styles.trustBadge}>
+                <span className="material-icons">visibility</span>
+                <span>100% transparent</span>
+              </div>
+            </div>
+            
+            <div className={styles.loginLink}>
+              Already have an account? <Link to="/login">Sign in</Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

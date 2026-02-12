@@ -23,31 +23,59 @@ export default class Login extends React.Component {
   }
 
   render() {
-    const content_style = {
-      height: '100dvh',
-      minHeight: '100vh',
-      backgroundColor: 'var(--primary)'
-    };
-    const params = {
-      vertCenter: true,
-      horCenter: true,
-      centered: true,
-      particleMargin: '2px'
-    };
-
-    const CombinedComponents = (
-      <div className={styles.loginCard}>
-        <h1>Login</h1>
-        <br />
-        <InputForm fields={inputs} submit={handle_login} submitText="login" customErrorText="Please enter valid login credentials." isSequential={true} notSubmittable={false} />
-        <h4 className={styles.signupLink}>Not a user? <Link to="/signup">Sign up Here</Link></h4>
-        <br />
-      </div>
-    );
-
     return (
-      <div className="signupContainer">
-        {ParticledContent(CombinedComponents, content_style, params)}
+      <div className={styles.loginContainer}>
+        <div className={styles.loginLeft}>
+          <div className={styles.brandSection}>
+            <h2>Make a difference with every dollar</h2>
+            <p>Simple, subscription-based giving that puts you in control of where your money goes.</p>
+            
+            <div className={styles.featureList}>
+              <div className={styles.featureItem}>
+                <div className={styles.featureIcon}>
+                  <span className="material-icons">verified</span>
+                </div>
+                <span className={styles.featureText}>Vetted organizations and transparent donation tracking</span>
+              </div>
+              
+              <div className={styles.featureItem}>
+                <div className={styles.featureIcon}>
+                  <span className="material-icons">lock</span>
+                </div>
+                <span className={styles.featureText}>Secure payments through trusted providers</span>
+              </div>
+              
+              <div className={styles.featureItem}>
+                <div className={styles.featureIcon}>
+                  <span className="material-icons">insights</span>
+                </div>
+                <span className={styles.featureText}>Clear analytics on your giving impact</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className={styles.loginRight}>
+          <div className={styles.loginCard}>
+            <h1>Welcome back</h1>
+            <p className={styles.subtitle}>Sign in to your account to continue making an impact</p>
+            
+            <div className={styles.loginForm}>
+              <InputForm 
+                fields={inputs} 
+                submit={handle_login} 
+                submitText="Sign in" 
+                customErrorText="Please enter valid login credentials." 
+                isSequential={true} 
+                notSubmittable={false} 
+              />
+            </div>
+            
+            <div className={styles.signupLink}>
+              Don't have an account? <Link to="/signup">Sign up</Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

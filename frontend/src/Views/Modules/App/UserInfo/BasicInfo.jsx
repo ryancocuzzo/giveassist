@@ -15,11 +15,16 @@ export default function BasicInfo(name, email, confirm) {
         confirm(changed_name, changed_email);
     };
     return (
-        <div style={{textAlign: 'left'}}>
-            <h1>Basic Info</h1>
-            <InputComponent title="Email" value={email} onChange={email_change} placeholder="Enter your email" validate={validateEmail}/>
-            <InputComponent title="Full Name" value={name} onChange={name_change} placeholder="Enter your full name" validate={validateName}/>
-            <button className={styles.submit} onClick={submit}>Confirm</button>
+        <div className={styles.settingsCard}>
+            <div className={styles.settingsHeader}>
+                <h2>Profile Information</h2>
+                <span className="material-icons">person</span>
+            </div>
+            <div className={styles.settingsForm}>
+                <InputComponent title="Email" value={email} onChange={email_change} placeholder="Enter your email" validate={validateEmail}/>
+                <InputComponent title="Full Name" value={name} onChange={name_change} placeholder="Enter your full name" validate={validateName}/>
+                <button className={styles.submit} onClick={submit}>Save Changes</button>
+            </div>
         </div>
     );
 }

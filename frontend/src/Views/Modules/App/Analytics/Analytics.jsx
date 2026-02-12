@@ -21,14 +21,41 @@ export default function Analytics(chartData, userData, eventData, total_donated,
     const tables = TabbedTables(userData, eventData);
 
     return (
-        <div style={{textAlign: 'left'}}>
-            <h1>Insights</h1>
-            <ColoredBarChart data={chartData}/>
-            <section style={{textAlign: 'center'}}>
-                <h3 className={styles.ttl}>You've donated ${total_donated}!</h3>
-                <h3 className={styles.ttl}>You're currently donating ${current_donation}/mo.</h3>
-            </section>
-            {tables}
+        <div className={styles.analyticsContainer}>
+            <div className={styles.analyticsHeader}>
+                <h1>Insights</h1>
+                <span className="material-icons">analytics</span>
+            </div>
+            
+            <div className={styles.statCards}>
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon}>
+                        <span className="material-icons">paid</span>
+                    </div>
+                    <div className={styles.statContent}>
+                        <div className={styles.statValue}>${total_donated}</div>
+                        <div className={styles.statLabel}>Total Donated</div>
+                    </div>
+                </div>
+                
+                <div className={styles.statCard}>
+                    <div className={styles.statIcon}>
+                        <span className="material-icons">autorenew</span>
+                    </div>
+                    <div className={styles.statContent}>
+                        <div className={styles.statValue}>${current_donation}</div>
+                        <div className={styles.statLabel}>Per Month</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div className={styles.chartSection}>
+                <ColoredBarChart data={chartData}/>
+            </div>
+            
+            <div className={styles.tablesSection}>
+                {tables}
+            </div>
         </div>
     );
 }
