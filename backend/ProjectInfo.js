@@ -13,25 +13,45 @@ var dev_sandbox_app = {
     databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com"
 };
 
-const tw_accountSid = '[REDACTED]';
-const tw_authToken = '[REDACTED]';
-const twilio_client = require('twilio')(tw_accountSid, tw_authToken);
-const twilio_phoneNumber = '+19083049973';
-const STRIPE_ACCT_ID = '[REDACTED]';
-
 // xxxxxxxxxxxxxxxxxxxxxxxx
                         // x
 let TEST_MODE = false;   // x
                         // x
 // xxxxxxxxxxxxxxxxxxxxxxxx
 
-var stripe;
+const requiredEnvVars = [
+    'TWILIO_ACCOUNT_SID',
+    'TWILIO_AUTH_TOKEN',
+    'TWILIO_PHONE_NUMBER',
+    'STRIPE_ACCOUNT_ID',
+    'STRIPE_SECRET_KEY_TEST',
+    'STRIPE_SECRET_KEY_LIVE'
+];
 
-if (TEST_MODE == true) {
-    stripe = require("stripe")("[REDACTED]");
+const missing = requiredEnvVars.filter((key) => !process.env[key]);
+if (missing.length > 0) {
+    throw new Error(
+        `Missing required environment variables: ${missing.join(', ')}. ` +
+        'See .env.example for setup.'
+    );
+}
+
+const tw_accountSid = process.env.TWILIO_ACCOUNT_SID;
+const tw_authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilio_phoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const STRIPE_ACCT_ID = process.env.STRIPE_ACCOUNT_ID;
+
+const twilio_client = require('twilio')(tw_accountSid, tw_authToken);
+
+const stripeSecretKey = TEST_MODE
+    ? process.env.STRIPE_SECRET_KEY_TEST
+    : process.env.STRIPE_SECRET_KEY_LIVE;
+
+var stripe = require("stripe")(stripeSecretKey);
+
+if (TEST_MODE) {
     admin.initializeApp(dev_sandbox_app);
 } else {
-    stripe = require("stripe")("[REDACTED]");
     admin.initializeApp(production_app);
 }
 
@@ -46,19 +66,3 @@ module.exports = {
     STRIPE_ACCT_ID: STRIPE_ACCT_ID,
     twilio_phoneNumber: twilio_phoneNumber
 }
-
-
-
-
-
-
-
-
-
-// /*
-//   TEST: [REDACTED]
-//   LIVE: [REDACTED]
-// */
-// // var stripe = require("stripe")("[REDACTED]"); // test
-// var stripe = require("stripe")("[REDACTED]"); // live
-// Get a reference to the root of the Database
