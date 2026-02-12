@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>A subscription-based donation allocation platform</strong><br/>
-  <em>Built 2019–2020 &middot; Modernized for showcase</em>
+  <em>2019–2021 &middot; Modernized for showcase</em>
 </p>
 
 ---
