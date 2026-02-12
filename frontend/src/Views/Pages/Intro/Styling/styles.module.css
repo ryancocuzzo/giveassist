@@ -1,9 +1,26 @@
+.buffer {
+  width: 50%;
+  max-width: 400px;
+  height: 3px;
+}
+
+.subscriptionTitle {
+  color: white;
+  margin-left: 50px;
+}
+
+@media (max-width: 699px) {
+  .subscriptionTitle {
+    margin-left: 20px;
+  }
+}
 
 /* Containers */
 
 .contentcontainer {
     padding: 20px;
-    padding-top: 200px;
+    padding-top: 180px;
+    padding-bottom: 80px;
 }
 .particlecontainer {
     background-color: black;

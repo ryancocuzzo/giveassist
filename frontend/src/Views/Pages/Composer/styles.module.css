@@ -9,7 +9,8 @@
     padding-top: 0px;
     grid-template-columns: repeat(1, 1fr);
     grid-auto-rows: min-content;
-    z-index: -1;
+    position: relative;
+    z-index: 0;
     /* background-color: #F8F8F8; */
 }
 
@@ -20,7 +21,8 @@
     padding-top: 0px;
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: min-content;
-    z-index: -1;
+    position: relative;
+    z-index: 0;
 }
 
 .grid_block {
@@ -72,7 +74,10 @@
 
 }
 
-.settings { margin-left: 20px; }
+.settings {
+    margin-left: 20px;
+    text-align: left;
+}
 
 
 @media only screen and (max-width: 800px)  {

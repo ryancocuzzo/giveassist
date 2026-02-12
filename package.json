@@ -1,0 +1,20 @@
+{
+  "name": "giveassist",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Giveassist — a subscription-based donation allocation platform",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  },
+  "packageManager": "npm@10.8.2"
+}

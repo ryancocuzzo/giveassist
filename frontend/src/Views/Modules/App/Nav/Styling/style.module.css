@@ -11,27 +11,42 @@ ul {
     padding: 0;
     text-decoration: none;
     outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 li {
-    float: left;
+    display: flex;
+    align-items: center;
 }
 
 .right {
-    float: right;
+    margin-left: auto;
 }
 
-.title {
-    margin-top: 1px;
+.logoContainer {
+    display: flex;
+    align-items: center;
+    height: 90px;
+}
+
+.logo {
+    height: 80px;
+    width: auto;
+    transition: transform 0.2s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+    cursor: pointer;
 }
 
 button.login {
     margin: 5px;
-    font-size: 25px;
-    margin-top: 8px;
     font-size: 20px;
+    margin-top: 8px;
     margin-bottom: 0px;
-    /* height: 48px; */
 }
 
 .give {
@@ -45,17 +60,9 @@ button.login {
     text-decoration: none;
 }
 
-.title {
-    margin: 0px;
-    padding: 0px;
-    text-decoration: none;
-}
-
-.title:hover { cursor: pointer;}
-
 div.cnavbar {
     width:100%;
-    padding: 0px;
+    padding: 5px 0;
     margin-bottom: 0px;
 }
 
@@ -75,17 +82,39 @@ a:focus {
 }
 @media only screen and (max-width: 1200px)  {
     button.login {
-        font-size: 20px;
+        font-size: 18px;
         padding: 5px 15px 5px 15px;
         margin-top: 8px;
      }
      div.cnavbar {
          width:100%;
-         padding: 0px;
+         padding: 5px 0;
          margin-bottom: 3px;
-         height: 40px;
+     }
+
+     .logoContainer {
+         height: 70px;
+     }
+
+     .logo {
+         height: 60px;
      }
 
      .give, .assist { font-size: 35px; }
 
+}
+
+@media only screen and (max-width: 600px)  {
+    .logoContainer {
+        height: 60px;
+    }
+
+    .logo {
+        height: 50px;
+    }
+
+    button.login {
+        font-size: 16px;
+        padding: 4px 12px;
+    }
 }

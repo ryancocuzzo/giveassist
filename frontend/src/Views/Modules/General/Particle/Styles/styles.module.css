@@ -1,9 +1,14 @@
 
 .gridded_centered {
-    position: 'static';
+    position: static;
     display: grid;
     align-items: center;
-    justify-items:center;
+    justify-items: center;
+}
+
+.grd {
+    display: grid;
+    position: relative;
 }
 
 .pinned  {

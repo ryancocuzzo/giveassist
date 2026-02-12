@@ -1,58 +1,30 @@
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
-let TEST_MODE = false;
+const server_root = import.meta.env.VITE_API_URL || 'http://localhost:1234';
 
-/*
+const stripe_api_key = DEMO_MODE
+  ? 'pk_test_demo'
+  : (import.meta.env.VITE_STRIPE_KEY || '');
 
-STRIPE
-
-  TEST: pk_test_eDgW1qWOGdRdCnIQocPje0Gg
-  LIVE: pk_live_GulO410dLXS1uDIODH1e8Nz5
-
-*/
-
-let server_root, stripe_api_key, fb_config;
-
-if (TEST_MODE == true) {
-  server_root = "http://localhost:1234";
-  stripe_api_key = 'pk_test_eDgW1qWOGdRdCnIQocPje0Gg';
-  // Your web app's Firebase configuration
-  fb_config = {
-    apiKey: "AIzaSyAUECj3-IzVLcedarFxfFq0vUWzG5yUcWY",
-    authDomain: "giveassist-inc-dev-sandbox.firebaseapp.com",
-    databaseURL: "https://giveassist-inc-dev-sandbox.firebaseio.com",
-    projectId: "giveassist-inc-dev-sandbox",
-    storageBucket: "giveassist-inc-dev-sandbox.appspot.com",
-    messagingSenderId: "1054713641478",
-    appId: "1:1054713641478:web:bad802e43601947c"
-  };
-
-
-} else {
-  server_root = "https://donate-mate-app.herokuapp.com";
-  stripe_api_key = 'pk_live_GulO410dLXS1uDIODH1e8Nz5';
-  fb_config = {
-      apiKey: "AIzaSyAL1jTucV0oqG4kpFCOkudEmN_7_-CvDYg",
-      authDomain: "donate-rcocuzzo-17387568.firebaseapp.com",
-      databaseURL: "https://donate-rcocuzzo-17387568.firebaseio.com",
-      projectId: "donate-rcocuzzo-17387568",
-      storageBucket: "donate-rcocuzzo-17387568.appspot.com",
-      messagingSenderId: "352064246619"
+const fb_config = DEMO_MODE
+  ? {
+      apiKey: 'demo-api-key',
+      authDomain: 'demo.firebaseapp.com',
+      databaseURL: 'https://demo.firebaseio.com',
+      projectId: 'demo-project',
+      storageBucket: 'demo.appspot.com',
+      messagingSenderId: '000000000000',
+      appId: '1:000:web:demo'
+    }
+  : {
+      apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+      authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+      databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+      projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+      storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+      appId: import.meta.env.VITE_FIREBASE_APP_ID
     };
-}
-
-// /*
-//     --------------------------------   REMOVE THIS LATER !!!!!!   --------------------------------
-//     ------------------------------------------------------------------------------------------------
-//     ------------------------------------------------------------------------------------------------
-//  */
-//
-// server_root = "http://localhost:1234";
-//
-// /*
-//     --------------------------------   REMOVE THIS LATER !!!!!!   --------------------------------
-//     ------------------------------------------------------------------------------------------------
-//     ------------------------------------------------------------------------------------------------
-//  */
 
 export const PLANS = [
   { title: 'PX', cost: 4.99 },
@@ -61,86 +33,78 @@ export const PLANS = [
 ];
 
 export function lowestPlanCost() {
-  var lowest = 999;
+  let lowest = 999;
   PLANS.forEach((plan) => {
-    if (plan.cost != null && plan.cost < lowest )
-      lowest = plan.cost;
+    if (plan.cost != null && plan.cost < lowest) lowest = plan.cost;
   });
   return lowest;
 }
 
-/* Ex input - PX */
-export function priceForPlanWithTitle (title) {
-  if (!title || typeof title !== 'string' || title.length > 2) throw 'priceForPlanWithTitle params issue: incorrect or wrong-formatted title.';
-  var cost = null;
+export function priceForPlanWithTitle(title) {
+  if (!title || typeof title !== 'string' || title.length > 2) {
+    throw new Error('priceForPlanWithTitle: incorrect title. Got ' + title);
+  }
+  let cost = null;
   PLANS.forEach((plan) => {
-    if (title === plan.title)
-      cost = plan.cost;
+    if (title === plan.title) cost = plan.cost;
   });
   return cost;
 }
 
-/* Ex input - 3.99 */
-export function titleOfPlanWithCost (cost) {
-  if (!cost || typeof cost !== 'number') throw 'titleOfPlanWithCost params issue: incorrect or wrong-formatted cost.';
-  var title = null;
+export function titleOfPlanWithCost(cost) {
+  if (!cost || typeof cost !== 'number') {
+    throw new Error('titleOfPlanWithCost: incorrect cost.');
+  }
+  let title = null;
   PLANS.forEach((plan) => {
-    if (cost === plan.cost)
-      title = plan.title;
+    if (cost === plan.cost) title = plan.title;
   });
   return title || 'PZ';
 }
 
 export function planExists(title) {
-  if (!title || typeof title !== 'string' || title.length > 2) throw 'planExists params issue: incorrect or wrong-formatted title.';
-  var ret = false;
+  if (!title || typeof title !== 'string' || title.length > 2) {
+    throw new Error('planExists: incorrect title.');
+  }
+  let found = false;
   PLANS.forEach((plan) => {
-    if (title === plan.title)
-      ret = true;
+    if (title === plan.title) found = true;
   });
-
-  return ret;
+  return found;
 }
 
-/* @param planname will arrive as a string (i.e PX)
-    @param customAmt will arrive as a num or null (i.e 3.99)
-    @return a db-usable plan format (i.e PX,3.99 or PY,4.99 or PZ,12(whole #))   */
 export const formatPlan = (planname, customAmt) => {
-    // ensure it's a floating point number
-    if (typeof planname !== 'string' || customAmt === undefined) throw 'formatPlan params error';
-    let found_price = priceForPlanWithTitle(planname);
-    let price = found_price ? found_price : customAmt;
-    return planname+ ',' + String(price);
-}
+  if (typeof planname !== 'string' || customAmt === undefined) {
+    throw new Error('formatPlan: invalid params');
+  }
+  const found_price = priceForPlanWithTitle(planname);
+  const price = found_price ? found_price : customAmt;
+  return planname + ',' + String(price);
+};
 
-var variables = {
+const variables = {
+  DEMO_MODE,
   local_urls: {
     home: '/',
-    vote: "/vote",
-    stats: "/stats",
+    vote: '/vote',
+    stats: '/stats',
     login: '/login',
-    signUp: './signup',
-    vaults: './vaults'
+    signUp: '/signup'
   },
   server_urls: {
     home: server_root,
-    eventPriviledges: server_root + '/eventPriviledges',
+    eventPrivileges: server_root + '/eventPrivileges',
     createEvent: server_root + '/createEvent',
-    createStripeUser: server_root + '/createStripeUser',
-    updateJoinedDate: server_root + '/updateJoinedDate',
-    initPayments: server_root + '/initPayments',
-    uploadProfilePicture: server_root + '/uploadProfilePicture',
     changePaymentSource: server_root + '/changePaymentSource',
     change_plan: server_root + '/change_plan',
     deleteUser: server_root + '/deleteUser',
     castVote: server_root + '/castVote',
-    postUserInfo: server_root + '/postUserInfo',
     initiate_new_user: server_root + '/initiate_new_user',
-    totalUsersForEvent: server_root  + '/totalUsersForEvent',
+    totalUsersForEvent: server_root + '/totalUsersForEvent',
     get_plan_stats: server_root + '/get_plan_stats'
   },
-  stripe_api_key: stripe_api_key,
-  fb_config: fb_config
+  stripe_api_key,
+  fb_config
 };
 
 export default variables;

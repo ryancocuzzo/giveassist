@@ -1,0 +1,13 @@
+.loginCard {
+  background-color: whitesmoke;
+  padding: 10px;
+  border-radius: 10px;
+  min-width: 300px;
+  max-width: 420px;
+  width: 90%;
+}
+
+.signupLink {
+  text-align: center;
+  margin-top: 15px;
+}

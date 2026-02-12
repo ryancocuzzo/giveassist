@@ -4,77 +4,83 @@ const PLANS = [
   { title: 'PZ', cost: null, id: 'plan_FNDp8ntFqUpWgO' }
 ];
 
-
-
 function lowestPlanCost() {
-  var lowest = 999;
+  let lowest = 999;
   PLANS.forEach((plan) => {
-    if (plan.cost != null && plan.cost < lowest )
+    if (plan.cost != null && plan.cost < lowest) {
       lowest = plan.cost;
+    }
   });
   return lowest;
 }
 
-/* Ex input - PX */
-function priceForPlanWithTitle (title) {
-  if (!title || typeof title !== 'string' || title.length > 2) throw 'priceForPlanWithTitle params issue: incorrect or wrong-formatted title. Got ' + title;
-  var cost = null;
+/** @param {string} title - e.g. 'PX' */
+function priceForPlanWithTitle(title) {
+  if (!title || typeof title !== 'string' || title.length > 2) {
+    throw new Error('priceForPlanWithTitle: incorrect or wrong-formatted title. Got ' + title);
+  }
+  let cost = null;
   PLANS.forEach((plan) => {
-    if (title === plan.title)
-      cost = plan.cost;
+    if (title === plan.title) cost = plan.cost;
   });
   return cost;
 }
 
-function idForPlanWithTitle (title) {
-  if (!title || typeof title !== 'string' || title.length > 2) throw 'idForPlanWithTitle params issue: incorrect or wrong-formatted title. Got ' + title;
-  var id = null;
+/** @param {string} title - e.g. 'PX' */
+function idForPlanWithTitle(title) {
+  if (!title || typeof title !== 'string' || title.length > 2) {
+    throw new Error('idForPlanWithTitle: incorrect or wrong-formatted title. Got ' + title);
+  }
+  let id = null;
   PLANS.forEach((plan) => {
-    if (title === plan.title)
-      id = plan.id;
+    if (title === plan.title) id = plan.id;
   });
   return id;
 }
 
-/* Ex input - 3.99 */
-function titleOfPlanWithCost (cost) {
-  if (!cost || typeof cost !== 'number') throw 'titleOfPlanWithCost params issue: incorrect or wrong-formatted cost.';
-  var title = null;
+/** @param {number} cost - e.g. 3.99 */
+function titleOfPlanWithCost(cost) {
+  if (!cost || typeof cost !== 'number') {
+    throw new Error('titleOfPlanWithCost: incorrect or wrong-formatted cost.');
+  }
+  let title = null;
   PLANS.forEach((plan) => {
-    if (cost === plan.cost)
-      title = plan.title;
+    if (cost === plan.cost) title = plan.title;
   });
   return title || 'PZ';
 }
 
 function planExists(title) {
-  if (!title || typeof title !== 'string' || title.length > 2) throw 'planExists params issue: incorrect or wrong-formatted title.';
-  var ret = false;
+  if (!title || typeof title !== 'string' || title.length > 2) {
+    throw new Error('planExists: incorrect or wrong-formatted title.');
+  }
+  let found = false;
   PLANS.forEach((plan) => {
-    if (title === plan.title)
-      ret = true;
+    if (title === plan.title) found = true;
   });
-
-  return ret;
+  return found;
 }
 
-/* @param planname will arrive as a string (i.e PX)
-    @param customAmt will arrive as a num or null (i.e 3.99)
-    @return a db-usable plan format (i.e PX,3.99 or PY,4.99 or PZ,12(whole #))   */
+/**
+ * @param {string} planname - e.g. 'PX'
+ * @param {number|null} customAmt - e.g. 3.99
+ * @returns {string} db-usable plan format, e.g. 'PX,4.99' or 'PZ,12'
+ */
 const formatPlan = (planname, customAmt) => {
-    // ensure it's a floating point number
-    if (typeof planname !== 'string' || customAmt === undefined) throw 'formatPlan params error';
-    let found_price = priceForPlanWithTitle(planname);
-    let price = found_price ? found_price : customAmt;
-    return planname+ ',' + String(price);
-}
+  if (typeof planname !== 'string' || customAmt === undefined) {
+    throw new Error('formatPlan: invalid params');
+  }
+  const found_price = priceForPlanWithTitle(planname);
+  const price = found_price ? found_price : customAmt;
+  return planname + ',' + String(price);
+};
 
 module.exports = {
-    PLANS: PLANS,
-    lowestPlanCost: lowestPlanCost,
-    priceForPlanWithTitle: priceForPlanWithTitle,
-    titleOfPlanWithCost: titleOfPlanWithCost,
-    planExists: planExists,
-    formatPlan: formatPlan,
-    idForPlanWithTitle: idForPlanWithTitle
-}
+  PLANS,
+  lowestPlanCost,
+  priceForPlanWithTitle,
+  titleOfPlanWithCost,
+  planExists,
+  formatPlan,
+  idForPlanWithTitle
+};

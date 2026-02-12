@@ -8,6 +8,35 @@
  div {
    font-weight: bold;
  }
+.tabbarWrapper {
+    position: relative;
+}
+
+.tabsFull {
+    display: flex;
+}
+
+.tabsCompact {
+    display: none;
+}
+
+.smTitle {
+    display: none;
+    text-align: center;
+}
+
+@media (max-width: 699px) {
+    .tabsFull {
+        display: none;
+    }
+    .tabsCompact {
+        display: grid;
+    }
+    .smTitle {
+        display: block;
+    }
+}
+
 .bar {
     display: flex;
 }
@@ -57,10 +86,12 @@ div.passive {
 }
 
 .in a {
-    padding-left:5px;
-    overflow: auto;
-    overflow-x: hidden;
-    overflow-y: hidden;
+    padding-left: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    max-width: 100%;
 }
 
 .activecontent {
@@ -105,7 +136,7 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-
+  margin-top: 25px;
 }
 
 .reset {

@@ -1,23 +1,29 @@
-import React, {Component} from 'react';
-import {CardElement, injectStripe} from 'react-stripe-elements';
-import axios from 'axios';
-import Popup from 'react-popup';
+import React, { Component } from 'react';
 import styles from './Styling/styles.module.css';
 
-class CheckoutForm extends Component {
-    /* onValid(), onTokenChange() */
-    constructor(props) {
-        super(props);
-        if (!(props.onTokenChange || props.onSubmit)) throw 'CheckoutForm Error: no handling function provided!';
-         this.state = { width: 0, height: 0 };
-    }
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
 
-  submit = async (ev) => {
-    let {token} = await this.props.stripe.createToken();
-    if (token)
-      this.props.onSubmit(token.id);
-    else
-      Popup.alert('Your payment information is invalid!')
+/**
+ * Payment card input form.
+ * In demo mode, renders a mock card element.
+ * In production, this would integrate with Stripe Elements.
+ */
+class CheckoutForm extends Component {
+  constructor(props) {
+    super(props);
+    if (!(props.onTokenChange || props.onSubmit)) {
+      throw new Error('CheckoutForm: no handling function provided!');
+    }
+    this.state = { width: 0, height: 0, cardFilled: false };
+  }
+
+  submit = async () => {
+    if (DEMO_MODE) {
+      const demoToken = 'tok_demo_' + Date.now();
+      if (this.props.onSubmit) this.props.onSubmit(demoToken);
+    } else {
+      alert('Stripe integration requires production mode.');
+    }
   }
 
   componentDidMount() {
@@ -33,29 +39,57 @@ class CheckoutForm extends Component {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
   }
 
-  onCardInfoChange = async (ev) => {
-      let {token} = await this.props.stripe.createToken();
-      if (this.props.onTokenChange)
-        this.props.onTokenChange(token?.id);
-      if (token && this.props.onValid)
-        this.props.onValid(token.id);
+  onCardInfoChange = () => {
+    if (DEMO_MODE) {
+      const demoToken = 'tok_demo_' + Date.now();
+      this.setState({ cardFilled: true });
+      if (this.props.onTokenChange) this.props.onTokenChange(demoToken);
+      if (this.props.onValid) this.props.onValid(demoToken);
+    }
   }
 
   render() {
-      let card_style = (this.state.width > 500 ) ? {base: {fontSize: '22px'}} :{base: {fontSize: '17px'}}; //{base: {fontSize: '22px'}, margin: 'auto', width: '100%'}
+    const cardElementStyle = {
+      padding: '12px',
+      border: '1px solid #ccc',
+      borderRadius: '4px',
+      backgroundColor: '#f9f9f9',
+      fontSize: this.state.width > 500 ? '16px' : '14px',
+      fontFamily: 'monospace',
+      color: '#666',
+      marginBottom: '10px'
+    };
+
     return (
-      <div class={styles.contained}>
-        <Popup />
-        <div class={styles.inner_contained}>
-            <div style={{width: '100%', height: '3px'}}></div>
-            <h4 style={{lineHeight: '23px'}}>This will be securely sent away to a third-party payment processor as an illegible token. <strong>We do not store payment information.</strong> </h4>
-        <CardElement onChange={this.onCardInfoChange} style={card_style} />            <div style={{marginTop: '15px'}}>
-            <button class={styles.submit} style={{display: this.props.notSubmittable ? 'none' : 'block'}} onClick={this.submit}>{this.props.submitText || 'Update'}</button>
+      <div className={styles.contained}>
+        <div className={styles.inner_contained}>
+          <div style={{ width: '100%', height: '3px' }}></div>
+          <h4 style={{ lineHeight: '23px' }}>
+            This will be securely sent away to a third-party payment processor as an illegible token.
+            {' '}<strong>We do not store payment information.</strong>
+          </h4>
+          {DEMO_MODE ? (
+            <div style={cardElementStyle} onClick={this.onCardInfoChange}>
+              {this.state.cardFilled
+                ? '4242 4242 4242 4242  |  12/25  |  123'
+                : 'Click to simulate card entry (DEMO)'}
             </div>
+          ) : (
+            <div style={cardElementStyle}>Stripe CardElement (production mode)</div>
+          )}
+          <div style={{ marginTop: '15px' }}>
+            <button
+              className={styles.submit}
+              style={{ display: this.props.notSubmittable ? 'none' : 'block' }}
+              onClick={this.submit}
+            >
+              {this.props.submitText || 'Update'}
+            </button>
+          </div>
         </div>
-       </div>
+      </div>
     );
   }
 }
 
-export default injectStripe(CheckoutForm);
+export default CheckoutForm;

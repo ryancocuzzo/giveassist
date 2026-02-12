@@ -11,6 +11,10 @@
  }
  */
 
+.voteButtonWrapper {
+    margin-top: 25px;
+}
+
 .summ {
     width: 86%;
     margin-left: 7%;
