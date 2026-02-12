@@ -191,7 +191,7 @@ giveassist/
 ## Retrospective
 
 **What went well:**
-- The subscription model worked exactly as theorized. Users signed up, forgot about it, and donations happened automatically.
+- The subscription model worked exactly as theorized. Users signed up and donations happened automatically from there.
 - The voting mechanic created genuine engagement — people cared about which cause won.
 - Building everything end-to-end (frontend, backend, payments, SMS, design, financial modeling) was an incredible learning experience.
 
